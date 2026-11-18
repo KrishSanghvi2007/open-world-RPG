@@ -6,6 +6,7 @@ Outlines for the parts of the game that are **not being built yet**. They exist 
 |---|---|
 | [ACT2_THE_WADER.md](ACT2_THE_WADER.md) | Act 2, Afterglow: the region, its people, quests, enemies and key scenes. |
 | [ACT3_THE_STUDIO.md](ACT3_THE_STUDIO.md) | Act 3, Lampblack, and the Finale: the region, quests, the last fight and the walk home. |
+| [CAST_IN_GAME.md](CAST_IN_GAME.md) | The Folded: nine figures from the owners' drawings, cast into the game. Two are in Act 1 now. |
 | [FORESHADOWING.md](FORESHADOWING.md) | What Act 1 must plant for Acts 2 and 3 to pay off, and where each seed is. |
 
 The spine of the whole story is `docs/STORY.md`. These files add detail and never contradict it. Tone: wabi-sabi, personal before cosmic (STORY.md sections 3 and 10).

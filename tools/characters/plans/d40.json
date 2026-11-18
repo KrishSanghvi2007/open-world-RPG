@@ -1,0 +1,136 @@
+{
+  "id": "d40",
+  "game_name": "Lacuna",
+  "painted": "painted.jpg",
+  "keep": [
+    "torso",
+    "head",
+    "handL",
+    "handR",
+    "tank",
+    "tapR_arm",
+    "pipe_top",
+    "leg_pipeL",
+    "leg_pipeR",
+    "cross_pipe",
+    "slipL",
+    "slipR"
+  ],
+  "erase": [
+    [
+      0.0,
+      0.66,
+      0.068,
+      1.0
+    ],
+    [
+      0.905,
+      0.63,
+      1.0,
+      1.0
+    ],
+    [
+      0.0,
+      0.965,
+      1.0,
+      1.0
+    ],
+    [
+      0.0,
+      0.86,
+      0.19,
+      1.0
+    ],
+    [
+      0.875,
+      0.86,
+      1.0,
+      1.0
+    ]
+  ],
+  "close": 6,
+  "min_piece": 2500,
+  "default": "#F2E3C0",
+  "colours": {
+    "torso": "#4A3558",
+    "head": "#EBD9B4",
+    "handL": "#EBD9B4",
+    "handR": "#EBD9B4",
+    "tapR_arm": "#C9963C",
+    "pipe_top": "#C9963C",
+    "leg_pipeL": "#C9963C",
+    "leg_pipeR": "#C9963C",
+    "cross_pipe": "#C9963C",
+    "tank": "#2E5E6E",
+    "slipL": "#C4574B",
+    "slipR": "#C4574B"
+  },
+  "regions": [
+    {
+      "name": "hair",
+      "box": [
+        0.29,
+        0.015,
+        0.65,
+        0.2
+      ],
+      "minus_ellipse": [
+        0.392,
+        0.1,
+        0.607,
+        0.27
+      ],
+      "colour": "#3B2A24"
+    },
+    {
+      "name": "face_void",
+      "box": [
+        0.42,
+        0.113,
+        0.582,
+        0.212
+      ],
+      "ellipse": true,
+      "colour": "#D8CBB0"
+    },
+    {
+      "name": "tank",
+      "box": [
+        0.37,
+        0.505,
+        0.58,
+        0.605
+      ],
+      "colour": "#2E5E6E"
+    }
+  ],
+  "round": 22,
+  "fill_boxes": [
+    [
+      0.385,
+      0.512,
+      0.568,
+      0.6
+    ]
+  ],
+  "hole_boxes": [
+    [
+      0.462,
+      0.672,
+      0.662,
+      0.812
+    ],
+    [
+      0.462,
+      0.842,
+      0.662,
+      0.87
+    ],
+    [
+      0.1,
+      0.69,
+      0.425,
+      0.86
+    ]
+  ]
+}

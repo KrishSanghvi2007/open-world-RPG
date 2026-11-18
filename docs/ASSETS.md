@@ -12,6 +12,26 @@ Re-downloadable packs (Fab, Marketplace, Poly Haven) live in `Content/ThirdParty
 | RPG Audio | Kenney, https://kenney.nl/assets/rpg-audio | Creative Commons Zero (CC0) | `Content/ThirdParty/Audio/Kenney/RPGAudio/` (ignored by git) | Cloth, pages, harvest, pick-up, crafting, doors, enemy wind-up creaks, default footsteps |
 | Interface Sounds 1.0 | Kenney, https://kenney.nl/assets/interface-sounds | Creative Commons Zero (CC0) | `Content/ThirdParty/Audio/Kenney/InterfaceSounds/` (ignored by git) | Menu open, close, select, move, refuse; the quest-choice bell |
 
+## Characters by Krish & Hannah Sanghvi
+
+The Folded (the Hatcher, Lacuna, and the seven others cast in `docs/story/CAST_IN_GAME.md`) are drawn from
+Krish and Hannah Sanghvi's own folded-paper ("exquisite corpse") drawings, used here with both artists' approval.
+The drawings live in their own repository, which this project only reads. Only the files a character is
+actually built from are copied in, under `art_source/characters/<id>/source/`.
+
+| What | From | Licence | Where | Used for |
+|---|---|---|---|---|
+| d28, the Spider: ink redraw, original and painted sheet | The owners' drawings repository (`drawings/redrawn/d28`, `originals`, `painted`) | The owners' own work | `art_source/characters/d28/source/` | The Hatcher |
+| d40, the Faceless One: ink redraw, original and painted sheet | The same (`d40`) | The owners' own work | `art_source/characters/d40/source/` | Lacuna |
+| Part boxes, pivots and movement notes for both | The same (`docs/CAST.md`, `tools/film/cast.json`) | The owners' own work | read in place, not copied | Rigging and animation |
+
+Free tools used to turn a drawing into a model (nothing paid, no account):
+
+| Tool | From | Licence or terms | Used for |
+|---|---|---|---|
+| Hunyuan3D-2.1, through its public demo | https://huggingface.co/spaces/tencent/Hunyuan3D-2.1 (anonymous, free quota) | Tencent Hunyuan 3D 2.1 Community License; outputs are ours to use | A rough 3D shape from the painted front view |
+| gradio_client, numpy, scipy, Pillow | PyPI | Apache 2.0, BSD, BSD, HPND | Talking to the demo; painting the front view |
+
 ## Made by us (no outside source)
 
 | What | Made by | Where | Used for |

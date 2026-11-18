@@ -1,0 +1,66 @@
+{
+  "id": "d28",
+  "game_name": "the Hatcher",
+  "painted": "painted_b.jpg",
+  "keep": [
+    "abdomen",
+    "head",
+    "L1_femur",
+    "L1_tibia",
+    "L2_femur",
+    "L2_tibia",
+    "L3_femur",
+    "L3_tibia",
+    "L4_femur",
+    "L4_tibia",
+    "R1_femur",
+    "R1_tibia",
+    "R2_femur",
+    "R2_tibia",
+    "R3_femur",
+    "R3_tibia",
+    "R4_femur",
+    "R4_tibia"
+  ],
+  "erase": [
+    [
+      0.0,
+      0.0,
+      1.0,
+      0.062
+    ],
+    [
+      0.69,
+      0.0,
+      1.0,
+      0.2
+    ],
+    [
+      0.0,
+      0.0,
+      0.135,
+      0.16
+    ],
+    [
+      0.555,
+      0.0,
+      0.7,
+      0.118
+    ]
+  ],
+  "open": 4,
+  "regrow": 10,
+  "open_protect": [
+    "abdomen",
+    "head"
+  ],
+  "close": 3,
+  "min_piece": 4000,
+  "default": "#D9A441",
+  "colours": {
+    "abdomen": "#D9A441",
+    "head": "#C4574B"
+  },
+  "regions": [],
+  "round": 30
+}

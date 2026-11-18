@@ -1,0 +1,38 @@
+[
+  {
+    "space": "tencent/Hunyuan3D-2.1",
+    "endpoint": "/shape_generation",
+    "steps": 30,
+    "octree_resolution": 256,
+    "seed": 1234,
+    "views": [
+      "front"
+    ],
+    "stats": {
+      "model": {
+        "shapegen": "tencent/Hunyuan3D-2.1/hunyuan3d-dit-v2-1",
+        "texgen": "tencent/Hunyuan3D-2.1"
+      },
+      "params": {
+        "caption": null,
+        "steps": 30,
+        "guidance_scale": 5.0,
+        "seed": 1234,
+        "octree_resolution": 256,
+        "check_box_rembg": true,
+        "num_chunks": 8000
+      },
+      "number_of_faces": 107492,
+      "number_of_vertices": 53736,
+      "time": {
+        "remove background": 0.9983437061309814,
+        "shape generation": 16.987757921218872,
+        "export to trimesh": 0.024421215057373047,
+        "total": 18.013056755065918
+      }
+    },
+    "seconds": 23.3,
+    "file": "art_source/characters/d28/raw/hunyuan.glb",
+    "when": "2026-11-18 23:56"
+  }
+]
