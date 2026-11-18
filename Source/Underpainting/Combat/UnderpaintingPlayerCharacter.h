@@ -346,6 +346,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Exploration|Tuning")
 	float FlareDuration = 8.0f;
 
+	/** A Flare with this long or less left can be lit again (it gutters as a cue). */
+	UPROPERTY(EditAnywhere, Category = "Underpainting|Tuning")
+	float FlareRenewWindow = 3.0f;
+
 	/** Centimetres. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Exploration|Tuning")
 	float FlareRadius = 800.0f;

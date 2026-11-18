@@ -1,35 +1,67 @@
-# Good morning
+# Before you play
 
-Last updated: 2026-11-18, late. Claude keeps this page current while you are away.
+Last updated: 2026-11-18, night. This is the page for your first playtest. The loop is stopped; nothing more will change until you say.
 
-**The short version:** all nine milestones of the Act 1 slice are built. The act can be played from Hesper's first line to an end card. Almost all of it has been driven by script and automated test, and **almost none of it has been played with real hands**. That is the one thing I cannot do, and it is what today is for.
+**The short version:** Act 1 now has animation, hit feedback, sound, a camera that behaves, prompts that teach
+each rule when it first matters, a marker for the next goal, fair checkpoints, and numbers that were measured
+by the game playing itself. That last part found faults that would have spoiled your playtest (the main one: the
+Cartoon Gallery could not really be crossed) and they are fixed. **No person has played it yet. You are the first.**
 
-## What is playable
+Devlog: `docs/devlog/014-feel-and-play.md`. The 24-second before/after fight: `docs/devlog/clips/014-fight-before-after.mp4`.
 
-| | What | Devlog |
-|---|---|---|
-| M2 | The first loop: talk, harvest, craft, relight, rest, attune | 001–003 |
-| M3 | Three connected zones, the Flare, sketched platforms, one-sided walls, 18 notes, a compass | 004 |
-| M4 | Two palette wells, six Strokes, the Contrast rule, lock-on, the perfect dodge | 005 |
-| M5 | Blotter, Madderback, Pentiment and the boss Old Palimpsest, each with a test room | 006 |
-| M6 | Quests that end in a choice that asks twice and changes the world; the Heart scene | 007 |
-| M7 | All 10 recipes, wearable gear, potions, all 12 attunement nodes | 008 |
-| M8 | The Turning: all three places change, the Stair of Spines, the Nape Overlook, an end card | 009 |
-| M9 | The satchel (pack, journal, notes, settings), keys you can change, continue | 010 |
+## How to play it
 
-Also: the **style kit** paints every placeholder in the Glaze look, and there are style probes for an environment corner, two props, an enemy (the Blotter), a UI screen (the satchel), item icons (devlog 012) and a person, Hesper (devlog 013). The last two are not in the game yet.
+1. Open **Unreal** (or type `/ready` to Claude). Click its window so it is in front.
+2. Content Drawer → Maps → Matriarch → **L_Matriarch_Village_A** → Play. It starts a new game.
+3. Turn the sound on. Follow the line at the top right and the small green marker. You should not need this page or the design document again; if you do, that is a finding.
+4. Close the game whenever you like. It keeps what you have done and puts you back where you last rested or walked into a zone.
 
-## Test it in 10 minutes
+**Estimated play time:** 35 to 45 minutes straight through; about an hour with the three side stories and some
+looking around. Every rule is taught in the first 20 minutes or so. (Measured: the game plays its own main path in
+11 min 26 s, never lost and never reading a note. The rest is an estimate.)
 
-1. Open **Unreal**. If it is not open, type `/ready` to Claude. Click on the Unreal window so it is in front (it runs very slowly otherwise).
-2. Content Drawer → Maps → Matriarch → **L_Matriarch_Village_A** → Play.
-3. **Keys.** WASD move, mouse look, Space jump, **E** use or talk, **1–9** choose, **Tab** satchel, **Q** close a menu or lock on, **left mouse** light attack, **right mouse** heavy (hold for a Stroke), **Left Ctrl** dodge, **Left Shift** sprint, **Z** swap well, **F** flare, **G** fix a platform, **H** poultice, **J** lamp oil, **K** draught, **L** tincture. **Esc** stops. You can change most of these on the satchel's Settings page.
-4. **The first quest (5 min).** Follow the text at the top right. Talk to Hesper (the figure by the tall lamp post), go up the ramp for Ochre, take linseed from the brown drum, use the grey slab, pour the oil into the lamp post, rest there and press 1, talk to Hesper again.
-5. **The satchel (1 min).** Press Tab. Left and Right turn the pages.
-6. **A fight (2 min).** Stop. Maps → Dev → **L_Combat_Greybox** → Play. One Blotter.
-7. **A build (2 min).** In that room press **F7** (fills your pack), then walk to the lamp post, rest, and attune two colours. Hold right mouse for a Stroke.
+If something goes wrong: **Tab → Settings → "I am stuck"** puts you back where you last woke. Dying is safe: you
+wake at the last Lampstand or zone door, whole, and the first death costs nothing.
 
-To see the end of the act without playing an hour: ask Claude for "a save at the Heart wall".
+## What changed
+
+**How it feels**
+- The player has real animations (swings that chain, a dash, flinches, a death). Enemies are still plain shapes, but they wind up, strike, rock and fall.
+- Hits land: a freeze, a camera kick, knockback, paint in the enemy's colour, a number.
+- 46 sounds, all free. **I cannot hear them. Tell me what is wrong, too loud, or silly.**
+- Early presses are remembered, a dodge can cut a swing short, the camera trails, and locking on puts it over your shoulder.
+- Menus can be clicked. A mark on the ground shows where an enemy's attack will land. A red flag shows where a hit came from.
+
+**How it plays**
+- 22 one-line prompts teach each rule once, when it first matters. (Settings can turn them off.)
+- A green marker hangs over the next goal, or over the door that leads to it. (Settings can turn it off.)
+- You wake where you last rested **or arrived**, whole, with two poultices. Progress is saved as you go.
+- A dodge now protects you from the whole blow. Before, long attacks hit you anyway.
+- A Flare can be relit as it gutters (its last three seconds), and sketched platforms hold a moment after the light goes. Before, the gallery could not really be crossed.
+- Nothing hostile stands within 15 metres of a Lampstand or a zone door.
+- The first enemy is alone. Groups can be drawn apart and take turns. The gallery has no enemies on it. The pit under it is no longer a trap.
+- The boss: less Health (600 → 480), about 15% lighter hits, and it only notices you inside its own room.
+- Small caches of crafting materials at five dead ends, so nobody needs to find a hidden wall to craft at all.
+- Hesper gives two Lamp Oil with the lantern, so nobody reaches the Rib Gate unable to light it.
+
+The measurements and every number: `docs/BALANCE.md`. The act as a sequence, with times: `docs/PACING.md`.
+
+## What to judge
+
+These are the things only you can tell me. In rough order of how much they matter.
+
+1. **Does a hit feel like a hit?** Yours on them, theirs on you. Too much freeze and shake, or too little?
+2. **The sound.** Everything about it.
+3. **Did you ever not know what to do next?** Where, exactly?
+4. **Did any prompt come too late, too early, or tell you something you already knew?** Did you miss one you needed?
+5. **The first fight** (one Blotter in the road). Did it teach you to dodge, or just hurt?
+6. **The forest's last stretch** (the Descent to the Rib Gate, nine enemies between two Lampstands). Tense, or a slog?
+7. **The Cartoon Gallery.** Did you understand you could relight the Flare as it flickers? Is the jump fair? How many falls?
+8. **The boss.** How many tries? I aimed for two or three. If one, it is too easy now and I will put some back. If more than four, tell me what kept killing you.
+9. **The camera when locked on**, especially against the boss, which fills the screen.
+10. **Pigment.** At the end, was there something you wanted and could not afford? (There should be.) Was there ever nothing you could afford? (There should not.)
+11. **The walk home after the Turning.** Does it earn its two quiet minutes?
+12. **Speed.** Does it hold 60 frames a second for you? I measured about 55 in the editor with everything else running, and could not do better than that from here.
 
 ## Where your feel-feedback matters most
 
@@ -71,43 +103,45 @@ Only hands can judge these. The question to answer is in italics.
 24a. *The icons* (devlog 012). Would you want these on the Pack page in place of the text list?
 25. *Changing a key.* Change Dodge to something else. Did it work, and was it obvious how?
 
-## What is broken, rough or unproven
+## What is rough or unproven
 
-**Unproven (built, tested by script, never by hand)**
-- The whole game with a real keyboard and mouse.
-- Whether a changed key actually works in play. The setting saves; I cannot press keys.
-- Walking any route. The script teleports. The main routes of all three zones and the Stair of Spines have passed a ground trace (no gaps, nothing too steep). That trace found one real fault, now fixed: the ramp out of the Vault's gallery pit ended against a wall. The jumps across the gallery's sketched platforms cannot be traced and are untested.
-- The Madderback and the Pentiment have now been fought by script, every attack seen landing (see below), but not by hand.
-- Two full runs of the act have now been scripted: green Heart wall, and red Heart wall with Corin finished in Bone Black (8 Madderbacks instead of 6, Corin at the village gate, no Blotters in the Hem). Corin as warden, Corin left unfinished, and "pour the flame into the Lampstand" are covered by automated test only. Pouring the flame changes nothing you can see yet.
-- The end card: I fixed it being drawn under the notices but have still not seen it clean.
-- A gamepad.
-
-**Found and fixed tonight by scripted play**
-- The Pentiment never used its spear thrust: it walked in too close and always swept. It now holds at spear's length.
-- One Flare caught the Pentiment four times in eight seconds. Now once; it will not Redraw again for 8 seconds.
-- The ramp out of the Vault's gallery pit ended against a wall.
-- A lip of up to 0.9 m on every ramp of the Stair of Spines.
-- Odile's lantern stayed in your pack after you gave it to Hesper. It is handed over now.
-- Ending a conversation was counted twice, so a quest with two "talk to them" steps in a row skipped one.
-- Floating name labels showed for people and caches that were not there (Corin's other selves, his hidden cache).
+**Unproven**
+- **Everything by hand.** All of it has been played only by script.
+- **The sound.** Never heard.
+- **The mouse.** One scripted click on one menu worked. Clicking through every menu has not been tried.
+- **The main path in one sitting.** The game played it in nine pieces, with fixes between. Two enemies (one on the Rib Stair, one at the Rib Gate) were moved after the runs that passed them.
+- **The boss.** One win in one try at the final numbers. Five losses before the fixes.
+- **Endings.** Only the third choice at the Heart wall was replayed in this pass. The others were last run before it (devlog 011).
+- Three prompts never came up in the runs: lock-on, low Glim, the second palette well.
+- "I am stuck" has not been pressed. The fall rescue worked the once it was needed.
+- A changed key working in play; a gamepad; the end card seen clean. (As before.)
 
 **Rough**
-- Everyone and everything is a plain shape. No models, no animation, no sound.
-- Enemies now feel their way round pillars and corners (seen once, with a Blotter). It is not real path-finding: a dead end or a U-shaped wall will still trap them.
-- The Turning is words on black.
-- Only the satchel has the paper look. Dialogue, crafting, the palette and the fighting HUD are plain panels.
-- Trading is in for Ilka (1 Sanguine for 2 Terre Verte, if you dressed the wells) and Corin (1 Rib Splinter for 1 Bone Black, if he guards the gate). Checked by automated test, not in play.
-- "A Fair Grind" (Bartram's whitewash) is playable: talk to Bartram after the first quest, then decide at the pale panel on the first house in the Hem, by the ramp. Its promised effects on the Hem's light and the flax press are not built; the choice is recorded for Act 2.
-- Three small attunement effects are missing (devlog 008).
+- Enemies and people are plain shapes. The player is the engine's grey mannequin.
+- The lock-on camera gets very close to the boss.
+- Enemies feel their way round pillars; a U-shaped wall can still trap them.
+- The Turning is words on black. Only the satchel has the paper look.
+- "A Fair Grind": its effects on the Hem's light and the flax press are not built. Three small attunement effects are missing (devlog 008).
 - Moving, looking and jumping cannot be rebound.
 
 **The Mac**
-- It runs short of memory with Unreal open (about 4.3 GB spilled to disk tonight, and the warning showed twice). The game kept running. Closing Blender and other large apps while you play should help.
-- A "Message Log" window may sit over the Unreal viewport after Claude runs tests. Close it with its ✕.
+- It was short of memory all night with Unreal and Blender both open (about 4.4 GB spilled to disk). **Close Blender and other big apps before you play**: it will run better for you than it did for me.
+- A "Message Log" window may sit over the Unreal viewport. Close it with its ✕.
 
+## Decisions I made that you may want to undo
+
+All are in `docs/QUESTIONS.md` (40 to 58 are from this pass). The ones that change a rule:
+
+- **45. A dodged blow is spent.** The alternative was to shorten every long attack instead.
+- **46. Being hit knocks you out of your swing** for 0.3 to 0.5 seconds.
+- **47. Groups take turns:** two attacking at most, never starting together. The design allowed three.
+- **49. A Flare can be relit in its last three seconds.** The alternative is a longer Flare.
+- **50. No enemies on the gallery's platforms.** The alternative keeps one on the fourth, which is more dramatic and much harder.
+- **53. The boss is easier** than its first numbers.
+- **42 and 43. You wake where you arrived, and progress saves itself.** The old rule was Lampstands only.
 ## Open questions (with what Claude chose)
 
-All 39 are in `docs/QUESTIONS.md` with the alternatives. The ones most worth your eye:
+From before this pass, still open:
 
 - **6. The story's central truth:** the Limner is the god's own unfinished self-portrait.
 - **23. You can leave the Vault without Odile's lantern.** Hesper then gets a plainer ending.

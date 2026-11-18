@@ -52,18 +52,41 @@ FOREST = "; ".join([
 
 VAULT = "; ".join([
     "guard on {skill}", "mark start", "wait 4",
-    "walk 1 0", "walk 31 0", "fight {skill} 90", "mark down the Rib Stair",
+    "walk 1 0", "walk 31 0", "walk 38 -3", "mark down the Rib Stair",   # the lone Pentiment at the foot comes to you: the guard fights it
     "walk 44.5 0", "wait 3", "mark at the Gallery edge",
     # Six sketched platforms over the pit: light a Flare, run to the edge, jump, land, and again.
-    "flare", "sprint 46.1 0.0", "jump", "sprint 51.0 0.0", "flare", "sprint 52.5 0.5", "jump", "sprint 61.0 3.0", "flare", "sprint 62.4 2.3", "jump", "sprint 71.0 -2.0", "flare", "sprint 72.4 -1.3", "jump", "sprint 81.0 3.0", "flare", "sprint 82.5 2.4", "jump", "sprint 91.0 -1.0", "flare", "sprint 92.6 -0.8", "jump", "sprint 101.0 0.0", "flare", "sprint 102.6 0.0", "jump", "sprint 108.0 0.0",
-    "walk 112 0", "fight {skill} 120", "mark across the Gallery",
+    "flare", "wait 0.3", "sprint 45.6 0.0", "jump", "sprint 51.0 0.0", "wait 0.3", "flare", "walk 49.7 -0.4", "sprint 52.5 0.5", "jump", "sprint 61.0 3.0", "wait 0.3", "flare", "walk 59.7 3.6", "sprint 62.4 2.3", "jump", "sprint 71.0 -2.0", "wait 0.3", "flare", "walk 69.7 -2.6", "sprint 72.4 -1.3", "jump", "sprint 81.0 3.0", "wait 0.3", "flare", "walk 79.7 3.5", "sprint 82.5 2.4", "jump", "sprint 91.0 -1.0", "wait 0.3", "flare", "walk 89.6 -1.1", "sprint 92.6 -0.8", "jump", "sprint 101.0 0.0", "wait 0.3", "flare", "walk 99.6 0.0", "sprint 102.6 0.0", "jump", "sprint 108.5 0.0", "wait 0.3",
+    "walk 112 0", "wait 1", "mark across the Gallery",
     "walkto Lampstand RibStairHeart", "use", READ, "wait 5", "close", "mark rested before the Heart",
     "walk 126 0", "mark boss begins", "fight {skill} 300", "mark boss over",
     "walkto Pickup OdilesLantern", "use", "wait 2", "mark took the lantern",
     "walkto Choice MQ_ColdUnderTheRibs", "use", READ, "wait 6", "menu 3", "wait 2", "menu 1", "mark chose",
 ])
 
-SEGMENTS = {"village": VILLAGE, "forest": FOREST, "vault": VAULT}
+# After the Turning: back across the Gallery (two platforms have taken and are solid now), up the Rib Stair, up the Stair
+# of Spines that has risen in the Scumblewood, in by the new lower gate, and to Hesper.
+VAULT_HOME = "; ".join([
+    "guard on {skill}", "mark start for home", "wait 4", "walk 126 0", "walk 110 0",
+    "flare", "walk 109.9 0.0", "sprint 106.1 0.0", "jump", "sprint 101.0 0.0", "wait 0.3", "flare", "walk 102.4 0.1", "sprint 99.4 -0.2", "jump", "sprint 91.0 -1.0", "wait 0.3", "flare", "walk 92.3 -1.5", "sprint 89.5 -0.4", "jump", "sprint 81.0 3.0", "wait 0.3", "flare", "walk 82.3 3.6", "sprint 79.6 2.3", "jump", "sprint 71.0 -2.0", "wait 0.3", "flare", "walk 72.3 -2.6", "sprint 69.6 -1.3", "jump", "sprint 61.0 3.0", "wait 0.3", "flare", "walk 62.3 3.4", "sprint 59.5 2.5", "jump", "sprint 51.0 0.0", "wait 0.3", "flare", "walk 52.4 0.0", "sprint 49.4 0.0", "jump", "sprint 44.0 0.0", "wait 0.3",
+    "walk 31 0", "walk 1 0", "walkto Exit Scumblewood", "mark out of the Vault", "use",
+])
+FOREST_HOME = "; ".join([
+    "guard on {skill}", "mark the Rib Gate, turned", "wait 4",
+    "walk 272 12", "walk 272 37", "walk 268 50", "walk 222 50", "walk 176 50", "mark top of the Stair of Spines",
+    "walkto Exit VarnishVillage", "use",
+])
+VILLAGE_HOME = "; ".join([
+    "guard on {skill}", "mark the lower gate", "wait 4",
+    "walk 22 -23", "walk 22 -9", "walk 6 2", "walkto NPC HesperVane", "talk 1", "mark told Hesper", "wait 6", "mark end",
+])
+
+# The second halves, for carrying on after a death: from the Sunward Clearing Lampstand, and from the one before the Heart.
+FOREST_2 = "guard on {skill}; mark woke at the Sunward Clearing; wait 3; " + FOREST.split("mark met Corin; ")[1]
+VAULT_2 = ("guard on {skill}; mark woke before the Heart; wait 3; walkto Lampstand RibStairHeart; use; wait 4; close; "
+           + VAULT.split("mark rested before the Heart; ")[1])
+
+SEGMENTS = {"village": VILLAGE, "forest": FOREST, "vault": VAULT, "forest2": FOREST_2, "vault2": VAULT_2,
+            "vault_home": VAULT_HOME, "forest_home": FOREST_HOME, "village_home": VILLAGE_HOME}
 
 # How hard each enemy is: the same fight five times at three levels of skill (the share of attacks dodged), in a test room.
 # The player cannot die in a trial; the damage taken is what is measured (docs/BALANCE.md).

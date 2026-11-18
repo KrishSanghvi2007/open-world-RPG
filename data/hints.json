@@ -116,7 +116,7 @@
   {
     "Name": "Flare",
     "Trigger": "VaultDark",
-    "Text": "There is no light here. {Flare} lights a Flare for 8 seconds: sketched things are solid while it burns, and hidden writing shows.",
+    "Text": "No light here. {Flare} lights a Flare for 8 seconds: sketched things are solid while it burns. Press again as it gutters to keep it lit.",
     "Seconds": 14
   },
   {

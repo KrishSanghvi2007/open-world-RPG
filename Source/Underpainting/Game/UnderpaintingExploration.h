@@ -74,6 +74,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Sketch")
 	bool IsSolid() const { return bSolid; }
 
+	/** How long it stays solid after the light leaves it. */
+	UPROPERTY(EditAnywhere, Category = "Sketch")
+	float LingerTime = 1.2f;
+
+	float UnlitFor = 100.0f;
+
 	/** Identifies this platform in the save. */
 	FName GetPlatformKey() const;
 

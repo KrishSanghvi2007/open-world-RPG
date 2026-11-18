@@ -30,7 +30,7 @@ ENEMY = {e["Name"]: e for e in D["enemies"]}
 ENEMIES = {"VarnishVillage": {}, "Scumblewood": {"Madderback": 6, "Blotter": 6}, "GrisailleVault": {"Pentiment": 6, "Blotter": 4, "ThePalimpsest": 1}}
 # Hidden caches (behind one-sided walls), and the ones a quest ending can open.
 CACHES = {"Scumblewood": [{"TerreVerte": 2}, {"BoneBlack": 2}, {}, {"Sanguine": 2}, {"LampOil": 1}], "GrisailleVault": [], "VarnishVillage": []}
-ON_PATH = {"Madderback": 0.5, "Blotter": 0.7, "Pentiment": 0.6, "ThePalimpsest": 1.0}      # share of each that stands on the road itself
+ON_PATH = {"Madderback": 0.8, "Blotter": 0.7, "Pentiment": 0.2, "ThePalimpsest": 1.0}      # share of each that stands on the road itself (most Pentiments are down in the pit)
 
 PLAYERS = {
     #            nodes found, caches found, off-path enemies killed, extra rests per zone, deaths in the act

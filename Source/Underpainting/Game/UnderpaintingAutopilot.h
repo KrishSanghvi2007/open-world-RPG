@@ -81,6 +81,7 @@ private:
 	/** While walking, fight whatever attacks with this skill (below 0: walk on regardless). */
 	float GuardSkill = -1.0f;
 	float GuardTime = 0.0f;
+	float LastDrinkTime = -100.0f;
 
 	// Background follow.
 	bool bFollow = false;

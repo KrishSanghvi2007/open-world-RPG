@@ -5,7 +5,7 @@ Claude keeps this file current. It says what's done, what's next, and what's wai
 Last updated: 2026-11-18
 
 ## Waiting on the owner
-Nothing blocks work. Claude is working through `docs/ROADMAP.md` on its own; see `docs/devlog/MORNING.md`.
+- [ ] **Your first playtest of Act 1.** Everything is ready and the work loop is stopped until you have played. Open `docs/devlog/MORNING.md`: how to start, what changed, the twelve things to judge, about 35 to 60 minutes of play.
 - [ ] Optional, one time: to have phone control on in every session, type `/config` in Claude Code and switch on "Enable Remote Control for all sessions". (Claude leaves this switch to you because it opens remote access to this Mac.)
 
 ## Decisions waiting on you
@@ -44,7 +44,7 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - Dying restarts the level.
 - The three zones are separate levels, each with an A (before) and B (after the Turning) version.
 
-## In progress: "feel good and play well" before the owner's playtest (set 2026-11-18)
+## Done, waiting on the owner: "feel good and play well" before the playtest (set 2026-11-18)
 Ten steps from the owner, then a devlog with a before/after fight clip, then stop and wait. Tick them off here so work can resume after any break.
 
 **Part A, game feel**
@@ -56,12 +56,12 @@ Ten steps from the owner, then a devlog with a before/after fight clip, then sto
 
 **Part B, playable design**
 - [x] 6. Onboarding: 22 one-line prompts in `data/hints.json`, each shown once when the thing it teaches first matters (`AUnderpaintingPlayerCharacter::TickHints`). Seen working through the village and into the forest.
-- [ ] 7. Wayfinding: objective marker, landmarks, light, no unrewarded dead ends.
-- [ ] 8. Pacing: the act planned as a sequence; dull stretches cut.
-- [ ] 9. Difficulty and balance: tuned numbers, a simulated pigment economy, written up.
-- [ ] 10. Robustness: fair checkpoints, no soft-locks, a timed scripted run of the golden path.
+- [x] 7. Wayfinding: a marker over the next goal (or the door toward it), brighter Lampstands, five caches at dead ends. Sightlines in the forest were left alone (level art).
+- [x] 8. Pacing: 23 beats in `docs/PACING.md`; enemies moved so each beat is what it says.
+- [x] 9. Difficulty and balance: measured by trials and by simulation; written up in `docs/BALANCE.md`.
+- [x] 10. Robustness: wake where you rested or arrived, autosave, fall rescue, safe Lampstands and doors; the autopilot played the main path to "Quest complete" in nine pieces (11 min 26 s).
 
-**Then:** devlog 014 with screenshots and the before/after clip (`docs/devlog/clips/`), update `MORNING.md`, stop the loop.
+**Done:** devlog 014, the before/after clip (`docs/devlog/clips/014-fight-before-after.mp4`), `MORNING.md`. **The loop is stopped. Waiting for the owner's playtest.**
 
 Tools made for this: the autopilot (`Game/UnderpaintingAutopilot.*`, `tools/dev/pilot.py`), the frame recorder and `tools/dev/make_clip.py`.
 

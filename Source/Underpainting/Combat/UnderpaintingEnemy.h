@@ -95,6 +95,11 @@ public:
 
 	float AttackBeganAt = -100.0f;
 
+	/** Height difference (cm) beyond which a target counts as on another level. */
+	static constexpr float LevelHeight = 350.0f;
+
+	float OutOfReachTime = 0.0f;
+
 	/** Slows the enemy (0.6 = 40% slower) for a time. */
 	void ApplySlow(float SpeedMultiplier, float Duration);
 

@@ -263,10 +263,15 @@ void AUnderpaintingEnemy::Tick(float DeltaTime)
 	const float Distance = Target ? FVector::Dist2D(Target->GetActorLocation(), GetActorLocation()) : TNumericLimits<float>::Max();
 	const float HomeDistance = FVector::Dist2D(HomeLocation, GetActorLocation());
 
+	// Someone a storey above or below cannot be reached and is not noticed: enemies in a pit do not gather under a
+	// player crossing overhead, and give up on one who climbs out of reach.
+	const bool bSameLevel = Target && FMath::Abs(Target->GetActorLocation().Z - GetActorLocation().Z) < LevelHeight;
+	OutOfReachTime = (Target && !bSameLevel) ? OutOfReachTime + DeltaTime : 0.0f;
+
 	switch (State)
 	{
 	case EEnemyState::Idle:
-		if (Target && Distance <= Row.AggroRadius * 100.0f)
+		if (Target && bSameLevel && Distance <= Row.AggroRadius * 100.0f)
 		{
 			SetState(EEnemyState::Chasing);
 		}
@@ -274,7 +279,7 @@ void AUnderpaintingEnemy::Tick(float DeltaTime)
 
 	case EEnemyState::Chasing:
 	{
-		if (!Target || HomeDistance > Row.LeashRadius * 100.0f)
+		if (!Target || HomeDistance > Row.LeashRadius * 100.0f || OutOfReachTime > 2.5f)
 		{
 			SetState(EEnemyState::Returning);
 			break;
@@ -309,7 +314,7 @@ void AUnderpaintingEnemy::Tick(float DeltaTime)
 		break;
 
 	case EEnemyState::Returning:
-		if (Target && Distance <= Row.AggroRadius * 100.0f && HomeDistance < Row.LeashRadius * 100.0f * 0.5f)
+		if (Target && bSameLevel && Distance <= Row.AggroRadius * 100.0f && HomeDistance < Row.LeashRadius * 100.0f * 0.5f)
 		{
 			SetState(EEnemyState::Chasing);
 		}

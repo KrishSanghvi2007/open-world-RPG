@@ -195,7 +195,8 @@ void AUnderpaintingPlayerCharacter::ArriveFromZone()
 
 bool AUnderpaintingPlayerCharacter::UseFlare()
 {
-	if (Action == EPlayerAction::Dead || IsMenuOpen() || FlareRemaining > 0.0f)
+	// A burning Flare can be renewed once it starts to gutter (its last seconds), so light can be kept up across a long crossing.
+	if (Action == EPlayerAction::Dead || IsMenuOpen() || FlareRemaining > FlareRenewWindow)
 	{
 		return false;
 	}
@@ -333,6 +334,10 @@ void AUnderpaintingPlayerCharacter::RestoreFromSave()
 		{
 			// After a death you wake whole, with the lantern at least half full: the walk back is the cost, not a second death.
 			Vitals->SetHealthAndGlim(Vitals->MaxHealth, FMath::Max(Save->Glim, Vitals->MaxGlim * 0.5f));
+			if (UUnderpaintingProgress* Woken = Mutable->GetProgress())
+			{
+				Woken->TopUpPoultices();        // or every retry after the first would be fought with none
+			}
 		}
 		else
 		{
@@ -1454,7 +1459,9 @@ void AUnderpaintingPlayerCharacter::Tick(float DeltaTime)
 		FlareRemaining = FMath::Max(0.0f, FlareRemaining - DeltaTime);
 	}
 	// The flare burns bright and gutters in its last second, so you can feel it running out.
-	FlareLight->SetIntensity(FlareRemaining > 0.0f ? 28.0f * FMath::Min(1.0f, FlareRemaining) : 0.0f);
+	// It stutters through the seconds in which it can be renewed: that is the cue to press again.
+	const float Gutter = FlareRemaining < FlareRenewWindow ? 0.72f + 0.28f * FMath::Sin(GetWorld()->GetTimeSeconds() * 21.0f) : 1.0f;
+	FlareLight->SetIntensity(FlareRemaining > 0.0f ? 28.0f * FMath::Min(1.0f, FlareRemaining) * Gutter : 0.0f);
 
 	switch (Action)
 	{

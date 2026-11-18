@@ -680,6 +680,16 @@ int32 UUnderpaintingProgress::HarvestNode(FName NodeKey, FName PigmentId, int32 
 	return Yield;
 }
 
+void UUnderpaintingProgress::TopUpPoultices()
+{
+	// Resting, and waking after a death, tops Moss Poultices up to 2 for free, once you know how to make them.
+	if (IsQuestComplete(FirstQuest) && GetItemCount(ITEM_MossPoultice) < 2)
+	{
+		Data.Items.FindOrAdd(ITEM_MossPoultice) = 2;
+		Changed();
+	}
+}
+
 void UUnderpaintingProgress::Rest()
 {
 	// Wet pigment dries and is safe from now on.
@@ -695,11 +705,7 @@ void UUnderpaintingProgress::Rest()
 	// Nodes regrow. (Per-pigment regrowth rules, such as Slumber Blue never regrowing, arrive with the forest and vault.)
 	Data.DepletedNodes.Reset();
 
-	// Resting tops Moss Poultices up to 2 for free, once you know how to make them.
-	if (IsQuestComplete(FirstQuest) && GetItemCount(ITEM_MossPoultice) < 2)
-	{
-		Data.Items.FindOrAdd(ITEM_MossPoultice) = 2;
-	}
+	TopUpPoultices();
 
 	Notice(TEXT("You rest. Your pigment dries."));
 	AdvanceQuests();

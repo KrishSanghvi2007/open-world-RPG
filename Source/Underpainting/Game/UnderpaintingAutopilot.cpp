@@ -209,6 +209,13 @@ bool UUnderpaintingAutopilot::TickWalk(const FVector& Target, bool bSprint, floa
 			return false;
 		}
 		Player->LockTarget = nullptr;
+		// Between fights, patch up before walking on.
+		UUnderpaintingVitalsComponent* Vitals = Player->GetVitals();
+		if (Vitals->GetHealth() < Vitals->MaxHealth * 0.65f && Vitals->MaxHealth < 1000.0f && TotalTime - LastDrinkTime > 5.0f)
+		{
+			Player->UsePoultice();
+			LastDrinkTime = TotalTime;
+		}
 	}
 
 	FVector To = Target - Player->GetActorLocation();
@@ -361,10 +368,12 @@ bool UUnderpaintingAutopilot::TickFight(float Skill, float Timeout, float DeltaT
 		return false;
 	}
 
-	// Drink when hurt and there is a gap.
-	if (Vitals->GetHealth() < Vitals->MaxHealth * 0.45f && UntilHit < 0.0f && Distance > 250.0f)
+	// Drink when hurt and nothing is about to land: at once if badly hurt, otherwise only with room to spare.
+	const float HealthLeft = Vitals->GetHealth() / FMath::Max(1.0f, Vitals->MaxHealth);
+	if (UntilHit < 0.0f && TotalTime - LastDrinkTime > 5.0f && (HealthLeft < 0.35f || (HealthLeft < 0.5f && Distance > 250.0f)))
 	{
 		Player->UsePoultice();
+		LastDrinkTime = TotalTime;
 	}
 
 	const float Reach = 165.0f;

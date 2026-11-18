@@ -139,7 +139,10 @@ void AUnderpaintingSketchPlatform::Tick(float DeltaTime)
 	const bool bFixed = Progress && Progress->IsPlatformFixed(GetPlatformKey());
 	const AUnderpaintingPlayerCharacter* Player = GetPlayer(this);
 	const bool bLit = Player && Player->IsFlareLighting(GetActorLocation());
-	SetSolid(bFixed || bLit, bFixed);
+	// The sketch holds for a moment after the light goes: long enough to light another Flare or finish a jump,
+	// never long enough to stand on in the dark.
+	UnlitFor = bLit ? 0.0f : UnlitFor + DeltaTime;
+	SetSolid(bFixed || bLit || UnlitFor < LingerTime, bFixed);
 }
 
 // --- Passable back ---

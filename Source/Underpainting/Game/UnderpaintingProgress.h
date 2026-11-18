@@ -250,6 +250,9 @@ public:
 	/** Resting at a lit Lampstand: wet pigment dries, nodes that regrow do, and poultices are topped up to 2. */
 	void Rest();
 
+	/** Moss Poultices back up to 2 (after a rest, and on waking after a death). */
+	void TopUpPoultices();
+
 	// --- Exploration ---
 
 	const FLoreRow* GetLore(FName LoreId) const;

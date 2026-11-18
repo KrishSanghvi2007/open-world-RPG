@@ -50,6 +50,7 @@ REGIONS = {
 }
 
 _counts = {}
+_placed = []        # (kind, id, ground) of every marker in the level being built
 
 
 # --------------------------------------------------------------------------------------
@@ -317,6 +318,7 @@ def marker(kind, data_id, text, ground, colour=None, yaw=0.0, labelled=True):
     _counts[(kind, data_id)] = index
     name = "%s_%s_%02d" % (kind, data_id, index)
 
+    _placed.append((kind, data_id, tuple(ground)))
     actor = _spawn_working_actor(kind, data_id, text, ground, yaw)
     if actor:
         actor.set_actor_label(name)
@@ -481,10 +483,21 @@ def begin_level(name):
     return path
 
 
+SAFE_RADIUS = 15.0      # metres round a Lampstand or a zone door in which nothing hostile may stand: these are where you wake
+
+
 def end_level(zone_id):
-    """Checks marker counts against data/regions.json, then saves."""
+    """Checks marker counts against data/regions.json and that every Lampstand is a safe place, then saves."""
     row = REGIONS[zone_id]
     problems = []
+    for kind, lamp_id, lamp in _placed:
+        if kind not in ("Lampstand", "Exit"):
+            continue
+        for other, enemy_id, at in _placed:
+            if other == "Enemy" and abs(at[2] - lamp[2]) < 3.5 and math.hypot(at[0] - lamp[0], at[1] - lamp[1]) < SAFE_RADIUS:
+                problems.append("%s: a %s stands %.0f m from the %s %s (must be %.0f m or more)"
+                                % (zone_id, enemy_id, math.hypot(at[0] - lamp[0], at[1] - lamp[1]), lamp_id, "Lampstand" if kind == "Lampstand" else "door", SAFE_RADIUS))
+    del _placed[:]
     for pigment, expected in zip(row["Pigments"], row["HarvestNodeCounts"]):
         placed = _counts.get(("Node", pigment), 0)
         if placed != expected:
@@ -782,7 +795,7 @@ def build_scumblewood(shifted=False):
         if warden:
             warden.set_editor_property("requires_flag", unreal.Name("Corin_Warden"))
     marker("Note", "BroodNest", "Hollow Vertebra: Madderback brood nest", off("HollowVertebra", 0, 10))
-    marker("Lampstand", "RibGate", "Lampstand", off("RibGate", -6, -6))
+    marker("Lampstand", "RibGate", "Lampstand", off("RibGate", 0, -7))        # clear of the last slope and of the gate's guard
     marker("NPC", "IlkaThrum", "Ilka Thrum", off("FirstWell", -3, -4))
     marker("Exit", "GrisailleVault", "The Rib Gate: to the Grisaille Vault", off("RibGate", 10, 0))
 
@@ -818,16 +831,18 @@ def build_scumblewood(shifted=False):
     needs_flag(cache("CorinsCache", "Cache", off("SunwardClearing", -12, 12), [("SlumberBlue", 2)], labelled=False), "Scumblewood_PentimentoCacheRevealed")
 
     # Enemies: 6 Madderbacks and 6 Blotters. Burning the nest halves the Madderbacks.
-    for i, p in enumerate((off("Bend", 3, -3), off("HollowVertebra", -5, -3), off("HollowVertebra", 4, 4),
-                           off("HollowVertebra", 6, -6), off("Approach", -2, -3), off("Approach", 4, 2))):
+    # In the Hollow Vertebra and on the Approach they stand well apart (more than the 10 m at which a Madderback notices
+    # you), so a careful player can draw them one at a time and a careless one gets two. Bunched, all three came at once.
+    for i, p in enumerate((off("Bend", 3, -3), off("HollowVertebra", -9, -8), off("HollowVertebra", 2, 9),
+                           off("HollowVertebra", 10, -6), off("Approach", -7, -4), off("Approach", 7, 1))):
         tick = enemy("Madderback", p)
         if i % 2 == 1 and isinstance(tick, unreal.UnderpaintingEnemy):
             tick.set_editor_property("removed_by_flag", unreal.Name("Scumblewood_MadderbackHalved"))
     # After the Turning the enemies have moved, and two quest endings change their numbers.
     # Before the Turning the first one stands alone in the road, in plain sight from the door: the first fight is one
     # enemy, seen coming. The second waits at the First Well, too far off to join in.
-    first_two = (off("Bend", -3, 3), off("SunwardClearing", 6, -6)) if shifted else ((22.0, 0.0, -1.8), off("FirstWell", 9, -3))
-    for i, p in enumerate(first_two + (off("Descent", -3, -2), off("Descent", 4, 3), off("Approach", 6, -5), off("RibGate", -8, 2))):
+    first_two = (off("Bend", -3, 3), off("SunwardClearing", -10, -9)) if shifted else ((22.0, 0.0, -1.8), off("FirstWell", 9, -3))
+    for i, p in enumerate(first_two + (off("Descent", -3, -2), off("Descent", 4, 3), (255.0, 15.0, -15.5), off("RibGate", -8, 9))):       # the fifth stands alone on the last slope, clear of the Approach
         blotter = enemy("Blotter", p)
         if shifted and i >= 4 and isinstance(blotter, unreal.UnderpaintingEnemy):
             blotter.set_editor_property("removed_by_flag", unreal.Name("Scumblewood_BlotterMinus2"))
@@ -953,10 +968,17 @@ def build_vault(shifted=False):
 
     # Enemies: 6 Pentiments, 4 Blotters and the boss. After the Turning nothing comes back here.
     if not shifted:
-        for p in ((36, -6, FLOOR), (40, 7, FLOOR), (61, 3, FLOOR + 0.5), (81, 3, FLOOR - 0.5),
-                  (88, 10, PIT), (110, 6, FLOOR)):
+        # The first Pentiment stands alone at the foot of the stair: a new kind of enemy is met one at a time.
+        # The platforms themselves are clear: crossing them is its own lesson (the Flare, the jump, keeping the light up),
+        # and a spear across a gap cannot be dodged in mid-air. One with a Blotter guards the far ledge (never three in
+        # one place). The rest are down in the pit, which is what a fall costs.
+        # In the pit they keep to the walls, beside the things worth finding there, further from the middle than they
+        # notice at: someone who falls lands in the clear and can walk to the ramp, or choose a fight.
+        for p in ((36, -6, FLOOR), (76, 14, PIT), (104, 14, PIT), (104, -14, PIT), (52, 14.5, PIT), (64, 14.5, PIT)):
             enemy("Pentiment", p)
-        for p in ((56, 8, PIT), (74, -6, PIT), (109, -5, FLOOR), (118, 4, FLOOR)):
+        # One Blotter stands on the Rib Stair itself, seen from the top. The far ledge is empty: it holds the Lampstand
+        # before the Heart, and a place to rest and to wake must be safe.
+        for p in ((60, 11, PIT), (90, 13.5, PIT), (88, -13.5, PIT), (16, 0, -5.0)):
             enemy("Blotter", p)
         enemy("ThePalimpsest", (142, 0, FLOOR))
 
