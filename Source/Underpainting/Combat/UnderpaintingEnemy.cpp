@@ -227,7 +227,7 @@ void AUnderpaintingEnemy::Tick(float DeltaTime)
 		{
 			BeginAttack(Attack);
 		}
-		else if (Distance > 140.0f)
+		else if (Distance > GetApproachDistance())
 		{
 			MoveTowards(Target->GetActorLocation());
 		}

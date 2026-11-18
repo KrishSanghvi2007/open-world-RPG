@@ -76,9 +76,15 @@ Only hands can judge these. The question to answer is in italics.
 - The whole game with a real keyboard and mouse.
 - Whether a changed key actually works in play. The setting saves; I cannot press keys.
 - Walking any route. The script teleports. The main routes of all three zones and the Stair of Spines have passed a ground trace (no gaps, nothing too steep). That trace found one real fault, now fixed: the ramp out of the Vault's gallery pit ended against a wall. The jumps across the gallery's sketched platforms cannot be traced and are untested.
-- The Madderback and the Pentiment have never been fought.
+- The Madderback and the Pentiment have now been fought by script, every attack seen landing (see below), but not by hand.
 - Only the green ending of the Heart wall was played through the Turning. The red wall, Corin's three endings and "pour the flame into the Lampstand" are built but unseen.
 - A gamepad.
+
+**Found and fixed tonight by scripted play**
+- The Pentiment never used its spear thrust: it walked in too close and always swept. It now holds at spear's length.
+- One Flare caught the Pentiment four times in eight seconds. Now once; it will not Redraw again for 8 seconds.
+- The ramp out of the Vault's gallery pit ended against a wall.
+- A lip of up to 0.9 m on every ramp of the Stair of Spines.
 
 **Rough**
 - Everyone and everything is a plain shape. No models, no animation, no sound.
@@ -96,7 +102,7 @@ Only hands can judge these. The question to answer is in italics.
 
 ## Open questions (with what Claude chose)
 
-All 34 are in `docs/QUESTIONS.md` with the alternatives. The ones most worth your eye:
+All 36 are in `docs/QUESTIONS.md` with the alternatives. The ones most worth your eye:
 
 - **6. The story's central truth:** the Limner is the god's own unfinished self-portrait.
 - **23. You can leave the Vault without Odile's lantern.** Hesper then gets a plainer ending.

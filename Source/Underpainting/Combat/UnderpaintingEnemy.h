@@ -143,6 +143,9 @@ protected:
 	/** Index into the row's Attacks to use at this distance (cm), or INDEX_NONE to keep closing in. */
 	virtual int32 ChooseAttack(float DistanceToTarget) const;
 
+	/** How close it walks before it stops and waits for its next attack (cm). */
+	virtual float GetApproachDistance() const { return 140.0f; }
+
 	/** Called when an attack lands, after damage. */
 	virtual void OnAttackLanded(const FEnemyAttack& Attack, AActor* Target) {}
 

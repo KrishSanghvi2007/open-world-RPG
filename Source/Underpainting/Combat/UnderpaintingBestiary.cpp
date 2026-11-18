@@ -99,7 +99,8 @@ bool APentimentEnemy::IsAreaAttack(const FEnemyAttack& Attack) const
 int32 APentimentEnemy::ChooseAttack(float DistanceToTarget) const
 {
 	// Patient. It redraws itself across a gap, thrusts at spear's length, and sweeps if you get round it.
-	if (DistanceToTarget > 350.0f && DistanceToTarget <= 900.0f)
+	const bool bShy = GetWorld() && GetWorld()->GetTimeSeconds() < RedrawShyUntil;
+	if (DistanceToTarget > 350.0f && DistanceToTarget <= 900.0f && !bShy)
 	{
 		return FindAttack(Row, TEXT("Redraw"));
 	}
@@ -123,6 +124,7 @@ bool APentimentEnemy::OnWindupTick(const FEnemyAttack& Attack, AActor* Target)
 		if (Player && Player->IsFlareLighting(GetActorLocation()))
 		{
 			UE_LOG(LogUnderpainting, Log, TEXT("%s was caught in the light mid-redraw"), *GetName());
+			RedrawShyUntil = GetWorld()->GetTimeSeconds() + RedrawShyTime;
 			return false;
 		}
 	}

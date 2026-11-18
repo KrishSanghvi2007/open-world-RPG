@@ -38,4 +38,6 @@ Choices Claude made while the owner was away. Each has the question, what was ch
 | 32 | What menus look like. | The satchel is paper, ruled lines and ink, with a brush stroke of pigment under the open tab (the UI style probe). Other menus keep the plain panels until you say. | Keep everything as violet panels; or go further (torn edges, handwriting), which needs art. | 2026-11-18 |
 | 33 | Two actions on one key. | Not possible: giving an action a key that is in use swaps the two. | Allow it and warn; or refuse the change. | 2026-11-18 |
 | 34 | Starting the game with a save from another zone. | It opens the zone you last rested in. Test rooms under Maps/Dev are left alone. | Always start in the level you pressed Play in. | 2026-11-18 |
+| 35 | One Flare (8 s) caught the Pentiment mid-Redraw four times running. | After being caught it will not Redraw again for 8 seconds: one Flare buys one opening. | Leave it, and let the Flare be a hard counter for its whole length. | 2026-11-18 |
+| 36 | The Pentiment walked in until it was too close to thrust, so it only ever swept. | It stops at spear's length (2.5 m) and thrusts; step inside 2 m and it sweeps. | Keep it aggressive and drop the thrust. | 2026-11-18 |
 

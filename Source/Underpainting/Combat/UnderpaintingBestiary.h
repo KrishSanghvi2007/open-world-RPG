@@ -50,7 +50,20 @@ protected:
 	virtual int32 ChooseAttack(float DistanceToTarget) const override;
 	virtual bool OnWindupTick(const FEnemyAttack& Attack, AActor* Target) override;
 	virtual void OnAttackActive(const FEnemyAttack& Attack, AActor* Target) override;
+	/** It keeps you at spear's length; step inside that and it sweeps. */
+	virtual float GetApproachDistance() const override { return 250.0f; }
 	virtual FLinearColor GetBodyColour() const override { return FLinearColor(0.03f, 0.07f, 0.38f); }
+
+	/** After a Flare catches it mid-Redraw it does not try again for this long, so one Flare is one opening, not eight seconds of them. */
+	UPROPERTY(EditAnywhere, Category = "Enemy")
+	float RedrawShyTime = 8.0f;
+
+private:
+
+	float RedrawShyUntil = -1.0f;
+
+protected:
+
 	virtual FVector GetBodyScale() const override { return FVector(0.45f, 0.45f, 2.0f); }
 };
 
