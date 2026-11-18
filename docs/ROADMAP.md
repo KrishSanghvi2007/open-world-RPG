@@ -14,7 +14,7 @@ Every milestone ends with a "done when" test the owner can do in under 5 minutes
   | Environment corner | Done: `docs/looktest/` (three styles) |
   | Prop | Done: Lampstand, Grinding Slab (in the look test) |
   | Player character | To do |
-  | NPC | To do |
+  | NPC | Done: Hesper Vane (devlog 013); in the look test only |
   | Enemy | Done: the Blotter (devlog 006) |
   | Boss | To do |
   | Interior | To do |

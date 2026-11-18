@@ -30,7 +30,7 @@ eal = unreal.EditorAssetLibrary
 
 MASKS = ["T_Stroke_Plaster", "T_Stroke_Roof", "T_Stroke_Wood", "T_Stroke_Stone", "T_Stroke_Ground", "T_Stroke_Dab"]
 SKIES = ["T_Sky_Gouache", "T_Sky_Glaze", "T_Sky_Wash"]
-PROPS = ["SM_House_A", "SM_House_B", "SM_Lampstand", "SM_GrindingSlab", "SM_Tree", "SM_Blotter"]
+PROPS = ["SM_House_A", "SM_House_B", "SM_Lampstand", "SM_GrindingSlab", "SM_Tree", "SM_Blotter", "SM_Hesper"]
 
 
 def lin(hex_colour, scale=1.0):
@@ -344,6 +344,7 @@ SKY_YAW_OFFSET = 0.0     # calibrated so the painted sun sits where the light co
 
 CAMERAS = {
     "Blotter": ((7.4, -6.6, 1.5), (9.0, 42.0)),
+    "Hesper": ((10.2, -5.6, 1.35), (4.0, 129.0)),
     "Hero": ((7.6, -8.6, 1.7), (7.0, 124.0)),        # (position m), (pitch, yaw)
     "Sunward": ((6.0, 8.0, 2.0), (6.0, -128.0)),
 }
@@ -437,6 +438,9 @@ def build_level(style_name):
     prop("Tree", "SM_Tree", (9.6, 10.6, 0.0), yaw=40.0, scale=1.25)
     prop("Tree_Terrace", "SM_Tree", (-2.5, 27.0, 4.0), yaw=160.0, scale=1.0)
     prop("GrindingSlab", "SM_GrindingSlab", (0.4, -3.6, 0.0), yaw=150.0)
+
+    # Style probe, first person: Hesper Vane beside her Lampstand, lighting pole in hand.
+    prop("Hesper_StyleProbe", "SM_Hesper", (7.6, -2.4, 0.0), yaw=200.0, scale=1.0)
 
     # Style probe, first enemy: a Blotter at the edge of the square, and the bare canvas it has dabbed the ground back to.
     prop("Blotter_StyleProbe", "SM_Blotter", (11.5, -2.5, 0.0), yaw=215.0, scale=1.1)
@@ -583,6 +587,10 @@ def main(args):
         import_assets()
     if command == "materials":
         create_materials()
+    if command == "view":            # view <CameraName>: put the editor viewport where that camera is (a still frame has no motion blur)
+        position, (pitch, yaw) = CAMERAS[args[1]]
+        unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem).set_level_viewport_camera_info(v(position), unreal.Rotator(roll=0.0, pitch=pitch, yaw=yaw))
+        return
     if command == "gameview":
         levels.editor_set_game_view(True)
     if command == "level":

@@ -284,6 +284,48 @@ def build_blotter(name="SM_Blotter", seed=44):
     return b.build()
 
 
+def build_hesper(name="SM_Hesper", seed=61):
+    """Style probe, first person: Hesper Vane, lampwright. Sixty-odd, sturdy, a little stooped from thirty years of
+    looking up at a lamp. Long ochre work dress, cream apron, a madder-rose shawl, grey hair pinned up, and the
+    lighting pole she is never without, its wick still glowing. Faces -Y."""
+    b = Builder(name, seed)
+    r = b.rng
+    # The dress: three uneven tiers, widest at the hem, leaning forward a touch.
+    for i, (z, h, wx, wy) in enumerate(((0.06, 0.56, 0.74, 0.62), (0.60, 0.44, 0.60, 0.50), (1.02, 0.36, 0.50, 0.40))):
+        b.block((0.0, -0.02 * i, z + h / 2.0), (wx, wy, h), "PigmentOchre", rot=(0, 0, r.uniform(-0.08, 0.08)), taper=0.16, wobble=0.02, lean=(0.0, -0.025))
+    # Boots, just showing.
+    for side in (-1, 1):
+        b.block((side * 0.15, -0.16, 0.05), (0.15, 0.30, 0.10), "Wood", rot=(0, 0, side * 0.12), wobble=0.01)
+    # The apron: a cream panel down the front, and its tie at the back.
+    b.block((0.0, -0.30, 0.74), (0.40, 0.035, 0.92), "Plaster", rot=(-0.07, 0, 0.02), taper=-0.12, wobble=0.012)
+    b.block((0.0, 0.24, 1.06), (0.26, 0.05, 0.10), "Plaster", rot=(0, 0, 0.2), wobble=0.01)
+    # Shoulders rounded forward under the shawl, which hangs longer on one side (she pins it badly).
+    b.block((0.0, -0.05, 1.44), (0.62, 0.40, 0.24), "Roof", rot=(-0.22, 0, 0.03), taper=0.25, wobble=0.02)
+    b.block((-0.24, -0.22, 1.18), (0.20, 0.06, 0.52), "Roof", rot=(-0.12, 0, 0.10), taper=0.2, wobble=0.015)
+    b.block((0.22, -0.22, 1.28), (0.18, 0.06, 0.32), "Roof", rot=(-0.12, 0, -0.12), taper=0.2, wobble=0.015)
+    b.block((0.0, 0.18, 1.30), (0.50, 0.05, 0.42), "Roof", rot=(0.10, 0, 0), taper=0.3, wobble=0.015)
+    # Neck and head, tipped up toward the lamp out of habit; grey hair in a bun, a loose strand.
+    b.cylinder((0.0, -0.10, 1.54), 0.07, 0.10, "Plaster", segments=6, wobble=0.005)
+    b.block((0.0, -0.14, 1.74), (0.21, 0.23, 0.26), "Plaster", rot=(0.16, 0, 0.04), taper=0.12, wobble=0.012)
+    b.block((0.0, -0.08, 1.86), (0.24, 0.26, 0.10), "Stone", rot=(0.16, 0, 0.04), taper=0.2, wobble=0.012)
+    b.block((0.0, 0.04, 1.76), (0.23, 0.10, 0.22), "Stone", rot=(0.16, 0, 0.0), wobble=0.012)
+    b.cylinder((0.0, 0.10, 1.84), 0.085, 0.11, "Stone", segments=6, top_radius=0.06, wobble=0.008, lean=(0.0, 0.03))
+    b.block((0.115, -0.20, 1.70), (0.02, 0.03, 0.16), "Stone", rot=(0.1, 0, -0.1), wobble=0.004)
+    # Her left arm hangs with an oil can; the sleeve is rolled.
+    b.block((-0.36, -0.06, 1.22), (0.13, 0.15, 0.50), "PigmentOchre", rot=(0.08, 0, -0.10), taper=0.1, wobble=0.012)
+    b.block((-0.40, -0.10, 0.90), (0.10, 0.11, 0.26), "Plaster", rot=(0.05, 0, -0.06), wobble=0.01)
+    b.cylinder((-0.41, -0.14, 0.62), 0.07, 0.16, "Metal", segments=6, top_radius=0.05, wobble=0.006)
+    b.block((-0.41, -0.24, 0.74), (0.02, 0.16, 0.02), "Metal", rot=(0.5, 0, 0), wobble=0.002)
+    # Her right arm is raised, holding the lighting pole upright beside her.
+    b.block((0.36, -0.12, 1.34), (0.13, 0.15, 0.34), "PigmentOchre", rot=(-0.9, 0, 0.12), taper=0.1, wobble=0.012)
+    b.block((0.40, -0.32, 1.44), (0.10, 0.11, 0.24), "Plaster", rot=(-0.3, 0, 0.05), wobble=0.01)
+    b.cylinder((0.42, -0.38, 0.02), 0.022, 2.55, "Wood", segments=5, top_radius=0.018, wobble=0.004, lean=(0.03, 0.02))
+    b.block((0.46, -0.37, 2.58), (0.10, 0.02, 0.02), "Metal", wobble=0.002)                 # the hook for lifting lamp glasses
+    b.cylinder((0.45, -0.36, 2.58), 0.03, 0.09, "Metal", segments=5, wobble=0.003)          # the wick holder
+    b.block((0.45, -0.36, 2.71), (0.05, 0.05, 0.10), "Glow", rot=(0, 0, 0.6), taper=0.6, wobble=0.004)   # the taper, lit
+    return b.build()
+
+
 def export(obj):
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
@@ -296,7 +338,7 @@ def export(obj):
 
 
 def main():
-    for name in ("SM_House_A", "SM_House_B", "SM_Lampstand", "SM_GrindingSlab", "SM_Tree", "SM_Blotter"):
+    for name in ("SM_House_A", "SM_House_B", "SM_Lampstand", "SM_GrindingSlab", "SM_Tree", "SM_Blotter", "SM_Hesper"):
         old = bpy.data.objects.get(name)
         if old:
             bpy.data.objects.remove(old, do_unlink=True)
@@ -307,6 +349,7 @@ def main():
         build_grinding_slab(),
         build_tree(),
         build_blotter(),
+        build_hesper(),
     ]
     for i, obj in enumerate(built):
         path = export(obj)
