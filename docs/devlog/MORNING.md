@@ -18,7 +18,8 @@ Last updated: 2026-11-18, night. Claude keeps this page current while you are aw
    Press **F5**, stop, press Play again: you are where you were, with what you had.
    Then walk through the blue doorway at the north end of the square into the forest, and on to the Vault.
 3. **The look (2 min).** Maps under LookTest → **L_LookTest_Glaze** → Play.
-4. **The story (2 min).** Read section 1 of `docs/STORY.md`. It changed this evening on your advisor's note: Act 1 is now about Hesper's wife.
+4. **The story (2 min).** Read section 1 of `docs/STORY.md`. It changed this evening on your advisor's note: Act 1 is now about Hesper's wife. Outlines for Acts 2 and 3 are in `docs/story/`.
+   After the quest, talk to Hesper again and ask her things; talk to Bartram; in the forest, talk to Corin and Ilka.
 
 ## Where your feel-feedback matters most
 
@@ -45,6 +46,7 @@ These are the things only hands can judge. For each, the question to answer is i
 
 ## What is broken or rough
 
+- **The Mac is short of memory with Unreal open.** Unreal showed a memory warning during a test (about 4.5 GB had spilled to disk). The game still ran. Closing Blender and the Epic Games Launcher while playtesting should help; tell Claude if the game stutters.
 - **Nobody has played the loop by hand yet.** Claude drove it from a script and it passed; real keys and a real mouse may still find problems.
 - A "Message Log" window may sit on top of the Unreal viewport after Claude runs tests. Close it with its ✕.
 - Menus are plain text with number keys.

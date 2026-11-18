@@ -203,7 +203,40 @@
     ],
     "ForbidFlags": [],
     "SetFlags": [],
-    "Choices": []
+    "Choices": [
+      {
+        "Label": "The Lampstand. Who built it?",
+        "Next": "Hesper_Topic_Lamp",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "That jar on your shelf.",
+        "Next": "Hesper_Topic_Soot",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "You've no mirror in the house.",
+        "Next": "Hesper_Topic_Mirror",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "(Say nothing.)",
+        "Next": "",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
   },
   {
     "Name": "Bartram_Hello",
@@ -225,8 +258,24 @@
         "StartQuest": ""
       },
       {
-        "Label": "I'll use the slab.",
-        "Next": "",
+        "Label": "What's in the stone jars?",
+        "Next": "Bartram_Topic_Jars",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "The black door, top of the Hem.",
+        "Next": "Bartram_Topic_Door",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "Any advice for the slab?",
+        "Next": "Bartram_Topic_Mud",
         "RequireFlags": [],
         "ForbidFlags": [],
         "SetFlags": [],
@@ -239,6 +288,266 @@
     "Npc": "BartramSedge",
     "Speaker": "Bartram Sedge",
     "Text": "Flaking. My sister's wall came away in my hand like wet bread. More light, that's all it wants. Brighter walls. I've a notion about that, when you've a minute.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Topic_Lamp",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Nobody. Everybody. Every lampstand on every back is built to the one pattern: post, bracket, cage. My mother didn't know whose pattern and nor did hers. You don't ask who thought of a spoon.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Topic_Soot",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Soot, off the inside of the glass. Forty years of it. Best black there is, and it's not for sale. I don't know what it's for. I only know you don't throw away what a lamp's spent itself making.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Topic_Mirror",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Had one. She took it down. Said a Limner can't see their own back and it only made her cross to try. I said nor can anyone, that's what other people are for.",
+    "Next": "Hesper_Topic_Mirror2",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Topic_Mirror2",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Madder, she wore. A red coat. I told her it would show every mark. She said that was the point of a coat.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [
+      "Hesper.ToldRedCoat"
+    ],
+    "Choices": []
+  },
+  {
+    "Name": "Bartram_Topic_Jars",
+    "Npc": "BartramSedge",
+    "Speaker": "Bartram Sedge",
+    "Text": "Thinner. Comes up from the west shore in stone jars, and the jars come back lighter than they went. Takes the colour off anything. A brush, a bench, a thumb. Don't get it on you. I mean that the way I don't mean most things.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Bartram_Topic_Door",
+    "Npc": "BartramSedge",
+    "Speaker": "Bartram Sedge",
+    "Text": "The black one, top of the Hem? Ansel's work, before he left. It was green. He set it, so it'd never want doing again, and it never has. Went black inside a year. Verdigris does. He said that was the green deciding what it was.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Bartram_Topic_Mud",
+    "Npc": "BartramSedge",
+    "Speaker": "Bartram Sedge",
+    "Text": "First thing my father taught me and the last thing I'll teach anyone: mix all six and you get mud. Every colour there is, and not one of them left. Keep your jars apart, Limner.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Corin_Hello",
+    "Npc": "CorinHalfSeen",
+    "Speaker": "Corin Half-Seen",
+    "Text": "Don't walk round me. Please. Everyone walks round me.",
+    "Next": "",
+    "Entry": 10,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "I'll stay in front.",
+        "Next": "Corin_Front",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "(Walk round him.)",
+        "Next": "Corin_Round",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "What do you see, when you look at people?",
+        "Next": "Corin_See",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Corin_Front",
+    "Npc": "CorinHalfSeen",
+    "Speaker": "Corin Half-Seen",
+    "Text": "That's kind. It's not much of a view from the back in any case. Bit of charcoal. A note to self the Hand never came back to.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Corin_Round",
+    "Npc": "CorinHalfSeen",
+    "Speaker": "Corin Half-Seen",
+    "Text": "There. Now you've seen the bit I haven't.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [
+      "Corin.SawBack"
+    ],
+    "Choices": []
+  },
+  {
+    "Name": "Corin_See",
+    "Npc": "CorinHalfSeen",
+    "Speaker": "Corin Half-Seen",
+    "Text": "The drawing, under. Most folk have lines beneath the paint. Under Ilka it's all ruled, would you believe. There was a red lady went down this way once and hers were quick, like handwriting.",
+    "Next": "Corin_See2",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Corin_See2",
+    "Npc": "CorinHalfSeen",
+    "Speaker": "Corin Half-Seen",
+    "Text": "Under you...",
+    "Next": "Corin_See3",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Corin_See3",
+    "Npc": "CorinHalfSeen",
+    "Speaker": "Corin Half-Seen",
+    "Text": "Never mind. Sing you a song? I only know the ends.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [
+      "Corin.LookedAtYou"
+    ],
+    "Choices": []
+  },
+  {
+    "Name": "Ilka_Hello",
+    "Npc": "IlkaThrum",
+    "Speaker": "Ilka Thrum",
+    "Text": "The village wants a fire. The village always wants a fire. Read the chalk before you fetch me a torch.",
+    "Next": "",
+    "Entry": 10,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "What does the chalk say?",
+        "Next": "Ilka_Chalk",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "How long has she been cooling?",
+        "Next": "Ilka_Cooling",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "You talk about her like a cow.",
+        "Next": "Ilka_Cow",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Ilka_Chalk",
+    "Npc": "IlkaThrum",
+    "Speaker": "Ilka Thrum",
+    "Text": "That every well with a tick-bite beside it is open, and every well without one has scabbed shut. Everything that feeds on her keeps her bleeding, and everything alive up here drinks the bleed.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Ilka_Cooling",
+    "Npc": "IlkaThrum",
+    "Speaker": "Ilka Thrum",
+    "Text": "Eleven years. A hair's breadth a season. I thought the instrument was off. It isn't. And it's slow, Limner. Slower than it should be, as if something down there were holding it back.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Ilka_Cow",
+    "Npc": "IlkaThrum",
+    "Speaker": "Ilka Thrum",
+    "Text": "I talk about her like something I've counted. She's had young, you know. You can tell by the hip. More than one. I don't know where they went.",
     "Next": "",
     "Entry": 0,
     "RequireFlags": [],
