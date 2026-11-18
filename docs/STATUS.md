@@ -16,6 +16,7 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - Repo set up for hands-off work: `CLAUDE.md`, Unreal `.gitignore`, Git LFS rules, project settings.
 
 ## Next (Claude does these)
+0. Add a Terminal shortcut for the owner: append `alias rpg='cd ~/Documents/GitHub/open-world-RPG && claude --continue'` to `~/.zshrc` (if not already there), and confirm it works. Check whether Remote Control can be switched on for every session automatically (for example, in `/config`); if it can, enable it and log it here.
 1. Mac setup: install Git LFS and the GitHub CLI, log in once, and set git to push to `main`.
 2. Register the Unreal MCP server (`unreal-mcp`, http://127.0.0.1:8000/mcp).
 3. Create the Unreal project **Underpainting** in this repo (Third Person template, starting Blueprint-only; C++ gets added once Xcode is ready), and enable the MCP and AllToolsets plugins with server auto-start.
