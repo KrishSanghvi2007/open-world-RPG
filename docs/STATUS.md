@@ -5,6 +5,7 @@ Claude keeps this file current. It says what's done, what's next, and what's wai
 Last updated: 2026-11-18
 
 ## Waiting on the owner
+Nothing blocks work. Claude is working through `docs/ROADMAP.md` on its own; see `docs/devlog/MORNING.md`.
 - [ ] Optional, one time: to have phone control on in every session, type `/config` in Claude Code and switch on "Enable Remote Control for all sessions". (Claude leaves this switch to you because it opens remote access to this Mac.)
 
 ## Decisions waiting on you
@@ -20,18 +21,25 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - Terminal shortcut `rpg` added to `~/.zshrc` (opens the project and resumes Claude). It works in new Terminal windows.
 - **Unreal project created** (`Underpainting.uproject` at the repo root, C++, from the Third Person template with the Combat variant). MCP and AllToolsets plugins are on and the MCP server starts with the editor, so Claude connects as soon as the project is open. Verified: Claude can read and change the open level.
 - **Data structs in C++** (`Source/Underpainting/Data/`): a row struct for each file in `data/`, and `UUnderpaintingDataSubsystem`, which loads the JSON when the game starts. The automated test `Underpainting.Data.LoadAll` passes.
+- **Look test** (`/Game/LookTest/Maps/`, pictures in `docs/looktest/`): one corner of the village square in three painterly styles, built by `tools/looktest/`. Working choice: B, Glaze.
+- **First combat** (`Source/Underpainting/Combat/`): stamina, sprint, dodge, light and heavy attacks, and a data-driven Blotter, in `/Game/Maps/Dev/L_Combat_Greybox`. Tests: `Underpainting.Combat.*`.
+- **Story** written: `docs/STORY.md`.
+- **Roadmap** set by the owner: `docs/ROADMAP.md`. Choices made while the owner is away are in `docs/QUESTIONS.md`.
 - **Grey-box of the Sleeping Matriarch, "A" versions** (`/Game/Maps/Matriarch/`): `L_Matriarch_Village_A`, `L_Matriarch_Scumblewood_A`, `L_Matriarch_Vault_A`. Built by `tools/greybox/build_matriarch_greybox.py`. Each has its layout, a player start, lighting by the GDD rule, and labelled markers for every Lampstand, node, enemy, NPC, station and exit, with counts checked against `data/regions.json`. The Vault has 0.6x gravity. Opened and play-tested in the editor.
 
-## Known gaps in the grey-box
-- Nobody has walked each route end to end yet: the layouts were checked from above and with one play start in the Vault.
-- Markers are placeholders: no enemies, harvesting, Lampstands or zone exits work yet.
-- The three zones are separate levels. The persistent level that streams them (`L_Matriarch_Persistent`) and the "B" versions come with the shift (build step 7).
-- Passable backs are walls with no collision from either side; the real one-sided rule needs code.
-- Sketch platforms are always solid for now; "solid only while lit" needs the Flare.
-- Lighting is a first pass and reads too bright in the forest.
+## Known gaps
+- The grey-box routes have not been walked end to end.
+- Markers are placeholders: no harvesting, Lampstands or zone exits yet.
+- Enemies have no models, animations or path-finding.
+- Dying restarts the level.
+- The three zones are separate levels; the "B" versions come with the shift (M8).
 
-## Next (Claude does these)
-Following the build order in `docs/GDD.md` section 11:
-1. Build step 1: the player character in C++ (movement, Stamina, dodge, light and heavy attacks) and one Blotter, driven by `data/items.json` and `data/enemies.json`, playable in the village grey-box.
-2. Turn markers into working actors: Lampstands (rest and respawn), harvest nodes, enemy spawners, zone exits.
-3. Walk all three routes and fix what the grey-box gets wrong (jump distances in the Cartoon Gallery, sightlines in the Furrow).
+## Next (Claude does these; see `docs/ROADMAP.md`)
+Milestone **M2, the walking skeleton**, in the village level:
+1. Inventory and harvesting an Ochre node.
+2. Crafting one item at the Grinding Slab.
+3. A skill-tree screen and buying one attunement node.
+4. Data-driven dialogue with Hesper Vane.
+5. One short quest, start to finish.
+6. Save and load.
+7. Bring a Blotter into the village loop, then the M2 devlog.

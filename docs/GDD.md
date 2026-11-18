@@ -43,6 +43,8 @@ Light is the second, smaller resource. It decides how expensive it is to *use* p
 
 **Erasures** are not evil. They are what happens to a painted world in the dark: the return of the blank canvas. They are the only pure-white things in the game.
 
+**The story** (the full arc, the characters, the mysteries and the endings) is in `docs/STORY.md`. The people of this world call the god **the Hand** and its leaving **the Lifting**; an unfinished thing is **open** and a finished thing is **set**.
+
 **The Limner.** "Limner" is an old word for a painter of illuminated manuscripts; it shares a root with "illuminate". Limners carry a lantern lit from a village Lampstand and are trusted to decide what gets finished.
 
 **The rule that gives the game its ending.** A *finished* thing no longer needs the lamp. It holds its form in the dark. The sun will go out whatever you do. The last act takes place in a world made only of the things you chose to finish.
@@ -163,6 +165,8 @@ Three states of world, three sets of rules. Each is a small, fixed list, not a p
 - **Sketched objects are solid only while lit.** A Flare makes platforms and bridges real for 8 seconds. A Fixative Flask makes one real permanently.
 - Ambient light 0. Nothing regrows. Slumber Blue is found only here.
 
+**Lore discoverables** come in four kinds, written in `docs/STORY.md` section 9: the Hand's marginalia (in sketch zones, revealed by a Flare), Odile Vane's field notes (along her route from the village to the Heart), the village's ledgers and logs, and pentimenti.
+
 **Pentimenti.** A pentimento is the ghost of an earlier idea showing through a finished painting. In this world they are faint outlines of what used to be, or was nearly, there. A Flare reveals them. They point to caches, and after a region shift they mark where things stood.
 
 ## 7. Questing
@@ -174,7 +178,7 @@ Quests are short (3 to 8 steps), text only, and almost all end the same way: **s
 The slice has four core quests and one stretch quest:
 
 1. **Dusk on the Shoulder** (main; Hesper Vane, lampwright). The tutorial: harvest Ochre, craft Lamp Oil, relight the village Lampstand, attune for the first time, receive the lantern.
-2. **Cold Under the Ribs** (main; Hesper). Descend the spine, enter the Vault, defeat Old Palimpsest. Then fill the blank it scraped into the Heart wall: **Sanguine (5)** makes her blood run hot (richer blood wells, 2 more Madderbacks); **Terre Verte (5)** thickens the moss (forest light 0.55 instead of 0.4, 2 fewer Blotters); **leave it bare** and keep your pigment plus 4 Ceruse, at a cost that arrives in Act 2.
+2. **Cold Under the Ribs** (main; Hesper). Descend the spine, enter the Vault, defeat Old Palimpsest. Beside the boss's hollow the wall shows two charcoal studies of a figure with a lantern and a knife, and a blank where a third was (see `docs/STORY.md`). Then fill that blank on the Heart wall: **Sanguine (5)** makes her blood run hot (richer blood wells, 2 more Madderbacks); **Terre Verte (5)** thickens the moss (forest light 0.55 instead of 0.4, 2 fewer Blotters); **leave it bare** and keep your pigment plus 4 Ceruse, at a cost that arrives in Act 2.
 3. **The Unseen Side** (side; Corin Half-Seen). Corin was painted from the front only and has spent his life walking backwards to face the sun. Finish him in **Terre Verte (3)** and he becomes the forest's warden (moss nodes yield +1). Finish him in **Bone Black (3)** and he becomes the village's grim gatekeeper (no Blotters reach the village after the shift). **Leave him** and, because only an unfinished man can see the sketch beneath the paint, he shows you a hidden cache of 2 Slumber Blue.
 4. **The Tick-Warden's Ledger** (side; Ilka Thrum). The village wants the Madderback nest burned. Ilka's records show the blood wells only stay open because the ticks bite. **Burn it**: half the Madderbacks, but wells yield 1 Sanguine instead of 2. **Dress the wells with Terre Verte (3)**: same danger, wells yield 3, and Ilka trades. The parasite is the supply chain.
 5. **A Fair Grind** (side, **stretch goal**; Bartram Sedge, colourman). He wants to whitewash the lowest terrace so it reflects more light. **Ceruse (3)** is brilliant (+0.25 light there, more linseed oil) and will poison the families living in it by Act 2. **Ochre (4)** is duller (+0.1) and safe. Built only after the other four are finished; nothing else depends on it.
