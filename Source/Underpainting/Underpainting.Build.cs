@@ -26,6 +26,7 @@ public class Underpainting : ModuleRules
 		PublicIncludePaths.AddRange(new string[] {
 			"Underpainting",
 			"Underpainting/Data",
+			"Underpainting/Combat",
 			"Underpainting/Variant_Combat",
 			"Underpainting/Variant_Combat/AI",
 			"Underpainting/Variant_Combat/Animation",
