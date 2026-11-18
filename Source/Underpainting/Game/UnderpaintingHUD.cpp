@@ -778,7 +778,7 @@ void AUnderpaintingHUD::DrawChoice(const UUnderpaintingProgress* Progress)
 		return;
 	}
 
-	DrawPanel(X, Y, Width, 110.0f + Row->Choices.Num() * 96.0f);
+	DrawPanel(X, Y, Width, 110.0f + Row->Choices.Num() * 116.0f);
 	DrawText(ChoiceSubject, GlimColour, X + 24.0f, Y + 16.0f, nullptr, 1.25f);
 	DrawText(TEXT("What you decide here is permanent."), DimColour, X + 24.0f, Y + 46.0f, nullptr, 0.9f);
 	float Cursor = Y + 80.0f;
@@ -790,8 +790,8 @@ void AUnderpaintingHUD::DrawChoice(const UUnderpaintingProgress* Progress)
 		const FString Cost = Choice.CostPigment.IsNone() ? FString(TEXT("free")) : FString::Printf(TEXT("%d %s"), Choice.CostAmount, *Progress->GetDisplayName(Choice.CostPigment));
 		DrawText(FString::Printf(TEXT("%d.  %s   (%s)%s%s"), Index + 1, *Choice.Label, *Cost, bCan ? TEXT("") : TEXT("   -   "), bCan ? TEXT("") : *Why),
 			bCan ? GoodColour : DimColour, X + 24.0f, Cursor, nullptr, 1.05f);
-		DrawWrapped(Choice.Consequence.Left(210), X + 54.0f, Cursor + 24.0f, Width - 80.0f, DimColour, 0.85f);
-		Cursor += 96.0f;
+		DrawWrapped(Choice.Consequence, X + 54.0f, Cursor + 24.0f, Width - 80.0f, DimColour, 0.85f);
+		Cursor += 116.0f;
 	}
 	DrawText(TEXT("Number to choose (you will be asked again)   [E] or [Q] walk away"), DimColour, X + 24.0f, Cursor, nullptr, 0.9f);
 }

@@ -119,6 +119,9 @@ def main(args):
         pawn.menu_close()
     elif command == "place":
         pawn.set_actor_location(find(world, "Place", args[1]).get_actor_location(), False, True)
+    elif command == "hidden":
+        # hidden <Kind> <Id>: is this marker out of the world right now?
+        print(args[2], "hidden =", find(world, args[1], args[2]).get_editor_property("hidden"))
     elif command == "count":
         cls = getattr(unreal, args[1])
         print(args[1], len(unreal.GameplayStatics.get_all_actors_of_class(world, cls)))

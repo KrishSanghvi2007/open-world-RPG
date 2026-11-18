@@ -23,4 +23,8 @@ Choices Claude made while the owner was away. Each has the question, what was ch
 | 17 | Keys added for combat depth. | Q lock on (it still closes a menu when one is open), Z swap well, H Moss Poultice, J Lamp Oil. | Any other layout; all keys become rebindable in M9. | 2026-11-18 |
 | 18 | A Bone Black build staggered the boss with every Impasto. | After a stagger ends, the boss cannot be staggered again for 8 seconds. Ordinary enemies are unchanged. | Raise the boss's Poise in the data (120 now); or leave it, and let that build be the easy way. | 2026-11-18 |
 | 19 | The boss's attack order. | Phase 1 alternates sweep and slam, with the line attack from range. Phase 2 cycles flail, sweep, grab (if you are close) or slam, slam. A fixed order, so it can be learned. | Random choice (less learnable, less predictable). | 2026-11-18 |
+| 20 | Where a quest's ending is chosen. | At a thing in the world (the nest, Corin's back, the Heart wall), with a list and then a second ask. | In the conversation with the quest giver. | 2026-11-18 |
+| 21 | A quest step asks you to reach a place you have already found. | It counts as done. Same for a boss already killed. | Make the player walk there again. | 2026-11-18 |
+| 22 | "A Fair Grind", the stretch quest. | Not built yet; the four core quests come first, as the design says. | Build it now. | 2026-11-18 |
+| 23 | Odile's lantern: can you leave the Vault without it? | Yes. Hesper then gets the plain "I found where she was" and no flame choice. | Force the pickup before the wall can be used. | 2026-11-18 |
 

@@ -55,3 +55,4 @@ Newest first. Format: `date: decision (who): why`
 - 2026-11-18: **"Use" targets what the player is looking at**, not the nearest thing (owner). Built as: the usable thing in reach closest to the centre of the view, with a little forgiveness for wide things.
 - 2026-11-18: `docs/devlog/MORNING.md` lists the exact moments where the owner's feel-feedback is needed most (owner).
 - 2026-11-18: The style kit's master material takes one colour and derives its dark and light values in the shader, so every placeholder (level script or C++) only sets a colour. Erasures set "Purity" to keep their white exact (Claude).
+- 2026-11-18: Quest endings are made at a place in the world and always asked twice; consequences are permanent flags in the save that levels read (`RequiresFlag`, `HiddenByFlag`, `RemovedByFlag`, yield flags).

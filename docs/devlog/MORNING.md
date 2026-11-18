@@ -6,6 +6,7 @@ Last updated: 2026-11-18, night. Claude keeps this page current while you are aw
 
 - **The walking skeleton (M2):** one connected loop in the village. Talk to Hesper, harvest, craft, relight the Lampstand, rest, attune, finish the quest, fight a Blotter, save and load.
 - **Combat depth (M4):** two palette wells, six Strokes that cost light, the Contrast rule (+30% in the complementary colour), lock-on, poultice and lamp oil, the perfect dodge.
+- **Quests and choices (M6):** three more quests, choices that ask twice and change the world, and the Heart scene with Odile's lantern and note. `docs/devlog/007-quests-and-choices.md`.
 - **Enemies and the boss (M5):** Madderback, Pentiment and Old Palimpsest, each with a test room under Maps → Dev. A first enemy style probe (the Blotter) is in `docs/devlog/006-enemies-and-boss.md`.
 - **Exploration, first pass (M3):** the three zones connect through blue doorways; the Flare; sketched platforms; one-sided walls with caches behind them; 18 notes to find; a compass.
 - **The style kit:** every grey-box level is now painted in the Glaze look (sky, haze, violet shadows, brush strokes) with no models.
@@ -47,6 +48,9 @@ These are the things only hands can judge. For each, the question to answer is i
 9e. *The Pentiment's Redraw* (`L_Combat_Pentiment`). Is the fade long enough to think "Flare!" and press F?
 9f. *The boss* (`L_Combat_Boss`). Does the moment it turns red read as "the rule just changed"?
 
+9g. *The second ask.* At the brood nest in the forest, pick an ending. Does "This cannot be painted over" make you hesitate, or is it just one more button?
+9h. *The hollow.* After the boss, you find a lantern and a note. Does the note land, read cold, with no cutscene around it?
+
 **Exploration**
 9. *"Use" follows your eyes.* Stand between Hesper and the Lampstand and turn: does the prompt switch when you expect it to?
 10. *The lesson wall* in the forest (`L_Matriarch_Scumblewood_A`, past the second lamp post). Coming down the gorge you meet a dark wall with a pale cross-hatched patch. Would you think to walk into it? This is the game's signature idea and the design says to drop it if testers miss it.
@@ -55,6 +59,9 @@ These are the things only hands can judge. For each, the question to answer is i
 13. *The compass* at the top. Useful, or noise?
 
 ## What is broken or rough
+
+- **The main quest stops after the Heart wall.** The Turning and the walk home to Hesper come with M8.
+- Corin's quest and Hesper's return are checked by automated test only, not in play.
 
 - **The Mac is short of memory with Unreal open.** Unreal showed a memory warning during a test (about 4.5 GB had spilled to disk). The game still ran. Closing Blender and the Epic Games Launcher while playtesting should help; tell Claude if the game stutters.
 - **Nobody has played the loop by hand yet.** Claude drove it from a script and it passed; real keys and a real mouse may still find problems.

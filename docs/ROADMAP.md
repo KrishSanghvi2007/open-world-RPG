@@ -77,7 +77,7 @@ Madderback, Pentiment, the three-attackers limit, and Old Palimpsest with its tw
 
 **Done when:** each enemy can be fought in its own test room, and the boss can be beaten or lost to in the Heart.
 
-### M6. Quests and dialogue
+### M6. Quests and dialogue (done; "after the shift" consequences and the quest's last two steps come with M8)
 All slice quests from JSON, branching dialogue, permanent choices with confirmation, world flags and their consequences in the levels.
 
 **Done when:** play "The Tick-Warden's Ledger" twice with different choices and see different results in the world.
