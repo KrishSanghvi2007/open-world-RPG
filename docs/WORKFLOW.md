@@ -3,13 +3,8 @@
 You're the creative director. Claude is the team. That's the whole workflow.
 
 ## Daily routine
-1. Open **Terminal**, then type:
-   ```
-   cd ~/Documents/GitHub/open-world-RPG
-   claude --continue
-   ```
-   (`--continue` resumes your last conversation. Use plain `claude` for a fresh start; it still knows the project from the files.)
-2. If you'll work on the game world, also open **Unreal** (and **Blender** if needed, then click *Connect to Claude* in its side panel).
+1. Open **Terminal** and type `rpg`, then press Enter. (This shortcut opens the project and resumes your last conversation with Claude.)
+2. Type `/ready`. Claude opens Unreal (and Blender if needed), connects everything, keeps the Mac awake, and gives you a checklist with at most one thing for you to do.
 3. Tell Claude what you want, in plain words. Examples:
    - "What's the status?"
    - "Build the village greybox."

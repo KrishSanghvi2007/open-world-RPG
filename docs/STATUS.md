@@ -20,6 +20,7 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - Repo set up for hands-off work: `CLAUDE.md`, Unreal `.gitignore`, Git LFS rules, project settings.
 
 ## Next (Claude does these)
+0. Add a Terminal shortcut for the owner: append `alias rpg='cd ~/Documents/GitHub/open-world-RPG && claude --continue'` to `~/.zshrc` (if not already there), and confirm it works. Check whether Remote Control can be switched on for every session automatically (for example, in `/config`); if it can, enable it and log it here.
 1. Create the Unreal project **Underpainting** in this repo (Third Person template), and enable the MCP and AllToolsets plugins with server auto-start.
 2. Add a C++ module and the DataTable structs for `data/*.json`.
 3. Greybox the Sleeping Matriarch region: village, forest and ribcage dungeon.
