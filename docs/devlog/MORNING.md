@@ -91,10 +91,10 @@ Only hands can judge these. The question to answer is in italics.
 
 **Rough**
 - Everyone and everything is a plain shape. No models, no animation, no sound.
-- Enemies walk straight at you; pillars confuse them.
+- Enemies now feel their way round pillars and corners (seen once, with a Blotter). It is not real path-finding: a dead end or a U-shaped wall will still trap them.
 - The Turning is words on black.
 - Only the satchel has the paper look. Dialogue, crafting, the palette and the fighting HUD are plain panels.
-- No trading (Ilka and Corin should trade after their quests).
+- Trading is in for Ilka (1 Sanguine for 2 Terre Verte, if you dressed the wells) and Corin (1 Rib Splinter for 1 Bone Black, if he guards the gate). Checked by automated test, not in play.
 - "A Fair Grind", the stretch quest, is not built.
 - Three small attunement effects are missing (devlog 008).
 - Moving, looking and jumping cannot be rebound.

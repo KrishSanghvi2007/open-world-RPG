@@ -325,6 +325,20 @@ bool FUnderpaintingChoiceTest::RunTest(const FString& Parameters)
 	TestFalse(TEXT("And was not kept"), Return->HasFlag(TEXT("Varnish_FlameKept")));
 	TestEqual(TEXT("The lantern has been given"), Return->GetItemCount(TEXT("OdilesLantern")), 0);
 
+	// Trading: Ilka, once the wells are dressed, gives 2 Terre Verte for 1 Sanguine. The offer needs a Sanguine in hand.
+	TestEqual(TEXT("Ilka's line after dressing the wells"), Tend->FindDialogueEntry(TEXT("IlkaThrum")), FName(TEXT("Ilka_Tended")));
+	if (const FDialogueRow* Offer = Tend->GetDialogueRow(TEXT("Ilka_Tended")))
+	{
+		TestEqual(TEXT("No Sanguine: only 'Not today'"), Tend->GetOfferedChoices(*Offer).Num(), 1);
+		Tend->AddPigment(TEXT("Sanguine"), 2, true);
+		TestEqual(TEXT("With Sanguine the trade is offered"), Tend->GetOfferedChoices(*Offer).Num(), 2);
+		const int32 GreenBefore = Tend->GetPigment(TEXT("TerreVerte"));
+		TestEqual(TEXT("Trading leads to her receipt"), Tend->ChooseDialogue(TEXT("Ilka_Tended"), 0), FName(TEXT("Ilka_Trade")));
+		TestEqual(TEXT("One Sanguine gone"), Tend->GetPigment(TEXT("Sanguine")), 1);
+		TestEqual(TEXT("Two Terre Verte gained"), Tend->GetPigment(TEXT("TerreVerte")), GreenBefore + 2);
+		TestFalse(TEXT("A trade is not remembered as a flag"), Tend->HasFlag(TEXT("Give.Sanguine")));
+	}
+
 	// Flags the game provides by itself.
 	TestTrue(TEXT("Has.<pigment>"), Heart->HasFlag(TEXT("Has.Ceruse")));
 	TestFalse(TEXT("Has.<item> not carried"), Heart->HasFlag(TEXT("Has.OdilesLantern")));

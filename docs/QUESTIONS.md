@@ -40,4 +40,6 @@ Choices Claude made while the owner was away. Each has the question, what was ch
 | 34 | Starting the game with a save from another zone. | It opens the zone you last rested in. Test rooms under Maps/Dev are left alone. | Always start in the level you pressed Play in. | 2026-11-18 |
 | 35 | One Flare (8 s) caught the Pentiment mid-Redraw four times running. | After being caught it will not Redraw again for 8 seconds: one Flare buys one opening. | Leave it, and let the Flare be a hard counter for its whole length. | 2026-11-18 |
 | 36 | The Pentiment walked in until it was too close to thrust, so it only ever swept. | It stops at spear's length (2.5 m) and thrusts; step inside 2 m and it sweeps. | Keep it aggressive and drop the thrust. | 2026-11-18 |
+| 37 | How enemies get round things. | They feel ahead and sidestep round what is in the way. Cheap, and enough for pillars and trunks. | Unreal's navigation mesh: proper routes, but it has to be built for every level and rebuilt when the level changes. Worth it once levels stop changing. | 2026-11-18 |
+| 38 | How trading works. | As a reply in conversation: one trade per press, as many times as you like while you can pay. | A shop screen with quantities (belongs with the paper-look menus, if you want them). | 2026-11-18 |
 

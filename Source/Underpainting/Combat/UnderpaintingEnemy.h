@@ -224,6 +224,10 @@ private:
 	int32 HitsLanded = 0;
 	FVector AttackStartLocation = FVector::ZeroVector;
 	float StateTime = 0.0f;
+
+	// Walking round things: which way it last turned to get past an obstacle, and until when it keeps to that side.
+	float AvoidSign = 1.0f;
+	float AvoidUntil = -1.0f;
 	float PoiseDamage = 0.0f;
 	float TimeSinceHit = 0.0f;
 	float CooldownRemaining = 0.0f;

@@ -874,7 +874,29 @@
     ],
     "ForbidFlags": [],
     "SetFlags": [],
-    "Choices": []
+    "Choices": [
+      {
+        "Label": "Trade 1 Rib Splinter for 1 Bone Black.",
+        "Next": "Corin_Trade",
+        "RequireFlags": [
+          "Has.RibSplinter"
+        ],
+        "ForbidFlags": [],
+        "SetFlags": [
+          "Give.RibSplinter",
+          "Get.BoneBlack"
+        ],
+        "StartQuest": ""
+      },
+      {
+        "Label": "Pass.",
+        "Next": "",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
   },
   {
     "Name": "Corin_Unfinished",
@@ -962,6 +984,52 @@
     "RequireFlags": [
       "Ticks_Tended"
     ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "Trade 1 Sanguine for 2 Terre Verte.",
+        "Next": "Ilka_Trade",
+        "RequireFlags": [
+          "Has.Sanguine"
+        ],
+        "ForbidFlags": [],
+        "SetFlags": [
+          "Give.Sanguine",
+          "Get.TerreVerte.2"
+        ],
+        "StartQuest": ""
+      },
+      {
+        "Label": "Not today.",
+        "Next": "",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Ilka_Trade",
+    "Npc": "IlkaThrum",
+    "Speaker": "Ilka Thrum",
+    "Text": "One in, two out. Written down. The wells pay better than I do.",
+    "Next": "Ilka_Tended",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Corin_Trade",
+    "Npc": "CorinHalfSeen",
+    "Speaker": "Corin Half-Seen",
+    "Text": "Bone for bone. That is fair. I am told I used to haggle.",
+    "Next": "Corin_Gatekeeper",
+    "Entry": 0,
+    "RequireFlags": [],
     "ForbidFlags": [],
     "SetFlags": [],
     "Choices": []

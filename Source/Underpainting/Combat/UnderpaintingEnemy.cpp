@@ -121,10 +121,47 @@ void AUnderpaintingEnemy::MoveTowards(const FVector& Location)
 {
 	FVector Direction = Location - GetActorLocation();
 	Direction.Z = 0.0f;
-	if (!Direction.IsNearlyZero())
+	if (Direction.IsNearlyZero())
 	{
-		AddMovementInput(Direction.GetSafeNormal(), 1.0f);
+		return;
 	}
+	Direction.Normalize();
+
+	// No path-finding: it feels ahead, and if something solid is in the way it goes round on one side and
+	// keeps to that side for a moment so it does not dither. Enough for pillars, trunks and corners.
+	const auto IsBlocked = [this](const FVector& Way)
+	{
+		FHitResult Hit;
+		FCollisionQueryParams Params(SCENE_QUERY_STAT(EnemyFeeler), false, this);
+		const FVector Start = GetActorLocation() + FVector(0.0f, 0.0f, 20.0f);
+		const bool bHit = GetWorld()->SweepSingleByChannel(Hit, Start, Start + Way * 110.0f, FQuat::Identity, ECC_WorldStatic, FCollisionShape::MakeSphere(45.0f), Params);
+		return bHit && !Cast<APawn>(Hit.GetActor());        // other creatures and the player are not walls
+	};
+
+	const float Now = GetWorld()->GetTimeSeconds();
+	if (IsBlocked(Direction))
+	{
+		for (const float Angle : { 50.0f, 85.0f, 120.0f })
+		{
+			for (const float Sign : { AvoidSign, -AvoidSign })
+			{
+				// Having picked a side, stay on it until the moment has passed.
+				if (Sign != AvoidSign && Now < AvoidUntil)
+				{
+					continue;
+				}
+				const FVector Way = Direction.RotateAngleAxis(Sign * Angle, FVector::UpVector);
+				if (!IsBlocked(Way))
+				{
+					AvoidSign = Sign;
+					AvoidUntil = Now + 0.8f;
+					AddMovementInput(Way, 1.0f);
+					return;
+				}
+			}
+		}
+	}
+	AddMovementInput(Direction, 1.0f);
 }
 
 int32 AUnderpaintingEnemy::ChooseAttack(float DistanceToTarget) const

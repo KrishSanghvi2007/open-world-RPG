@@ -617,11 +617,23 @@ FName UUnderpaintingProgress::ChooseDialogue(FName RowId, int32 ChoiceIndex)
 	const FDialogueChoice& Choice = Row->Choices[ChoiceIndex];
 	for (const FName& Flag : Choice.SetFlags)
 	{
-		// "Give.<Item>" hands one of that item over instead of setting a flag (the mirror of "Has.<Item>").
-		const FString Whole = Flag.ToString();
-		if (Whole.StartsWith(TEXT("Give.")))
+		// "Give.<Id>[.<n>]" hands over that many of an item or pigment, and "Get.<Id>[.<n>]" receives them, instead of
+		// setting a flag. Together they make a trade (the mirror of "Has.<Id>", which gates the reply).
+		TArray<FString> Parts;
+		Flag.ToString().ParseIntoArray(Parts, TEXT("."));
+		if (Parts.Num() >= 2 && (Parts[0] == TEXT("Give") || Parts[0] == TEXT("Get")))
 		{
-			RemoveItem(FName(*Whole.RightChop(5)), 1);
+			const FName Id(*Parts[1]);
+			const int32 Count = Parts.Num() >= 3 ? FMath::Max(1, FCString::Atoi(*Parts[2])) : 1;
+			const bool bGive = Parts[0] == TEXT("Give");
+			if (IsPigment(Id))
+			{
+				if (bGive) { SpendPigment(Id, Count); } else { AddPigment(Id, Count, true); }
+			}
+			else
+			{
+				if (bGive) { RemoveItem(Id, Count); } else { AddItem(Id, Count); }
+			}
 			continue;
 		}
 		Data.Flags.AddUnique(Flag);
