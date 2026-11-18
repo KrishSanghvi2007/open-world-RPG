@@ -158,17 +158,42 @@ def cylinder(name, base, radius, height, colour, folder="Geometry", collide=True
                        collide=collide, tags=tags)
 
 
+_label_material = None
+
+
+def label_material():
+    """Text that is drawn on its front only. The engine's text materials are two-sided, so from behind a label
+    reads mirrored; with this, labels are placed back to back and each side reads the right way round."""
+    global _label_material
+    if _label_material is None:
+        path = MAT_DIR + "/MI_GreyboxLabel"
+        if eal.does_asset_exist(path):
+            _label_material = eal.load_asset(path)
+        else:
+            mi = asset_tools.create_asset("MI_GreyboxLabel", MAT_DIR, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
+            mel.set_material_instance_parent(mi, unreal.load_asset("/Engine/EngineMaterials/UnlitText"))
+            overrides = mi.get_editor_property("base_property_overrides")
+            overrides.set_editor_property("override_two_sided", True)
+            overrides.set_editor_property("two_sided", False)
+            mi.set_editor_property("base_property_overrides", overrides)
+            mel.update_material_instance(mi)
+            eal.save_asset(path)
+            _label_material = mi
+    return _label_material
+
+
 def label(text, pos, folder, size=60.0, colour="#2E2E30"):
-    actor = actors.spawn_actor_from_class(unreal.TextRenderActor, v(pos), unreal.Rotator(roll=0.0, pitch=0.0, yaw=Zone.label_yaw))
-    comp = actor.text_render
-    comp.set_text(text)
-    comp.set_world_size(size)
-    comp.set_horizontal_alignment(unreal.HorizTextAligment.EHTA_CENTER)
     h = colour.lstrip("#")
-    comp.set_text_render_color(unreal.Color(r=int(h[0:2], 16), g=int(h[2:4], 16), b=int(h[4:6], 16), a=255))
-    actor.set_actor_label("Label_" + text.replace(" ", "_")[:40])
-    actor.set_folder_path(folder)
-    return actor
+    for side, yaw in (("Front", Zone.label_yaw), ("Back", Zone.label_yaw + 180.0)):
+        actor = actors.spawn_actor_from_class(unreal.TextRenderActor, v(pos), unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw))
+        comp = actor.text_render
+        comp.set_text_material(label_material())
+        comp.set_text(text)
+        comp.set_world_size(size)
+        comp.set_horizontal_alignment(unreal.HorizTextAligment.EHTA_CENTER)
+        comp.set_text_render_color(unreal.Color(r=int(h[0:2], 16), g=int(h[2:4], 16), b=int(h[4:6], 16), a=255))
+        actor.set_actor_label("Label_%s_%s" % (text.replace(" ", "_")[:40], side))
+        actor.set_folder_path(folder)
 
 
 MARKER_STYLES = {
@@ -269,7 +294,7 @@ def begin_level(name):
     if eal.does_asset_exist(path):
         levels.load_level(path)
         for actor in actors.get_all_level_actors():
-            if not isinstance(actor, (unreal.WorldSettings, unreal.Brush)) or isinstance(actor, unreal.Volume):
+            if not isinstance(actor, unreal.WorldSettings) and actor.get_class().get_name() != "Brush":
                 actors.destroy_actor(actor)
     else:
         levels.new_level(path)
@@ -574,4 +599,4 @@ def build_all():
 
 
 if __name__ == "__main__":
-    build_all()
+    print(build_all() or "no problems")
