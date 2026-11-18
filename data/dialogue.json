@@ -1033,5 +1033,147 @@
     "ForbidFlags": [],
     "SetFlags": [],
     "Choices": []
+  },
+  {
+    "Name": "Bartram_Grind_Ask",
+    "Npc": "BartramSedge",
+    "Speaker": "Bartram Sedge",
+    "Text": "Limner, a notion. The Hem's flaking for want of light, and a white wall throws back what it's given. Ceruse is the whitest thing there is. Three measures would do the first wall, and I'd pay you fair.",
+    "Next": "",
+    "Entry": 20,
+    "RequireFlags": [
+      "Q.MQ_DuskOnTheShoulder.Done"
+    ],
+    "ForbidFlags": [
+      "Q.SQ_AFairGrind.Active",
+      "Q.SQ_AFairGrind.Done"
+    ],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "I'll see what I can bring.",
+        "Next": "Bartram_Grind_Yes",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": "SQ_AFairGrind"
+      },
+      {
+        "Label": "Ceruse is lead.",
+        "Next": "Bartram_Grind_Lead",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "Something else, Bartram.",
+        "Next": "Bartram_Hello",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Bartram_Grind_Lead",
+    "Npc": "BartramSedge",
+    "Speaker": "Bartram Sedge",
+    "Text": "It is. I know it is, I grind the stuff. My sister's children sleep against that wall. I've told myself the dark is worse. Most days I believe it. There's a limewash of Ochre would do instead: four measures, half the light, and nobody coughing.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "I'll see what I can bring.",
+        "Next": "Bartram_Grind_Yes",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": "SQ_AFairGrind"
+      },
+      {
+        "Label": "Let me think.",
+        "Next": "",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Bartram_Grind_Yes",
+    "Npc": "BartramSedge",
+    "Speaker": "Bartram Sedge",
+    "Text": "Good. Good! Three Ceruse off the Blotters, or four Ochre if you've gone soft on me. The first wall's by the ramp down into the Hem. I'll meet you at it.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Bartram_Grind_Waiting",
+    "Npc": "BartramSedge",
+    "Speaker": "Bartram Sedge",
+    "Text": "The wall by the ramp, in the Hem. Three Ceruse or four Ochre. I've the brushes soaking.",
+    "Next": "",
+    "Entry": 30,
+    "RequireFlags": [
+      "Q.SQ_AFairGrind.Active"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "I'll go and look at it.",
+        "Next": "",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "Something else, Bartram.",
+        "Next": "Bartram_Hello",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Bartram_Grind_White",
+    "Npc": "BartramSedge",
+    "Speaker": "Bartram Sedge",
+    "Text": "Look at it! You could read by that wall. We'll keep the little ones off it. We will. I've said so.",
+    "Next": "Bartram_Hello",
+    "Entry": 60,
+    "RequireFlags": [
+      "Hem_CeruseWash"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Bartram_Grind_Cream",
+    "Npc": "BartramSedge",
+    "Speaker": "Bartram Sedge",
+    "Text": "Cream. It's a perfectly good cream. It'll do half the job at twice the labour and nobody will thank you. ...My sister did. Take your flasks.",
+    "Next": "Bartram_Hello",
+    "Entry": 60,
+    "RequireFlags": [
+      "Hem_OchreWash"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
   }
 ]

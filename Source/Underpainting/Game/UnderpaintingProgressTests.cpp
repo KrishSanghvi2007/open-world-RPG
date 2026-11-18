@@ -339,6 +339,21 @@ bool FUnderpaintingChoiceTest::RunTest(const FString& Parameters)
 		TestFalse(TEXT("A trade is not remembered as a flag"), Tend->HasFlag(TEXT("Give.Sanguine")));
 	}
 
+	// A Fair Grind: the kinder wash costs Ochre and Bartram pays in flasks; the white one marks the Hem's families for Act 2.
+	UUnderpaintingProgress* Grind = MakeProgress(*this);
+	FinishFirstQuest(Grind);
+	TestEqual(TEXT("With the lamp lit, Bartram has a notion"), Grind->FindDialogueEntry(TEXT("BartramSedge")), FName(TEXT("Bartram_Grind_Ask")));
+	TestEqual(TEXT("Saying yes starts the quest"), Grind->ChooseDialogue(TEXT("Bartram_Grind_Ask"), 0), FName(TEXT("Bartram_Grind_Yes")));
+	Grind->EndDialogue(TEXT("BartramSedge"));
+	Grind->EndDialogue(TEXT("BartramSedge"));
+	TestTrue(TEXT("Two talks later the wall waits"), Grind->IsAwaitingChoice(TEXT("SQ_AFairGrind")));
+	Grind->AddPigment(TEXT("Ochre"), 4, false);
+	TestFalse(TEXT("No Ceruse, no white wall"), Grind->CanChoose(TEXT("SQ_AFairGrind"), TEXT("SellCeruse"), &Why));
+	TestTrue(TEXT("The Ochre wash"), Grind->MakeChoice(TEXT("SQ_AFairGrind"), TEXT("TeachOchreWash")));
+	TestEqual(TEXT("Bartram pays in flasks"), Grind->GetItemCount(TEXT("FixativeFlask")), 2);
+	TestFalse(TEXT("Nobody gets sick"), Grind->HasFlag(TEXT("Village_LeadSickness")));
+	TestEqual(TEXT("He grumbles about cream"), Grind->FindDialogueEntry(TEXT("BartramSedge")), FName(TEXT("Bartram_Grind_Cream")));
+
 	// Flags the game provides by itself.
 	TestTrue(TEXT("Has.<pigment>"), Heart->HasFlag(TEXT("Has.Ceruse")));
 	TestFalse(TEXT("Has.<item> not carried"), Heart->HasFlag(TEXT("Has.OdilesLantern")));

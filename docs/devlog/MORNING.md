@@ -87,6 +87,7 @@ Only hands can judge these. The question to answer is in italics.
 - The ramp out of the Vault's gallery pit ended against a wall.
 - A lip of up to 0.9 m on every ramp of the Stair of Spines.
 - Odile's lantern stayed in your pack after you gave it to Hesper. It is handed over now.
+- Ending a conversation was counted twice, so a quest with two "talk to them" steps in a row skipped one.
 - Floating name labels showed for people and caches that were not there (Corin's other selves, his hidden cache).
 
 **Rough**
@@ -95,7 +96,7 @@ Only hands can judge these. The question to answer is in italics.
 - The Turning is words on black.
 - Only the satchel has the paper look. Dialogue, crafting, the palette and the fighting HUD are plain panels.
 - Trading is in for Ilka (1 Sanguine for 2 Terre Verte, if you dressed the wells) and Corin (1 Rib Splinter for 1 Bone Black, if he guards the gate). Checked by automated test, not in play.
-- "A Fair Grind", the stretch quest, is not built.
+- "A Fair Grind" (Bartram's whitewash) is playable: talk to Bartram after the first quest, then decide at the pale panel on the first house in the Hem, by the ramp. Its promised effects on the Hem's light and the flax press are not built; the choice is recorded for Act 2.
 - Three small attunement effects are missing (devlog 008).
 - Moving, looking and jumping cannot be rebound.
 
@@ -105,7 +106,7 @@ Only hands can judge these. The question to answer is in italics.
 
 ## Open questions (with what Claude chose)
 
-All 36 are in `docs/QUESTIONS.md` with the alternatives. The ones most worth your eye:
+All 39 are in `docs/QUESTIONS.md` with the alternatives. The ones most worth your eye:
 
 - **6. The story's central truth:** the Limner is the god's own unfinished self-portrait.
 - **23. You can leave the Vault without Odile's lantern.** Hesper then gets a plainer ending.

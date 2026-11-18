@@ -63,12 +63,7 @@ void AUnderpaintingHUD::ShowDialogueRow(FName RowId)
 	UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
 	if (!Progress || RowId.IsNone() || !Progress->GetDialogueRow(RowId))
 	{
-		const FName Npc = DialogueNpc;
-		CloseMenu();
-		if (Progress && !Npc.IsNone())
-		{
-			Progress->EndDialogue(Npc);
-		}
+		CloseMenu();        // closing a conversation is what counts it as had (once)
 		return;
 	}
 	DialogueRow = RowId;

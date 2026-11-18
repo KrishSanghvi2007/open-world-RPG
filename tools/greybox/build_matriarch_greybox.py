@@ -596,6 +596,9 @@ def build_village(shifted=False):
         marker("Note", "LowerGate", "Lower gate (appears after the shift)", (0, -37, 0))
         marker("Note", "HemFlaking", "The Hem: paint starting to flake", (-17, -22, 0))
 
+    # A Fair Grind: the first wall of the Hem, by the ramp. It takes the colour Bartram is given, for good.
+    choice_point("SQ_AFairGrind", "the first wall of the Hem", (27, -27.85, 1.5), yaw=90.0, size=(0.1, 2.6, 2.8))
+
     # Things to read, and the named places.
     lore("Odile_01", (3.0, -36.5, 0), yaw=90.0)
     lore("Ledger_Hesper", (1.6, 3.4, 4), yaw=200.0)

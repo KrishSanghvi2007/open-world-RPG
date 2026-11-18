@@ -66,6 +66,8 @@ def talk(pawn, reply=1):
             break
         print("    line:", pawn.describe_state().split("row=")[1].split(" ")[0])
         pawn.menu_number(replies[min(line, len(replies) - 1)])
+        if "menu=1 " not in pawn.describe_state():
+            break        # that reply ended the conversation; pressing Use again would start it over
         pawn.interact()
 
 
@@ -205,6 +207,14 @@ def main(args):
         pawn.dev_grant(unreal.Name("TerreVerte"), 3); pawn.dev_grant(unreal.Name("BoneBlack"), 3)
         goto(world, pawn, "Choice", "SQ_TheUnseenSide"); pawn.interact(); say(pawn, "at his back")
         pawn.menu_number(int(args[1]) if len(args) > 1 else 3); pawn.menu_number(1); say(pawn, "decided")
+    elif command == "grind":
+        # grind <ending 1-2>: A Fair Grind in the village, after the first quest (1 Ceruse, 2 Ochre).
+        goto(world, pawn, "NPC", "BartramSedge"); talk(pawn, 1); say(pawn, "took the quest")
+        goto(world, pawn, "NPC", "BartramSedge"); talk(pawn, 1); say(pawn, "talked again")
+        pawn.dev_grant(unreal.Name("Ceruse"), 3); pawn.dev_grant(unreal.Name("Ochre"), 4)
+        goto(world, pawn, "Choice", "SQ_AFairGrind"); pawn.interact(); say(pawn, "at the wall")
+        pawn.menu_number(int(args[1]) if len(args) > 1 else 2); pawn.menu_number(1); say(pawn, "decided")
+        goto(world, pawn, "NPC", "BartramSedge"); talk(pawn, 4); say(pawn, "what Bartram says now")
     elif command == "count":
         cls = getattr(unreal, args[1])
         print(args[1], len(unreal.GameplayStatics.get_all_actors_of_class(world, cls)))
