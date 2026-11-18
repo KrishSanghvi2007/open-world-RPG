@@ -1,0 +1,203 @@
+[
+  {
+    "Name": "MQ_DuskOnTheShoulder",
+    "DisplayName": "Dusk on the Shoulder",
+    "QuestType": "Main",
+    "Act": 1,
+    "Giver": "HesperVane",
+    "Zone": "VarnishVillage",
+    "Summary": "The village Lampstand is guttering and the paint on the lower houses has begun to flake. Hesper Vane, the lampwright, teaches her new Limner the whole trade in one errand: harvest, grind, light.",
+    "Steps": [
+      "Speak to Hesper Vane at the guttering Lampstand in Varnish.",
+      "Harvest 4 Hide Ochre from the Sunward Terraces.",
+      "Take Linseed Oil from the flax press.",
+      "Craft 1 Lamp Oil at Bartram Sedge's Grinding Slab.",
+      "Pour the Lamp Oil into the Lampstand to relight it.",
+      "Rest at the Lampstand and attune Warm Ground (Ochre, tier 1).",
+      "Receive the Pilot Lantern from Hesper."
+    ],
+    "Prerequisites": [],
+    "Choices": [],
+    "RewardItems": [
+      { "Id": "PilotLantern", "Count": 1 },
+      { "Id": "MossPoultice", "Count": 3 }
+    ],
+    "RewardPigments": [],
+    "RewardNotes": "Unlocks Recipe_MossPoultice, Recipe_Mahlstick, Recipe_MossCloak and Recipe_BraidedWick. Opens the gate to the Scumblewood."
+  },
+  {
+    "Name": "MQ_ColdUnderTheRibs",
+    "DisplayName": "Cold Under the Ribs",
+    "QuestType": "Main",
+    "Act": 1,
+    "Giver": "HesperVane",
+    "Zone": "GrisailleVault",
+    "Summary": "The Matriarch is shivering in her sleep. Something inside her ribs is drinking her warmth. Go down her spine, enter the Grisaille Vault, and put it right. What you paint over the wound decides how she wakes.",
+    "Steps": [
+      "Descend through the Scumblewood to the Rib Gate.",
+      "Light the Rib Gate Lampstand.",
+      "Enter the Grisaille Vault.",
+      "Cross the Cartoon Gallery by flaring the lantern to make sketched platforms solid.",
+      "Defeat Old Palimpsest at the Heart.",
+      "Fill the blank patch it scraped into the Heart wall, or leave it bare.",
+      "Hold on through the Turning as the Matriarch stirs.",
+      "Climb the new Stair of Spines back to Varnish and speak to Hesper."
+    ],
+    "Prerequisites": ["MQ_DuskOnTheShoulder"],
+    "Choices": [
+      {
+        "ChoiceId": "FillSanguine",
+        "Label": "Paint the wound with Sanguine",
+        "CostPigment": "Sanguine",
+        "CostAmount": 5,
+        "Consequence": "Her blood runs hot. After the shift, blood wells in the Scumblewood yield +1 Sanguine each, and 2 extra Madderbacks spawn there. The Heart wall is finished in red and will hold in the dark in later acts.",
+        "WorldFlags": ["Heart_Sanguine", "Scumblewood_MadderbackPlus2", "Scumblewood_SanguineYieldPlus1"]
+      },
+      {
+        "ChoiceId": "FillTerreVerte",
+        "Label": "Paint the wound with Terre Verte",
+        "CostPigment": "TerreVerte",
+        "CostAmount": 5,
+        "Consequence": "Moss thickens along her spine. After the shift, the Scumblewood's ambient light is 0.55 instead of 0.4 and 2 fewer Blotters spawn there. The Heart wall is finished in green and will hold in the dark in later acts.",
+        "WorldFlags": ["Heart_TerreVerte", "Scumblewood_LightPlus015", "Scumblewood_BlotterMinus2"]
+      },
+      {
+        "ChoiceId": "LeaveBlank",
+        "Label": "Leave the wound bare",
+        "CostPigment": "",
+        "CostAmount": 0,
+        "Consequence": "You keep your pigment and scrape 4 Ceruse from the scar. The Heart wall stays unfinished: nothing changes now, but an unfinished thing does not survive the dark, and Act 2 will remember.",
+        "WorldFlags": ["Heart_Blank"]
+      }
+    ],
+    "RewardItems": [
+      { "Id": "LampOil", "Count": 2 }
+    ],
+    "RewardPigments": [
+      { "Id": "SlumberBlue", "Count": 2 }
+    ],
+    "RewardNotes": "LeaveBlank also grants 4 Ceruse. Completing this quest triggers the region shift (the Turning) and ends the vertical slice."
+  },
+  {
+    "Name": "SQ_TheUnseenSide",
+    "DisplayName": "The Unseen Side",
+    "QuestType": "Side",
+    "Act": 1,
+    "Giver": "CorinHalfSeen",
+    "Zone": "Scumblewood",
+    "Summary": "Corin was painted from the front only. His back is bare sketch, so he has spent his life facing the sun and walking backwards. He asks you to finish him, and the colour you choose is the man he becomes.",
+    "Steps": [
+      "Meet Corin Half-Seen at the Sunward Clearing in the Scumblewood.",
+      "Walk around him and see his unpainted side.",
+      "Bring 3 of one pigment, or decide to leave him as he is.",
+      "Paint his back, or tell him you will not."
+    ],
+    "Prerequisites": ["MQ_DuskOnTheShoulder"],
+    "Choices": [
+      {
+        "ChoiceId": "FinishTerreVerte",
+        "Label": "Finish him in Terre Verte",
+        "CostPigment": "TerreVerte",
+        "CostAmount": 3,
+        "Consequence": "Corin becomes the wood's warden. Terre Verte nodes in the Scumblewood yield +1. After the shift he waits at the foot of the Stair of Spines and points the way to the Nape Overlook.",
+        "WorldFlags": ["Corin_Warden", "Scumblewood_TerreVerteYieldPlus1"]
+      },
+      {
+        "ChoiceId": "FinishBoneBlack",
+        "Label": "Finish him in Bone Black",
+        "CostPigment": "BoneBlack",
+        "CostAmount": 3,
+        "Consequence": "Corin becomes grave and unmovable. He walks to Varnish and stands guard at the Hem. After the shift, no Blotters spawn in the village, and he trades 1 Rib Splinter for 1 Bone Black.",
+        "WorldFlags": ["Corin_Gatekeeper", "Village_HemGuarded"]
+      },
+      {
+        "ChoiceId": "LeaveUnfinished",
+        "Label": "Leave him as he is",
+        "CostPigment": "",
+        "CostAmount": 0,
+        "Consequence": "Only an unfinished man can see the sketch under the paint. Corin shows you a pentimento trail to a hidden cache of 2 Slumber Blue. He stays where he is, still facing the sun.",
+        "WorldFlags": ["Corin_Unfinished", "Scumblewood_PentimentoCacheRevealed"]
+      }
+    ],
+    "RewardItems": [
+      { "Id": "ShedHide", "Count": 2 }
+    ],
+    "RewardPigments": [],
+    "RewardNotes": "LeaveUnfinished also grants 2 Slumber Blue from the cache. This quest is the clearest statement of the game's idea: finishing something costs the same pigment you would have spent on yourself."
+  },
+  {
+    "Name": "SQ_TickWardensLedger",
+    "DisplayName": "The Tick-Warden's Ledger",
+    "QuestType": "Side",
+    "Act": 1,
+    "Giver": "IlkaThrum",
+    "Zone": "Scumblewood",
+    "Summary": "Ilka Thrum counts Madderbacks for a living, and the count is climbing. The village wants the brood nest burned. Ilka's ledger says the blood wells only stay open because the ticks bite. No ticks, no Sanguine.",
+    "Steps": [
+      "Meet Ilka Thrum at the First Well in the Scumblewood.",
+      "Inspect the 3 blood wells and read what Ilka has chalked beside each.",
+      "Find the brood nest in the Hollow Vertebra.",
+      "Burn the nest, or dress the 3 wells with Terre Verte so they stay open and clean."
+    ],
+    "Prerequisites": ["MQ_DuskOnTheShoulder"],
+    "Choices": [
+      {
+        "ChoiceId": "BurnNest",
+        "Label": "Burn the brood nest",
+        "CostPigment": "",
+        "CostAmount": 0,
+        "Consequence": "Madderback numbers in the Scumblewood are halved, making the wood much safer. Without fresh bites the blood wells begin to scab: each yields 1 Sanguine instead of 2. Ilka closes her ledger.",
+        "WorldFlags": ["Ticks_Culled", "Scumblewood_MadderbackHalved", "Scumblewood_SanguineYieldMinus1"]
+      },
+      {
+        "ChoiceId": "TendWells",
+        "Label": "Dress the wells and leave the nest",
+        "CostPigment": "TerreVerte",
+        "CostAmount": 3,
+        "Consequence": "Madderback numbers are unchanged. The wells run clean: each yields 3 Sanguine instead of 2. Ilka starts trading, 1 Sanguine for 2 Terre Verte.",
+        "WorldFlags": ["Ticks_Tended", "Scumblewood_SanguineYieldPlus1", "Ilka_Trades"]
+      }
+    ],
+    "RewardItems": [
+      { "Id": "TickChitin", "Count": 2 }
+    ],
+    "RewardPigments": [],
+    "RewardNotes": "Either outcome unlocks Recipe_ChitinJerkin."
+  },
+  {
+    "Name": "SQ_AFairGrind",
+    "DisplayName": "A Fair Grind",
+    "QuestType": "Side",
+    "Act": 1,
+    "Giver": "BartramSedge",
+    "Zone": "VarnishVillage",
+    "Summary": "Bartram Sedge, the colourman, wants to whitewash the Hem, the lowest terrace of Varnish, so its walls throw back what light is left. Ceruse is the brightest white there is. It is also poison, and he knows it.",
+    "Steps": [
+      "Speak to Bartram Sedge at the Grinding Slab after relighting the Lampstand.",
+      "Bring him 3 Ceruse taken from Blotters, or 4 Hide Ochre for a slower limewash.",
+      "Hand over the pigment and watch the first wall go up."
+    ],
+    "Prerequisites": ["MQ_DuskOnTheShoulder"],
+    "Choices": [
+      {
+        "ChoiceId": "SellCeruse",
+        "Label": "Give him the Ceruse",
+        "CostPigment": "Ceruse",
+        "CostAmount": 3,
+        "Consequence": "The Hem is painted brilliant white. After the shift its ambient light is +0.25 above the village level. The flax press gives 6 Linseed Oil per rest instead of 4. In Act 2 the Hem's families will be sick with the lead.",
+        "WorldFlags": ["Hem_CeruseWash", "Village_HemLightPlus025", "Village_LeadSickness"]
+      },
+      {
+        "ChoiceId": "TeachOchreWash",
+        "Label": "Give him Ochre and talk him out of it",
+        "CostPigment": "Ochre",
+        "CostAmount": 4,
+        "Consequence": "The Hem is washed a warm cream. After the shift its ambient light is +0.1 above the village level. Nobody gets sick. Bartram grumbles and gives you 2 Fixative Flasks from his own shelf.",
+        "WorldFlags": ["Hem_OchreWash", "Village_HemLightPlus010"]
+      }
+    ],
+    "RewardItems": [],
+    "RewardPigments": [],
+    "RewardNotes": "Either outcome unlocks Recipe_FixativeFlask. TeachOchreWash also grants 2 FixativeFlask. This is the first quest to cut if the slice runs long."
+  }
+]

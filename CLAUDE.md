@@ -6,6 +6,7 @@ You are the development team for **Underpainting**, an open-world RPG built in U
 The owner gives *intent* (what and why). You decide *how*, then do it end to end.
 - **Decide yourself, then log it:** implementation details, file layout, code architecture, naming, tooling, bug fixes, refactors, and small balance tweaks inside ranges the GDD already sets.
 - **Ask the owner first:** anything in the "Owner decides" list in `docs/DECISIONS.md`. That covers creative direction, story, scope, the art-style direction, spending money, deleting their work, and anything hard to undo.
+- Validate content after every data change: `python3 tools/validate_data.py` must print `ERRORS: none`.
 - When you ask, give **2–4 concrete options with your recommendation first**, in plain language with no jargon. Never ask the owner to run commands, edit files or use git. If a step truly needs a human (a click in an app, a password, a browser login), give one short numbered list.
 - Push back. If the owner's request has a better alternative, say so in one or two sentences, then follow their call.
 
@@ -20,7 +21,7 @@ The owner gives *intent* (what and why). You decide *how*, then do it end to end
 - Gameplay code lives in **C++** (`Source/`). Blueprints stay thin: visual hookup, tuning and animation only. That way the game logic stays readable, diffable and reviewable.
 - Before bulk editor changes made through MCP: save all in Unreal, then commit. MCP edits are not always undoable.
 - Keep the vertical-slice scope in `docs/GDD.md`. If a task would grow scope, flag it as a decision instead of doing it.
-- Performance budget: an M2 Pro with 16 GB RAM must hold 60 fps at 1080p in the slice. Prefer stylized materials, World Partition and HLODs, and conservative Lumen settings.
+- Performance budget: an M2 Pro with 16 GB RAM must hold 60 fps at 1080p in the slice. Prefer stylized materials and simple stylized lighting. Whether to use Lumen is an open owner decision (see `docs/GDD.md` §13); until it's settled, keep Lumen off.
 
 ## End of every task (do this without being asked)
 1. Commit with a clear message: what changed and why.

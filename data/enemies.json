@@ -1,0 +1,115 @@
+[
+  {
+    "Name": "Blotter",
+    "DisplayName": "Blotter",
+    "Family": "Erasure",
+    "Tier": "Standard",
+    "Zones": ["Scumblewood", "GrisailleVault"],
+    "Hue": "White",
+    "MaxHP": 60,
+    "Poise": 30,
+    "MoveSpeed": 300,
+    "AggroRadius": 12.0,
+    "LeashRadius": 30.0,
+    "GlimOnKill": 10,
+    "Weaknesses": ["BoneBlack"],
+    "Resistances": ["Ceruse"],
+    "Phase2HPPercent": 0,
+    "Phase2Hue": "",
+    "Attacks": [
+      { "AttackName": "Dab", "Phase": 1, "Windup": 0.6, "Active": 0.2, "Recovery": 0.8, "Damage": 14, "Telegraph": "WarmRim", "Notes": "Single forward poke with a rag-wrapped arm. The basic test of a dodge." },
+      { "AttackName": "Wipe", "Phase": 1, "Windup": 0.9, "Active": 0.3, "Recovery": 1.0, "Damage": 20, "Telegraph": "WarmRim", "Notes": "Wide horizontal sweep, 2.5 m. Dodge through it, not away." },
+      { "AttackName": "SmearLunge", "Phase": 1, "Windup": 1.1, "Active": 0.35, "Recovery": 1.3, "Damage": 26, "Telegraph": "WarmRim", "Notes": "5 m lunge. On hit it also drains 10 Glim. Long recovery is the punish window." }
+    ],
+    "Drops": [
+      { "Id": "Ceruse", "Count": 1, "Chance": 0.6 }
+    ],
+    "BehaviourNotes": "A tall, colourless figure that dabs the world away with cloth arms. The only pure-white thing on screen. Drawn to dim places: it will not enter light of 0.75 or more, and inside a lantern Flare its recoveries are 0.3 s longer. Wherever one idles, the ground under it slowly fades to bare canvas (visual only). Never more than 3 attack the player at once."
+  },
+  {
+    "Name": "Madderback",
+    "DisplayName": "Madderback",
+    "Family": "Parasite",
+    "Tier": "Standard",
+    "Zones": ["Scumblewood"],
+    "Hue": "Red",
+    "MaxHP": 90,
+    "Poise": 50,
+    "MoveSpeed": 380,
+    "AggroRadius": 10.0,
+    "LeashRadius": 20.0,
+    "GlimOnKill": 0,
+    "Weaknesses": ["TerreVerte"],
+    "Resistances": ["Sanguine"],
+    "Phase2HPPercent": 0,
+    "Phase2Hue": "",
+    "Attacks": [
+      { "AttackName": "ProboscisJab", "Phase": 1, "Windup": 0.7, "Active": 0.2, "Recovery": 0.9, "Damage": 18, "Telegraph": "WarmRim", "Notes": "On hit, the Madderback heals itself 10 HP." },
+      { "AttackName": "GoreCharge", "Phase": 1, "Windup": 1.0, "Active": 0.6, "Recovery": 1.4, "Damage": 28, "Telegraph": "WarmRim", "Notes": "Paws the ground, then charges 8 m in a straight line. If it hits a tree or bone spur it is stuck for 2.0 s." },
+      { "AttackName": "BloatBurst", "Phase": 1, "Windup": 1.5, "Active": 0.3, "Recovery": 2.0, "Damage": 30, "Telegraph": "WhiteFlash", "Notes": "Only used below 30% HP. Swells, then bursts in a 3 m radius. Must be dodged or outrun; cannot be Erased." }
+    ],
+    "Drops": [
+      { "Id": "Sanguine", "Count": 1, "Chance": 0.5 },
+      { "Id": "TickChitin", "Count": 1, "Chance": 0.7 }
+    ],
+    "BehaviourNotes": "A boar-sized tick, swollen deep red with the Matriarch's blood. Territorial rather than hostile: it guards a blood well and gives up the chase at 20 m. Not an Erasure and not evil. Its bites keep the blood wells open, so the Sanguine supply depends on it (see SQ_TickWardensLedger)."
+  },
+  {
+    "Name": "Pentiment",
+    "DisplayName": "Pentiment",
+    "Family": "Draft",
+    "Tier": "Standard",
+    "Zones": ["GrisailleVault"],
+    "Hue": "Blue",
+    "MaxHP": 75,
+    "Poise": 35,
+    "MoveSpeed": 340,
+    "AggroRadius": 14.0,
+    "LeashRadius": 40.0,
+    "GlimOnKill": 0,
+    "Weaknesses": ["Ochre"],
+    "Resistances": ["SlumberBlue"],
+    "Phase2HPPercent": 0,
+    "Phase2Hue": "",
+    "Attacks": [
+      { "AttackName": "DrawnThrust", "Phase": 1, "Windup": 0.8, "Active": 0.2, "Recovery": 0.9, "Damage": 20, "Telegraph": "WarmRim", "Notes": "Spear thrust, 3 m reach. The spear is a single drawn line that thickens during the wind-up." },
+      { "AttackName": "ContourSweep", "Phase": 1, "Windup": 1.0, "Active": 0.3, "Recovery": 1.1, "Damage": 24, "Telegraph": "WarmRim", "Notes": "Full 360-degree sweep. Punishes circling behind it." },
+      { "AttackName": "Redraw", "Phase": 1, "Windup": 1.2, "Active": 0.25, "Recovery": 1.2, "Damage": 28, "Telegraph": "WarmRim", "Notes": "Fades to an outline, then redraws itself up to 6 m away along a floor line and strikes. A lantern Flare during the wind-up cancels it and staggers the Pentiment for 2.0 s." }
+    ],
+    "Drops": [
+      { "Id": "GraphiteShard", "Count": 1, "Chance": 0.8 },
+      { "Id": "SlumberBlue", "Count": 1, "Chance": 0.25 }
+    ],
+    "BehaviourNotes": "An earlier draft of a person that the god drew, disliked and painted over. Blue-grey line figure with a drawn spear. Stands motionless as part of the wall drawings until the player comes within 14 m. Patient: it waits for the player to commit before attacking. It is not fixed, so light unsettles it."
+  },
+  {
+    "Name": "ThePalimpsest",
+    "DisplayName": "Old Palimpsest, the Scraped One",
+    "Family": "Erasure",
+    "Tier": "Boss",
+    "Zones": ["GrisailleVault"],
+    "Hue": "White",
+    "MaxHP": 600,
+    "Poise": 120,
+    "MoveSpeed": 260,
+    "AggroRadius": 40.0,
+    "LeashRadius": 40.0,
+    "GlimOnKill": 100,
+    "Weaknesses": ["BoneBlack", "TerreVerte"],
+    "Resistances": ["Ceruse", "Sanguine"],
+    "Phase2HPPercent": 50,
+    "Phase2Hue": "Red",
+    "Attacks": [
+      { "AttackName": "LongWipe", "Phase": 1, "Windup": 1.1, "Active": 0.4, "Recovery": 1.2, "Damage": 28, "Telegraph": "WarmRim", "Notes": "Huge horizontal sweep, 5 m. Dodge toward the boss." },
+      { "AttackName": "BlottingSlam", "Phase": 1, "Windup": 1.3, "Active": 0.3, "Recovery": 1.5, "Damage": 36, "Telegraph": "WarmRim", "Notes": "Both arms overhead, 4 m area. The best punish window in phase 1." },
+      { "AttackName": "ScrapeLine", "Phase": 1, "Windup": 1.0, "Active": 0.5, "Recovery": 1.0, "Damage": 24, "Telegraph": "WarmRim", "Notes": "Drags a claw along the floor and sends a line of nothing 15 m forward. It is a projectile: the Erase stroke deletes it. The floor strip stays blank and harmful (5 damage per second) for 6 s." },
+      { "AttackName": "HeartbloodFlail", "Phase": 2, "Windup": 0.9, "Active": 0.25, "Recovery": 1.8, "Damage": 18, "Telegraph": "WarmRim", "Notes": "Three swings, 0.4 s apart, 18 damage each. The 1.8 s recovery comes after the third. Teaches the player to count." },
+      { "AttackName": "Unmake", "Phase": 2, "Windup": 1.6, "Active": 0.3, "Recovery": 2.2, "Damage": 45, "Telegraph": "WhiteFlash", "Notes": "Grab. Also drains 30 Glim. Cannot be Erased; must be dodged. Longest wind-up and longest recovery in the slice." }
+    ],
+    "Drops": [
+      { "Id": "Ceruse", "Count": 4, "Chance": 1.0 },
+      { "Id": "SlumberBlue", "Count": 2, "Chance": 1.0 }
+    ],
+    "BehaviourNotes": "An Erasure that has unmade so much it wears the scraps: layers of half-rubbed faces, fields and doorways. It is curled against the Matriarch's heart, drinking the warmth. Phase 1 (100% to 50% HP) its hue is White: weak to Bone Black, resists Ceruse. At 50% it scrapes its own surface away over 2.5 s (it is vulnerable and takes +50% damage during this), exposing an underlayer soaked in her blood. Phase 2 hue is Red: weak to Terre Verte, resists Sanguine. Phase 2 keeps all phase 1 attacks and adds the two phase 2 attacks. Arena rule: the heart beats every 20 s and for 4 s the arena's ambient light is 0.5, halving Stroke costs. The fight is the exam for the Contrast system."
+  }
+]

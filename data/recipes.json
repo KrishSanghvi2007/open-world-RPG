@@ -1,0 +1,135 @@
+[
+  {
+    "Name": "Recipe_LampOil",
+    "OutputItem": "LampOil",
+    "OutputCount": 1,
+    "Inputs": [
+      { "Id": "Ochre", "Count": 1 },
+      { "Id": "LinseedOil", "Count": 1 }
+    ],
+    "Station": "GrindingSlab",
+    "UnlockType": "Start",
+    "UnlockId": "",
+    "Notes": "The first thing the player ever crafts. Taught during MQ_DuskOnTheShoulder."
+  },
+  {
+    "Name": "Recipe_MossPoultice",
+    "OutputItem": "MossPoultice",
+    "OutputCount": 2,
+    "Inputs": [
+      { "Id": "TerreVerte", "Count": 1 },
+      { "Id": "LinseedOil", "Count": 1 }
+    ],
+    "Station": "GrindingSlab",
+    "UnlockType": "Quest",
+    "UnlockId": "MQ_DuskOnTheShoulder",
+    "Notes": "Healing beyond the 2 free poultices per rest is a Terre Verte sink."
+  },
+  {
+    "Name": "Recipe_FixativeFlask",
+    "OutputItem": "FixativeFlask",
+    "OutputCount": 2,
+    "Inputs": [
+      { "Id": "Ceruse", "Count": 1 },
+      { "Id": "LinseedOil", "Count": 1 }
+    ],
+    "Station": "GrindingSlab",
+    "UnlockType": "Quest",
+    "UnlockId": "SQ_AFairGrind",
+    "Notes": "Unlocked by either outcome of the quest."
+  },
+  {
+    "Name": "Recipe_SanguineDraught",
+    "OutputItem": "SanguineDraught",
+    "OutputCount": 1,
+    "Inputs": [
+      { "Id": "Sanguine", "Count": 2 },
+      { "Id": "LinseedOil", "Count": 1 }
+    ],
+    "Station": "GrindingSlab",
+    "UnlockType": "Attunement",
+    "UnlockId": "Sanguine_T1",
+    "Notes": "You learn what a pigment can be made into by attuning to it."
+  },
+  {
+    "Name": "Recipe_BlueTincture",
+    "OutputItem": "BlueTincture",
+    "OutputCount": 1,
+    "Inputs": [
+      { "Id": "SlumberBlue", "Count": 1 },
+      { "Id": "LinseedOil", "Count": 1 }
+    ],
+    "Station": "GrindingSlab",
+    "UnlockType": "Attunement",
+    "UnlockId": "SlumberBlue_T1",
+    "Notes": "Exploration tool. Slumber Blue never regrows, so every tincture is a real decision."
+  },
+  {
+    "Name": "Recipe_Mahlstick",
+    "OutputItem": "Mahlstick",
+    "OutputCount": 1,
+    "Inputs": [
+      { "Id": "Ochre", "Count": 2 },
+      { "Id": "RibSplinter", "Count": 2 },
+      { "Id": "ShedHide", "Count": 1 }
+    ],
+    "Station": "ArmatureBench",
+    "UnlockType": "Quest",
+    "UnlockId": "MQ_DuskOnTheShoulder",
+    "Notes": ""
+  },
+  {
+    "Name": "Recipe_BoneScraper",
+    "OutputItem": "BoneScraper",
+    "OutputCount": 1,
+    "Inputs": [
+      { "Id": "BoneBlack", "Count": 4 },
+      { "Id": "RibSplinter", "Count": 3 },
+      { "Id": "GraphiteShard", "Count": 2 }
+    ],
+    "Station": "ArmatureBench",
+    "UnlockType": "Attunement",
+    "UnlockId": "BoneBlack_T1",
+    "Notes": "Needs Graphite Shards, so it cannot be finished until the player has fought Pentiments in the Grisaille Vault."
+  },
+  {
+    "Name": "Recipe_MossCloak",
+    "OutputItem": "MossCloak",
+    "OutputCount": 1,
+    "Inputs": [
+      { "Id": "TerreVerte", "Count": 4 },
+      { "Id": "ShedHide", "Count": 3 }
+    ],
+    "Station": "ArmatureBench",
+    "UnlockType": "Quest",
+    "UnlockId": "MQ_DuskOnTheShoulder",
+    "Notes": ""
+  },
+  {
+    "Name": "Recipe_ChitinJerkin",
+    "OutputItem": "ChitinJerkin",
+    "OutputCount": 1,
+    "Inputs": [
+      { "Id": "Sanguine", "Count": 3 },
+      { "Id": "TickChitin", "Count": 4 },
+      { "Id": "ShedHide", "Count": 2 }
+    ],
+    "Station": "ArmatureBench",
+    "UnlockType": "Quest",
+    "UnlockId": "SQ_TickWardensLedger",
+    "Notes": "Unlocked by either outcome of the quest."
+  },
+  {
+    "Name": "Recipe_BraidedWick",
+    "OutputItem": "BraidedWick",
+    "OutputCount": 1,
+    "Inputs": [
+      { "Id": "Ochre", "Count": 4 },
+      { "Id": "ShedHide", "Count": 2 }
+    ],
+    "Station": "ArmatureBench",
+    "UnlockType": "Quest",
+    "UnlockId": "MQ_DuskOnTheShoulder",
+    "Notes": "One-time craft. Competes directly with Ochre attunement for the same 4 Ochre."
+  }
+]
