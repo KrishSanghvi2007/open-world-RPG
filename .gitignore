@@ -1,0 +1,34 @@
+# --- Unreal Engine (patterns match at any depth, so a project subfolder works) ---
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+.vs/
+.vscode/
+.idea/
+*.xcworkspace
+*.xcodeproj
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+
+# Plugin build output
+Plugins/**/Binaries/
+Plugins/**/Intermediate/
+
+# Re-downloadable third-party packs (Fab / Marketplace). List them in docs/ASSETS.md instead.
+Content/ThirdParty/
+
+# --- Blender ---
+*.blend1
+*.blend2
+
+# --- OS / tools ---
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
+.claude/settings.local.json
