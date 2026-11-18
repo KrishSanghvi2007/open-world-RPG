@@ -111,6 +111,21 @@ bool FUnderpaintingEnemyDataTest::RunTest(const FString& Parameters)
 		}
 	});
 
+	// The boss changes hue at half Health, so it lists one weakness and one resistance per phase, in order.
+	const FEnemyRow* Boss = Enemies->FindRow<FEnemyRow>(TEXT("ThePalimpsest"), TEXT("Test"), false);
+	if (TestNotNull(TEXT("Old Palimpsest"), Boss))
+	{
+		TestEqual(TEXT("Boss changes at half Health"), Boss->Phase2HPPercent, 50);
+		TestEqual(TEXT("Phase 1: weak to Bone Black"), Boss->Weaknesses[0], FName(TEXT("BoneBlack")));
+		TestEqual(TEXT("Phase 2: weak to Terre Verte"), Boss->Weaknesses[1], FName(TEXT("TerreVerte")));
+		TestEqual(TEXT("Phase 1: resists Ceruse"), Boss->Resistances[0], FName(TEXT("Ceruse")));
+		TestEqual(TEXT("Phase 2: resists Sanguine"), Boss->Resistances[1], FName(TEXT("Sanguine")));
+		int32 PhaseTwoAttacks = 0;
+		for (const FEnemyAttack& Attack : Boss->Attacks) { PhaseTwoAttacks += Attack.Phase == 2 ? 1 : 0; }
+		TestEqual(TEXT("Phase 2 adds two attacks"), PhaseTwoAttacks, 2);
+		TestEqual(TEXT("Killing it refills the lantern"), Boss->GlimOnKill, 100);
+	}
+
 	// The fight the first playable is built around: Limner's Knife against one Blotter.
 	const FEnemyRow* Blotter = Enemies->FindRow<FEnemyRow>(TEXT("Blotter"), TEXT("Test"), false);
 	const FItemRow* Knife = Items->FindRow<FItemRow>(TEXT("LimnersKnife"), TEXT("Test"), false);

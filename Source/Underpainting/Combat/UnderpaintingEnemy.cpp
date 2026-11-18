@@ -12,6 +12,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -33,7 +34,7 @@ AUnderpaintingEnemy::AUnderpaintingEnemy()
 	PlaceholderBody = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PlaceholderBody"));
 	PlaceholderBody->SetupAttachment(RootComponent);
 	PlaceholderBody->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	PlaceholderBody->SetRelativeScale3D(FVector(0.7f, 0.7f, 2.2f));
+	PlaceholderBody->SetRelativeScale3D(FVector(0.7f, 0.7f, 2.2f));   // re-applied from GetBodyScale() in BeginPlay
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> Cylinder(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
 	if (Cylinder.Succeeded())
 	{
@@ -72,6 +73,7 @@ void AUnderpaintingEnemy::BeginPlay()
 	Vitals->OnDeath.AddDynamic(this, &AUnderpaintingEnemy::HandleDeath);
 	GetCharacterMovement()->MaxWalkSpeed = Row.MoveSpeed;
 
+	PlaceholderBody->SetRelativeScale3D(GetBodyScale());
 	BodyMaterial = UnderpaintingStyle::MakeMaterial(PlaceholderBody);
 	UpdateTelegraph();
 }
@@ -126,7 +128,7 @@ int32 AUnderpaintingEnemy::ChooseAttack(float DistanceToTarget) const
 	for (int32 Index = 0; Index < Row.Attacks.Num(); ++Index)
 	{
 		const float Reach = GetAttackReach(Row.Attacks[Index]) + GetAttackLunge(Row.Attacks[Index]);
-		if (Row.Attacks[Index].Phase == 1 && DistanceToTarget <= Reach && Reach < BestReach)
+		if (Row.Attacks[Index].Phase <= Phase && DistanceToTarget <= Reach && Reach < BestReach)
 		{
 			Best = Index;
 			BestReach = Reach;
@@ -140,7 +142,10 @@ void AUnderpaintingEnemy::BeginAttack(int32 AttackIndex)
 	const FEnemyAttack& Attack = Row.Attacks[AttackIndex];
 	CurrentAttack = AttackIndex;
 	bAttackLanded = false;
-	AttackClock.Start(FAttackTiming(Attack.Windup, Attack.Active, Attack.Recovery));
+	HitsLanded = 0;
+	// A multi-hit attack stays live long enough for all its hits.
+	const float Active = Attack.Active + (GetHitCount(Attack) - 1) * GetHitInterval(Attack);
+	AttackClock.Start(FAttackTiming(Attack.Windup, Active, Attack.Recovery));
 	SetState(EEnemyState::Attacking);
 	UE_LOG(LogUnderpainting, Verbose, TEXT("%s winds up %s"), *GetName(), *Attack.AttackName.ToString());
 }
@@ -153,8 +158,28 @@ void AUnderpaintingEnemy::Tick(float DeltaTime)
 	TimeSinceHit += DeltaTime;
 	CooldownRemaining = FMath::Max(0.0f, CooldownRemaining - DeltaTime);
 	SlowRemaining = FMath::Max(0.0f, SlowRemaining - DeltaTime);
+	StaggerImmunityRemaining = FMath::Max(0.0f, StaggerImmunityRemaining - DeltaTime);
 	VulnerableRemaining = FMath::Max(0.0f, VulnerableRemaining - DeltaTime);
 	GetCharacterMovement()->MaxWalkSpeed = Row.MoveSpeed * (SlowRemaining > 0.0f ? SlowMultiplier : 1.0f);
+	// A two-phase enemy changes when its Health crosses the threshold in the data.
+	if (Phase == 1 && Row.Phase2HPPercent > 0 && State != EEnemyState::Dead && Vitals->GetHealthFraction() * 100.0f <= Row.Phase2HPPercent)
+	{
+		Phase = 2;
+		PhaseChangeRemaining = PhaseChangeTime;
+		AttackClock.Stop();
+		CurrentAttack = INDEX_NONE;
+		ApplyVulnerable(0.5f, PhaseChangeTime);
+		SetState(EEnemyState::Chasing);
+		OnPhaseTwo();
+		UE_LOG(LogUnderpainting, Log, TEXT("%s enters phase 2"), *GetName());
+	}
+	if (PhaseChangeRemaining > 0.0f)
+	{
+		PhaseChangeRemaining -= DeltaTime;
+		UpdateTelegraph();
+		return;
+	}
+
 	if (ReelRemaining > 0.0f)
 	{
 		// Reeling from an erased attack: no action until it passes.
@@ -189,7 +214,8 @@ void AUnderpaintingEnemy::Tick(float DeltaTime)
 		}
 
 		FaceTowards(Target->GetActorLocation(), DeltaTime);
-		const int32 Attack = CooldownRemaining <= 0.0f ? ChooseAttack(Distance) : INDEX_NONE;
+		// Never more than three enemies attacking at once (enemy design principle 4).
+		const int32 Attack = CooldownRemaining <= 0.0f && CountAttackers(this) < MaxAttackers ? ChooseAttack(Distance) : INDEX_NONE;
 		if (Attack != INDEX_NONE)
 		{
 			BeginAttack(Attack);
@@ -208,6 +234,7 @@ void AUnderpaintingEnemy::Tick(float DeltaTime)
 	case EEnemyState::Staggered:
 		if (StateTime >= StaggerDuration)
 		{
+			StaggerImmunityRemaining = StaggerImmunityTime;
 			SetState(EEnemyState::Chasing);
 		}
 		break;
@@ -238,24 +265,41 @@ void AUnderpaintingEnemy::Tick(float DeltaTime)
 void AUnderpaintingEnemy::TickAttack(float DeltaTime, AActor* Target)
 {
 	const FEnemyAttack& Attack = Row.Attacks[CurrentAttack];
-	const EAttackPhase Phase = AttackClock.GetPhase();
+	const EAttackPhase PhaseNow = AttackClock.GetPhase();
+	const float ElapsedBefore = AttackClock.Elapsed;
 
-	if (Phase == EAttackPhase::Windup)
+	if (PhaseNow == EAttackPhase::Windup)
 	{
+		if (!OnWindupTick(Attack, Target))
+		{
+			AttackClock.Stop();
+			CurrentAttack = INDEX_NONE;
+			ForceStagger();
+			return;
+		}
 		// Track the target through the wind-up, then commit to a direction just before the hit.
 		if (Target && AttackClock.Elapsed < Attack.Windup - AimLockTime)
 		{
 			FaceTowards(Target->GetActorLocation(), DeltaTime, 360.0f);
 		}
 	}
-	else if (Phase == EAttackPhase::Active)
+	else if (PhaseNow == EAttackPhase::Active)
 	{
+		const float ActiveTime = AttackClock.Timing.Active;
 		const float Lunge = GetAttackLunge(Attack);
-		if (Lunge > 0.0f && Attack.Active > 0.0f)
+		if (Lunge > 0.0f && ActiveTime > 0.0f)
 		{
-			FVector Velocity = GetActorForwardVector() * (Lunge / Attack.Active);
+			FVector Velocity = GetActorForwardVector() * (Lunge / ActiveTime);
 			Velocity.Z = GetCharacterMovement()->Velocity.Z;
 			GetCharacterMovement()->Velocity = Velocity;
+		}
+
+		// Each hit of a multi-hit attack gets its own slice of the active window.
+		const int32 Slice = FMath::Clamp(FMath::FloorToInt((AttackClock.Elapsed - Attack.Windup) / GetHitInterval(Attack)), 0, GetHitCount(Attack) - 1);
+		if (GetHitCount(Attack) > 1 && Slice > HitsLanded)
+		{
+			HitsLanded = Slice;
+			bAttackLanded = false;
 		}
 		if (!bAttackLanded)
 		{
@@ -263,11 +307,22 @@ void AUnderpaintingEnemy::TickAttack(float DeltaTime, AActor* Target)
 		}
 	}
 
-	if (AttackClock.Advance(DeltaTime))
+	const bool bFinished = AttackClock.Advance(DeltaTime);
+
+	// The moment the wind-up ends.
+	if (ElapsedBefore < Attack.Windup && AttackClock.Elapsed >= Attack.Windup)
 	{
+		AttackStartLocation = GetActorLocation();
+		OnAttackActive(Attack, Target);
+	}
+
+	if (bFinished)
+	{
+		const float Travelled = FVector::Dist2D(AttackStartLocation, GetActorLocation());
 		CurrentAttack = INDEX_NONE;
 		CooldownRemaining = AttackCooldown;
 		SetState(EEnemyState::Chasing);
+		OnAttackFinished(Attack, Travelled);
 	}
 }
 
@@ -280,7 +335,18 @@ void AUnderpaintingEnemy::HitTest(const FEnemyAttack& Attack)
 
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(EnemyAttack), false, this);
 	TArray<FHitResult> Hits;
-	GetWorld()->SweepMultiByChannel(Hits, Start, End, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(Radius), Params);
+	if (IsAreaAttack(Attack))
+	{
+		// Everything within reach, all the way round.
+		GetWorld()->SweepMultiByChannel(Hits, GetActorLocation(), GetActorLocation() + FVector(0.0f, 0.0f, 1.0f), FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(Reach), Params);
+#if ENABLE_DRAW_DEBUG
+		DrawDebugSphere(GetWorld(), GetActorLocation(), Reach, 16, FColor(196, 87, 75), false, 0.05f);
+#endif
+	}
+	else
+	{
+		GetWorld()->SweepMultiByChannel(Hits, Start, End, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(Radius), Params);
+	}
 
 #if ENABLE_DRAW_DEBUG
 	DrawDebugCapsule(GetWorld(), (Start + End) * 0.5f, (End - Start).Size() * 0.5f + Radius, Radius,
@@ -312,7 +378,10 @@ void AUnderpaintingEnemy::HitTest(const FEnemyAttack& Attack)
 void AUnderpaintingEnemy::HandleDamaged(float Damage, float StaggerDamage, AActor* DamageCauser)
 {
 	TimeSinceHit = 0.0f;
-	PoiseDamage += StaggerDamage;
+	if (StaggerImmunityRemaining <= 0.0f)
+	{
+		PoiseDamage += StaggerDamage;
+	}
 
 	if (State == EEnemyState::Idle || State == EEnemyState::Returning)
 	{
@@ -366,7 +435,9 @@ void AUnderpaintingEnemy::UpdateTelegraph()
 	const bool bActive = State == EEnemyState::Attacking && AttackClock.GetPhase() == EAttackPhase::Active;
 
 	// The warm rim grows through the wind-up so the moment of the hit can be read.
-	TelegraphLight->SetIntensity(bWindup ? FMath::Lerp(4.0f, 30.0f, AttackClock.GetPhaseAlpha()) : (bActive ? 30.0f : 0.0f));
+	const bool bWhiteFlash = (bWindup || bActive) && Row.Attacks.IsValidIndex(CurrentAttack) && Row.Attacks[CurrentAttack].Telegraph == EAttackTelegraph::WhiteFlash;
+	TelegraphLight->SetLightColor(bWhiteFlash ? FLinearColor::White : FLinearColor(1.0f, 0.45f, 0.12f));
+	TelegraphLight->SetIntensity(bWindup ? FMath::Lerp(4.0f, bWhiteFlash ? 60.0f : 30.0f, AttackClock.GetPhaseAlpha()) : (bActive ? 30.0f : 0.0f));
 
 	if (BodyMaterial)
 	{
@@ -401,8 +472,13 @@ void AUnderpaintingEnemy::ApplyVulnerable(float ExtraDamageFraction, float Durat
 
 bool AUnderpaintingEnemy::CancelAttack(float ReelSeconds)
 {
-	const EAttackPhase Phase = AttackClock.GetPhase();
-	if (State != EEnemyState::Attacking || (Phase != EAttackPhase::Windup && Phase != EAttackPhase::Active))
+	const EAttackPhase ClockPhase = AttackClock.GetPhase();
+	if (State != EEnemyState::Attacking || (ClockPhase != EAttackPhase::Windup && ClockPhase != EAttackPhase::Active))
+	{
+		return false;
+	}
+	// A white flash means "this cannot be cancelled: move" (enemy design principle 2).
+	if (Row.Attacks.IsValidIndex(CurrentAttack) && Row.Attacks[CurrentAttack].Telegraph == EAttackTelegraph::WhiteFlash)
 	{
 		return false;
 	}
@@ -413,4 +489,43 @@ bool AUnderpaintingEnemy::CancelAttack(float ReelSeconds)
 	SetState(EEnemyState::Chasing);
 	UE_LOG(LogUnderpainting, Log, TEXT("%s had its attack erased"), *GetName());
 	return true;
+}
+
+TArray<FName> AUnderpaintingEnemy::GetActiveWeaknesses() const
+{
+	if (!Row.Phase2Hue.IsNone() && Row.Weaknesses.IsValidIndex(Phase - 1))
+	{
+		return { Row.Weaknesses[Phase - 1] };
+	}
+	return Row.Weaknesses;
+}
+
+TArray<FName> AUnderpaintingEnemy::GetActiveResistances() const
+{
+	if (!Row.Phase2Hue.IsNone() && Row.Resistances.IsValidIndex(Phase - 1))
+	{
+		return { Row.Resistances[Phase - 1] };
+	}
+	return Row.Resistances;
+}
+
+void AUnderpaintingEnemy::ForceStagger()
+{
+	if (State != EEnemyState::Dead)
+	{
+		PoiseDamage = 0.0f;
+		AttackClock.Stop();
+		CurrentAttack = INDEX_NONE;
+		SetState(EEnemyState::Staggered);
+	}
+}
+
+int32 AUnderpaintingEnemy::CountAttackers(const UObject* WorldContext)
+{
+	int32 Count = 0;
+	for (TActorIterator<AUnderpaintingEnemy> It(WorldContext->GetWorld()); It; ++It)
+	{
+		Count += It->State == EEnemyState::Attacking ? 1 : 0;
+	}
+	return Count;
 }

@@ -106,6 +106,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Combat")
 	float GetLightHere() const;
 
+	/** Something lights the place for a while (the Matriarch's heartbeat): light here counts as at least this. */
+	void LendLight(float Light, float Seconds);
+
 	/** Locks the view onto the enemy in front, or lets go. */
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ToggleLockOn();
@@ -146,6 +149,18 @@ public:
 	/** For test scripts and debugging: buys an attunement node if it can be afforded. */
 	UFUNCTION(BlueprintCallable, Category = "Dev")
 	bool DevAttune(FName NodeId);
+
+	/** For test scripts and debugging: nothing can hurt the player. */
+	UFUNCTION(BlueprintCallable, Category = "Dev")
+	void DevSetInvulnerable(bool bOn);
+
+	/** For test scripts and debugging: damages every enemy in the level. Returns the total dealt. */
+	UFUNCTION(BlueprintCallable, Category = "Dev")
+	float DevHurtEnemies(float Damage);
+
+	/** For test scripts and debugging: one line per enemy. */
+	UFUNCTION(BlueprintCallable, Category = "Dev")
+	FString DevDescribeEnemies();
 
 	/** For test scripts and debugging: puts a pigment in a well. */
 	UFUNCTION(BlueprintCallable, Category = "Dev")
@@ -280,6 +295,9 @@ private:
 	float HeavyHeldSince = -1.0f;
 	bool bDodgeRewarded = false;
 	float ZoneAmbientLight = 1.0f;
+	bool bDevInvulnerable = false;
+	float BorrowedLight = 0.0f;
+	float BorrowedLightUntil = -1.0f;
 	void HeavyPressed();
 	void HeavyReleased();
 	void LockOrClosePressed();

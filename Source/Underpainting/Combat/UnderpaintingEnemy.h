@@ -60,6 +60,27 @@ public:
 
 	const FEnemyRow& GetRow() const { return Row; }
 
+	/** 1, or 2 once a two-phase enemy has passed its threshold. */
+	UFUNCTION(BlueprintPure, Category = "Enemy")
+	int32 GetPhase() const { return Phase; }
+
+	/**
+	 * The pigments that count as this enemy's weakness and resistance right now. A two-phase enemy lists one
+	 * of each per phase, in order, because its hue changes (data/README.md, the boss rule).
+	 */
+	TArray<FName> GetActiveWeaknesses() const;
+	TArray<FName> GetActiveResistances() const;
+
+	/** Holds the enemy still and helpless for a time (stuck in a tree, reeling). */
+	void Reel(float Seconds) { ReelRemaining = FMath::Max(ReelRemaining, Seconds); }
+
+	/** Forces a stagger now (a Flare on a Pentiment). */
+	void ForceStagger();
+
+	/** Enemies attacking at this moment, across the level. Never more than MaxAttackers start a new attack. */
+	static int32 CountAttackers(const UObject* WorldContext);
+	static constexpr int32 MaxAttackers = 3;
+
 	/** Slows the enemy (0.6 = 40% slower) for a time. */
 	void ApplySlow(float SpeedMultiplier, float Duration);
 
@@ -86,6 +107,30 @@ protected:
 
 	/** Distance (cm) the enemy travels forward while the attack is live. 0 for a standing attack. */
 	virtual float GetAttackLunge(const FEnemyAttack& Attack) const { return 0.0f; }
+
+	/** True for attacks that hit everything around the enemy (a burst, a full sweep) instead of in front of it. */
+	virtual bool IsAreaAttack(const FEnemyAttack& Attack) const { return false; }
+
+	/** How many separate hits the attack's active window holds (a flail of three is 3). */
+	virtual int32 GetHitCount(const FEnemyAttack& Attack) const { return 1; }
+
+	/** Seconds between the hits of a multi-hit attack. */
+	virtual float GetHitInterval(const FEnemyAttack& Attack) const { return 0.4f; }
+
+	/** Called when the wind-up ends and the attack goes live (teleports happen here). */
+	virtual void OnAttackActive(const FEnemyAttack& Attack, AActor* Target) {}
+
+	/** Called every frame of a wind-up. Return false to abandon the attack (the enemy is then staggered). */
+	virtual bool OnWindupTick(const FEnemyAttack& Attack, AActor* Target) { return true; }
+
+	/** Called when the attack is over, with how far the enemy travelled while it was live. */
+	virtual void OnAttackFinished(const FEnemyAttack& Attack, float DistanceTravelled) {}
+
+	/** Called when a two-phase enemy enters its second phase. */
+	virtual void OnPhaseTwo() {}
+
+	/** Size of the placeholder body relative to a person. */
+	virtual FVector GetBodyScale() const { return FVector(0.7f, 0.7f, 2.2f); }
 
 	/** Index into the row's Attacks to use at this distance (cm), or INDEX_NONE to keep closing in. */
 	virtual int32 ChooseAttack(float DistanceToTarget) const;
@@ -126,6 +171,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy|Tuning")
 	float AimLockTime = 0.2f;
 
+	/** Seconds after a stagger ends during which no new stagger can build. Bosses use this so they cannot be kept down. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy|Tuning")
+	float StaggerImmunityTime = 0.0f;
+
+	/** Seconds a two-phase enemy spends changing, wide open (it takes +50% damage). */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy|Tuning")
+	float PhaseChangeTime = 2.5f;
+
 	FEnemyRow Row;
 
 private:
@@ -154,6 +207,11 @@ private:
 	float VulnerableRemaining = 0.0f;
 	float VulnerableFraction = 0.0f;
 	float ReelRemaining = 0.0f;
+	int32 Phase = 1;
+	float StaggerImmunityRemaining = 0.0f;
+	float PhaseChangeRemaining = 0.0f;
+	int32 HitsLanded = 0;
+	FVector AttackStartLocation = FVector::ZeroVector;
 	float StateTime = 0.0f;
 	float PoiseDamage = 0.0f;
 	float TimeSinceHit = 0.0f;

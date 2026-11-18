@@ -108,6 +108,16 @@ def main(args):
         for i, pigment in enumerate(args[1:3]):
             pawn.dev_grant(unreal.Name(pigment), 3)
             print("attuned", pigment, pawn.dev_attune(unreal.Name(pigment + "_T1")))
+    elif command == "god":
+        pawn.dev_set_invulnerable(args[1] == "on")
+    elif command == "hurt":
+        print("dealt", pawn.dev_hurt_enemies(float(args[1])))
+    elif command == "enemies":
+        print(pawn.dev_describe_enemies())
+    elif command == "where":
+        print("player", pawn.get_actor_location())
+        for a in unreal.GameplayStatics.get_all_actors_of_class(world, unreal.UnderpaintingEnemy):
+            print(a.get_name(), a.get_actor_location(), "velocity", a.get_velocity())
     elif command == "grant":
         pawn.dev_grant(unreal.Name(args[1]), int(args[2]))
     elif command == "stroke":

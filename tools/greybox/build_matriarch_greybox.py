@@ -252,8 +252,10 @@ PIGMENT_COLOURS = {
 
 # Markers that have a working C++ actor are placed as that actor; the rest stay labelled placeholder shapes.
 STATIONS = {"GrindingSlab": "GRINDING_SLAB", "ArmatureBench": "ARMATURE_BENCH"}
-LIT_FROM_THE_START = {"SunwardClearing", "RibStairHeart"}      # wild pilot flames; the others must be relit
+LIT_FROM_THE_START = {"SunwardClearing", "RibStairHeart", "DevBlotter", "DevMadderback", "DevPentiment", "DevThePalimpsest"}      # wild pilot flames; the others must be relit
 PICKUPS = {"FlaxPress": ("LinseedOil", 2, "the flax press")}
+ENEMY_CLASSES = {"Blotter": ("BlotterEnemy", 1.3), "Madderback": ("MadderbackEnemy", 0.9),
+                 "Pentiment": ("PentimentEnemy", 1.3), "ThePalimpsest": ("OldPalimpsest", 2.4)}
 
 
 def _spawn_working_actor(kind, data_id, text, ground, yaw):
@@ -290,8 +292,9 @@ def _spawn_working_actor(kind, data_id, text, ground, yaw):
             actor.set_editor_property("item_id", unreal.Name(item))
             actor.set_editor_property("count", count)
             actor.set_editor_property("source_name", source)
-    elif kind == "Enemy" and data_id == "Blotter":
-        actor = spawn("BlotterEnemy", 1.3)
+    elif kind == "Enemy" and data_id in ENEMY_CLASSES:
+        cls_name, height = ENEMY_CLASSES[data_id]
+        actor = spawn(cls_name, height)
     elif kind == "Exit":
         actor = spawn("UnderpaintingZoneExit", 2.0)
         if actor:

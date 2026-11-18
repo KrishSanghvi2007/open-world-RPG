@@ -15,8 +15,15 @@ spec = importlib.util.spec_from_file_location("matriarch_greybox", os.path.join(
 gb = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(gb)
 
-LEVEL = "/Game/Maps/Dev/L_Combat_Greybox"
 PLAYER_BP = "/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"
+
+# One room per enemy, so each can be learned on its own: (level, enemy ID, what the room teaches, sketch zone?)
+ROOMS = [
+    ("L_Combat_Greybox", "Blotter", "Blotter: dodge its warm-lit attacks, strike in the recovery", False),
+    ("L_Combat_Madderback", "Madderback", "Madderback: stand before a pillar, sidestep the charge, punish while it is stuck", False),
+    ("L_Combat_Pentiment", "Pentiment", "Pentiment: flare (F) as it fades and it staggers", True),
+    ("L_Combat_Boss", "ThePalimpsest", "Old Palimpsest: Bone Black while it is white, Terre Verte once it is red", True),
+]
 
 
 def reparent_player():
@@ -31,36 +38,44 @@ def reparent_player():
         print("player Blueprint already uses UnderpaintingPlayerCharacter")
 
 
-def build_room():
-    if gb.eal.does_asset_exist(LEVEL):
-        gb.levels.load_level(LEVEL)
+def build_room(level_name, enemy_id, note, sketch):
+    level = "/Game/Maps/Dev/" + level_name
+    if gb.eal.does_asset_exist(level):
+        gb.levels.load_level(level)
         for actor in gb.actors.get_all_level_actors():
             if not isinstance(actor, unreal.WorldSettings) and actor.get_class().get_name() != "Brush":
                 gb.actors.destroy_actor(actor)
     else:
-        gb.levels.new_level(LEVEL)
+        gb.levels.new_level(level)
     gb._counts.clear()
-    gb.Zone.unlit, gb.Zone.label_yaw, gb.Zone.shadow_tint, gb.Zone.look = False, 180.0, "#4A3558", "VillageDusk"
-    CREAM, TEAL, VIOLET, UMBER = "#F2E3C0", "#2E5E6E", "#4A3558", "#6B4F3A"
+    CREAM, VIOLET, UMBER = "#F2E3C0", "#4A3558", "#6B4F3A"
+    if sketch:
+        gb.Zone.unlit, gb.Zone.label_yaw, gb.Zone.shadow_tint, gb.Zone.look = True, 180.0, "#4B4A48", "VaultSketch"
+        floor, wall, pillar = "#E6E1D6", "#4B4A48", "#2E2E30"
+    else:
+        gb.Zone.unlit, gb.Zone.label_yaw, gb.Zone.shadow_tint, gb.Zone.look = False, 180.0, VIOLET, "VillageDusk"
+        floor, wall, pillar = CREAM, VIOLET, UMBER
 
-    gb.sun_and_sky(sun_colour="#FFD9A0", sky_tint=TEAL, sun_lux=6.0, sky_intensity=1.2, pitch=-40.0)
-    gb.slab("Floor", -16, 16, -16, 16, 0.0, CREAM)
-    for name, x0, x1, y0, y1 in (("Wall_N", 16, 17, -17, 17), ("Wall_S", -17, -16, -17, 17), ("Wall_E", -16, 16, 16, 17), ("Wall_W", -16, 16, -17, -16)):
-        gb.slab(name, x0, x1, y0, y1, 4.0, VIOLET, "Geometry/Walls", bottom=-1.0)
-    # A few pillars: something to dodge around and to break the lunge.
+    size = 22 if enemy_id == "ThePalimpsest" else 16
+    gb.sun_and_sky()
+    gb.slab("Floor", -size, size, -size, size, 0.0, floor)
+    for name, x0, x1, y0, y1 in (("Wall_N", size, size + 1, -size - 1, size + 1), ("Wall_S", -size - 1, -size, -size - 1, size + 1),
+                                 ("Wall_E", -size, size, size, size + 1), ("Wall_W", -size, size, -size - 1, -size)):
+        gb.slab(name, x0, x1, y0, y1, 4.0, wall, "Geometry/Walls", bottom=-1.0)
+    # Pillars: something to dodge around, and for a charge to stick in.
     for i, (x, y) in enumerate(((4, 6), (4, -6), (-5, 0))):
-        gb.box("Pillar_%d" % i, (x, y, 1.75), (1.2, 1.2, 3.5), UMBER, "Geometry/Pillars")
+        gb.box("Pillar_%d" % i, (x, y, 1.75), (1.2, 1.2, 3.5), pillar, "Geometry/Pillars")
 
-    blotter = gb.actors.spawn_actor_from_class(unreal.BlotterEnemy, gb.v((9, 0, 1.3)), unreal.Rotator(roll=0.0, pitch=0.0, yaw=180.0))
-    blotter.set_actor_label("Blotter_01")
-    blotter.set_folder_path("Gameplay")
-    gb.label("Blotter: dodge its warm-lit attacks, strike in the recovery", (12, 0, 3.2), "Markers/Notes", size=50.0)
-
+    gb.enemy(enemy_id, (9, 0, 0))
+    gb.label(note, (size - 3, 0, 3.2), "Markers/Notes", size=50.0)
+    gb.marker("Lampstand", "Dev" + enemy_id, "Lampstand", (-12, 5, 0))
     gb.player_start((-9, 0, 0), yaw=0.0)
     gb.levels.save_current_level()
-    print("built", LEVEL)
+    print("built", level)
 
 
 if __name__ == "__main__":
     reparent_player()
-    build_room()
+    for room in ROOMS:
+        build_room(*room)
+    gb.eal.save_directory("/Game/StyleKit")

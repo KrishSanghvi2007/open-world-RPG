@@ -560,7 +560,7 @@ void AUnderpaintingPlayerCharacter::TickAttack(float DeltaTime)
 	}
 	else if (Action == EPlayerAction::Stroke && StrokeName == TEXT("Sfumato"))
 	{
-		Vitals->bInvulnerable = false;
+		Vitals->bInvulnerable = bDevInvulnerable;
 	}
 
 	if (AttackClock.Advance(DeltaTime))
@@ -624,10 +624,11 @@ void AUnderpaintingPlayerCharacter::HitTest()
 		// A Stroke: the Contrast rule decides how hard it lands.
 		AUnderpaintingEnemy* Enemy = Cast<AUnderpaintingEnemy>(Target);
 		const UnderpaintingCombatRules::FContrast Contrast = Enemy
-			? UnderpaintingCombatRules::Contrast(StrokePigment, Enemy->GetRow().Weaknesses, Enemy->GetRow().Resistances)
+			? UnderpaintingCombatRules::Contrast(StrokePigment, Enemy->GetActiveWeaknesses(), Enemy->GetActiveResistances())
 			: UnderpaintingCombatRules::FContrast();
 		float Damage = StrokeDamage * Contrast.DamageMultiplier;
-		float Stagger = Damage * WeaponStaggerMultiplier * Contrast.StaggerMultiplier;
+		// Stagger builds from the Stroke's own damage: the Contrast rule gives +50% stagger, not +30% and then +50%.
+		float Stagger = StrokeDamage * WeaponStaggerMultiplier * Contrast.StaggerMultiplier;
 
 		UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
 		if (StrokeName == TEXT("Impasto"))
@@ -727,7 +728,14 @@ bool AUnderpaintingPlayerCharacter::StartStroke()
 
 float AUnderpaintingPlayerCharacter::GetLightHere() const
 {
-	return UnderpaintingCombatRules::EffectiveLight(ZoneAmbientLight, FlareRemaining > 0.0f);
+	const float Light = UnderpaintingCombatRules::EffectiveLight(ZoneAmbientLight, FlareRemaining > 0.0f);
+	return GetWorld() && GetWorld()->GetTimeSeconds() < BorrowedLightUntil ? FMath::Max(Light, BorrowedLight) : Light;
+}
+
+void AUnderpaintingPlayerCharacter::LendLight(float Light, float Seconds)
+{
+	BorrowedLight = Light;
+	BorrowedLightUntil = GetWorld()->GetTimeSeconds() + Seconds;
 }
 
 int32 AUnderpaintingPlayerCharacter::GetStrokeGlimCost() const
@@ -883,7 +891,7 @@ void AUnderpaintingPlayerCharacter::TickLockOn(float DeltaTime)
 void AUnderpaintingPlayerCharacter::TickDodge(float DeltaTime)
 {
 	DodgeElapsed += DeltaTime;
-	Vitals->bInvulnerable = DodgeElapsed < DodgeInvulnerableTime;
+	Vitals->bInvulnerable = bDevInvulnerable || DodgeElapsed < DodgeInvulnerableTime;
 
 	// Fast at the start, easing out: most of the distance is covered while the dodge still protects you.
 	const float Alpha = FMath::Clamp(DodgeElapsed / DodgeDuration, 0.0f, 1.0f);
@@ -907,7 +915,7 @@ void AUnderpaintingPlayerCharacter::EndAction()
 
 	Action = EPlayerAction::None;
 	AttackClock.Stop();
-	Vitals->bInvulnerable = false;
+	Vitals->bInvulnerable = bDevInvulnerable;
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
@@ -992,4 +1000,31 @@ bool AUnderpaintingPlayerCharacter::DevSetWell(int32 Index, FName PigmentId)
 {
 	UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
 	return Progress && Progress->SetWell(Index, PigmentId);
+}
+
+void AUnderpaintingPlayerCharacter::DevSetInvulnerable(bool bOn)
+{
+	bDevInvulnerable = bOn;
+	Vitals->bInvulnerable = bOn;
+}
+
+float AUnderpaintingPlayerCharacter::DevHurtEnemies(float Damage)
+{
+	float Total = 0.0f;
+	for (TActorIterator<AUnderpaintingEnemy> It(GetWorld()); It; ++It)
+	{
+		Total += It->GetVitals()->ApplyDamage(Damage, 0.0f, this);
+	}
+	return Total;
+}
+
+FString AUnderpaintingPlayerCharacter::DevDescribeEnemies()
+{
+	FString Text;
+	for (TActorIterator<AUnderpaintingEnemy> It(GetWorld()); It; ++It)
+	{
+		Text += FString::Printf(TEXT("%s hp=%.0f phase=%d state=%d attack=%s weak=%s | "), *It->GetName(), It->GetVitals()->GetHealth(), It->GetPhase(), int32(It->GetState()),
+			*It->GetCurrentAttackName().ToString(), It->GetActiveWeaknesses().Num() > 0 ? *It->GetActiveWeaknesses()[0].ToString() : TEXT("-"));
+	}
+	return Text;
 }
