@@ -58,6 +58,23 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Enemy")
 	float GetPoiseFraction() const { return Row.Poise > 0 ? PoiseDamage / Row.Poise : 0.0f; }
 
+	const FEnemyRow& GetRow() const { return Row; }
+
+	/** Slows the enemy (0.6 = 40% slower) for a time. */
+	void ApplySlow(float SpeedMultiplier, float Duration);
+
+	/** The Glaze mark: the enemy takes this much more damage (0.15 = +15%) for a time. */
+	void ApplyVulnerable(float ExtraDamageFraction, float Duration);
+
+	/** Erase: an attack that is winding up or landing is wiped out and the enemy reels briefly. Returns true if there was one. */
+	bool CancelAttack(float ReelSeconds = 1.0f);
+
+	UFUNCTION(BlueprintPure, Category = "Enemy")
+	bool IsGlazed() const { return VulnerableRemaining > 0.0f; }
+
+	/** Extra damage fraction from being glazed, if any. */
+	float GetVulnerability() const { return VulnerableRemaining > 0.0f ? VulnerableFraction : 0.0f; }
+
 	/** Row in data/enemies.json. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
 	FName EnemyId = TEXT("Blotter");
@@ -132,6 +149,11 @@ private:
 	FAttackClock AttackClock;
 	int32 CurrentAttack = INDEX_NONE;
 	bool bAttackLanded = false;
+	float SlowRemaining = 0.0f;
+	float SlowMultiplier = 1.0f;
+	float VulnerableRemaining = 0.0f;
+	float VulnerableFraction = 0.0f;
+	float ReelRemaining = 0.0f;
 	float StateTime = 0.0f;
 	float PoiseDamage = 0.0f;
 	float TimeSinceHit = 0.0f;

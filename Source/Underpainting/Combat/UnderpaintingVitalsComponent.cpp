@@ -29,6 +29,13 @@ void UUnderpaintingVitalsComponent::AdvanceRegeneration(float DeltaTime)
 		return;
 	}
 
+	if (HealRemaining > 0.0f)
+	{
+		const float Step = FMath::Min(HealRemaining, HealPerSecond * DeltaTime);
+		HealRemaining -= Step;
+		Health = FMath::Min(MaxHealth, Health + Step);
+	}
+
 	TimeSinceStaminaSpend += DeltaTime;
 	// Only the part of this step that falls after the pause counts, so the rule holds at any frame rate.
 	const float RegenTime = FMath::Min(DeltaTime, TimeSinceStaminaSpend - StaminaRegenDelay);
@@ -40,8 +47,13 @@ void UUnderpaintingVitalsComponent::AdvanceRegeneration(float DeltaTime)
 
 float UUnderpaintingVitalsComponent::ApplyDamage(float Damage, float StaggerDamage, AActor* DamageCauser)
 {
-	if (bDead || bInvulnerable || Damage <= 0.0f)
+	if (bDead || Damage <= 0.0f)
 	{
+		return 0.0f;
+	}
+	if (bInvulnerable)
+	{
+		OnDodged.Broadcast(DamageCauser);
 		return 0.0f;
 	}
 
@@ -124,4 +136,16 @@ bool UUnderpaintingVitalsComponent::TrySpendGlim(float Amount)
 	}
 	Glim -= Amount;
 	return true;
+}
+
+void UUnderpaintingVitalsComponent::StartHealOverTime(float TotalAmount, float Duration)
+{
+	HealRemaining = TotalAmount;
+	HealPerSecond = Duration > 0.0f ? TotalAmount / Duration : TotalAmount * 1000.0f;
+}
+
+void UUnderpaintingVitalsComponent::SetMaxHealth(float NewMax)
+{
+	MaxHealth = FMath::Max(1.0f, NewMax);
+	Health = FMath::Min(Health, MaxHealth);
 }

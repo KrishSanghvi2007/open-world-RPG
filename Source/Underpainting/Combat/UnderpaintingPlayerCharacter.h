@@ -17,6 +17,7 @@ enum class EPlayerAction : uint8
 	None,
 	LightAttack,
 	HeavyAttack,
+	Stroke,
 	Dodge,
 	Dead
 };
@@ -93,6 +94,36 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Save")
 	void StartNewGame();
 
+	/** The Stroke of the active well: the heavy attack, changed by a pigment. Costs heavy Stamina plus Glim. */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	bool StartStroke();
+
+	/** Glim the active well's Stroke would cost here and now. */
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	int32 GetStrokeGlimCost() const;
+
+	/** Light where the player stands, 0 to 1 (the zone's ambient light, at least 0.5 inside a Flare). */
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	float GetLightHere() const;
+
+	/** Locks the view onto the enemy in front, or lets go. */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void ToggleLockOn();
+
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	class AUnderpaintingEnemy* GetLockTarget() const { return LockTarget.Get(); }
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void SwapWell();
+
+	/** Uses a Moss Poultice: 40 Health over 4 seconds. */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	bool UsePoultice();
+
+	/** Pours Lamp Oil into the lantern: +40 Glim. */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	bool UseLampOil();
+
 	/** Lights a Flare: 20 Glim for 8 seconds of light in an 8 m radius (docs/GDD.md 4.5). */
 	UFUNCTION(BlueprintCallable, Category = "Exploration")
 	bool UseFlare();
@@ -107,6 +138,18 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Exploration")
 	float GetFlareTimeRemaining() const { return FlareRemaining; }
+
+	/** For test scripts and debugging: puts dry pigment or an item straight into the pack. */
+	UFUNCTION(BlueprintCallable, Category = "Dev")
+	void DevGrant(FName Id, int32 Count);
+
+	/** For test scripts and debugging: buys an attunement node if it can be afforded. */
+	UFUNCTION(BlueprintCallable, Category = "Dev")
+	bool DevAttune(FName NodeId);
+
+	/** For test scripts and debugging: puts a pigment in a well. */
+	UFUNCTION(BlueprintCallable, Category = "Dev")
+	bool DevSetWell(int32 Index, FName PigmentId);
 
 	/** One line describing what the player would see: prompt, open menu, quest step, pack. For scripts and tests. */
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
@@ -155,6 +198,14 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Tuning")
 	float SprintSpeed = 750.0f;
+
+	/** Hold the heavy button this long (seconds) and it becomes the active well's Stroke. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Tuning")
+	float StrokeHoldTime = 0.28f;
+
+	/** How far away (cm) an enemy can be locked onto, and how far before the lock lets go. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Tuning")
+	float LockOnRange = 1500.0f;
 
 	/** Movement speed while committed to a swing. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Tuning")
@@ -221,6 +272,25 @@ private:
 
 	TWeakObjectPtr<class AUnderpaintingInteractable> Focus;
 	float FlareRemaining = 0.0f;
+	TWeakObjectPtr<class AUnderpaintingEnemy> LockTarget;
+	FName StrokePigment;
+	FName StrokeName;
+	float StrokeDamage = 0.0f;
+	int32 StrokeHitsDone = 0;
+	float HeavyHeldSince = -1.0f;
+	bool bDodgeRewarded = false;
+	float ZoneAmbientLight = 1.0f;
+	void HeavyPressed();
+	void HeavyReleased();
+	void LockOrClosePressed();
+	void SwapWellPressed() { SwapWell(); }
+	void PoulticePressed() { UsePoultice(); }
+	void LampOilPressed() { UseLampOil(); }
+	void TickLockOn(float DeltaTime);
+	void ApplyHit(AActor* Target, float Damage, float StaggerDamage, const TCHAR* What);
+
+	UFUNCTION()
+	void HandleDodged(AActor* Attacker);
 	void FlarePressed() { UseFlare(); }
 	void FlaskPressed() { UseFixativeFlask(); }
 	void ArriveFromZone();

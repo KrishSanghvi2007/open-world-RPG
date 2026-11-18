@@ -352,13 +352,37 @@ void AUnderpaintingHUD::DrawPlayerBars(const AUnderpaintingPlayerCharacter* Play
 	DrawBar(X, Y + 26.0f, 300.0f, 12.0f, Vitals->GetStaminaFraction(), StaminaColour, FString::Printf(TEXT("Stamina %d"), FMath::CeilToInt(Vitals->GetStamina())));
 	DrawBar(X, Y + 48.0f, 300.0f * Vitals->MaxGlim / 100.0f, 12.0f, Vitals->GetGlimFraction(), GlimColour, FString::Printf(TEXT("Glim %d / %d"), FMath::CeilToInt(Vitals->GetGlim()), FMath::CeilToInt(Vitals->MaxGlim)));
 
+	// The palette: two wells, the active one marked, with its Stroke and what that Stroke costs here.
+	if (const UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this))
+	{
+		const UUnderpaintingDataSubsystem* Data = GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>();
+		const float WellX = X + 470.0f;
+		for (int32 Index = 0; Index < UUnderpaintingProgress::NumWells; ++Index)
+		{
+			const FPigmentRow* Pigment = Data ? Data->FindPigment(Progress->GetWell(Index)) : nullptr;
+			const bool bActive = Index == Progress->GetActiveWellIndex();
+			const float BoxX = WellX + Index * 54.0f;
+			DrawRect(bActive ? TextColour : BackColour, BoxX - 3.0f, Y - 3.0f, 46.0f, 46.0f);
+			DrawRect(Pigment ? UUnderpaintingDataSubsystem::HexToColour(Pigment->ColourHex) : FLinearColor(0.12f, 0.11f, 0.10f), BoxX, Y, 40.0f, 40.0f);
+		}
+		if (const FPigmentRow* Active = Data ? Data->FindPigment(Progress->GetActivePigment()) : nullptr)
+		{
+			const int32 Cost = Player->GetStrokeGlimCost();
+			DrawText(FString::Printf(TEXT("%s  (hold heavy)"), *Active->StrokeName.ToString()), TextColour, WellX + 120.0f, Y, nullptr, 1.0f);
+			DrawText(Cost > 0 ? FString::Printf(TEXT("%d Glim here   light %.0f%%"), Cost, Player->GetLightHere() * 100.0f) : FString(TEXT("free in this light")),
+				DimColour, WellX + 120.0f, Y + 22.0f, nullptr, 0.9f);
+		}
+		DrawText(FString::Printf(TEXT("Poultice %d [H]   Lamp Oil %d [J]"), Progress->GetItemCount(TEXT("MossPoultice")), Progress->GetItemCount(TEXT("LampOil"))),
+			DimColour, WellX, Y + 50.0f, nullptr, 0.85f);
+	}
+
 	if (Vitals->IsDead())
 	{
 		DrawText(TEXT("You were rubbed out."), TextColour, Canvas->ClipX * 0.5f - 110.0f, Canvas->ClipY * 0.4f, nullptr, 1.6f);
 	}
 	else if (Menu == EUnderpaintingMenu::None)
 	{
-		DrawText(TEXT("E use/talk   F flare   G fix   Tab pack   Mouse L/R attack   L-Ctrl dodge   L-Shift sprint   F5 save   F9 load   F8 new game"), DimColour, X, Canvas->ClipY - 30.0f, nullptr, 0.85f);
+		DrawText(TEXT("E use   F flare   G fix   Tab pack   Mouse L light, R heavy (hold: Stroke)   Q lock on   Z swap well   L-Ctrl dodge   L-Shift sprint   F5/F9 save/load"), DimColour, X, Canvas->ClipY - 30.0f, nullptr, 0.85f);
 	}
 }
 
@@ -373,6 +397,11 @@ void AUnderpaintingHUD::DrawEnemyBars()
 			continue;
 		}
 
+		const AUnderpaintingPlayerCharacter* Viewer = Cast<AUnderpaintingPlayerCharacter>(GetOwningPawn());
+		if (Viewer && FVector::Dist(Viewer->GetActorLocation(), Enemy->GetActorLocation()) > 2500.0f)
+		{
+			continue;   // bars are for what you are fighting, not for what is three rooms away
+		}
 		const FVector Screen = Project(Enemy->GetActorLocation() + FVector(0.0f, 0.0f, 150.0f));
 		const FVector2D Point(Screen.X / ProjectionScale, Screen.Y / ProjectionScale);
 		if (Screen.Z <= 0.0f)
@@ -394,6 +423,14 @@ void AUnderpaintingHUD::DrawEnemyBars()
 			Status += TEXT("  ") + Enemy->GetCurrentAttackName().ToString();
 		}
 		DrawText(Status, TextColour, Point.X - Width * 0.5f, Point.Y - 20.0f, nullptr, 0.9f);
+		if (Enemy->IsGlazed())
+		{
+			DrawText(TEXT("glazed"), GlimColour, Point.X + Width * 0.5f + 8.0f, Point.Y - 4.0f, nullptr, 0.85f);
+		}
+		if (Viewer && Viewer->GetLockTarget() == Enemy)
+		{
+			DrawRect(TextColour, Point.X - 5.0f, Point.Y + 22.0f, 10.0f, 10.0f);
+		}
 	}
 }
 

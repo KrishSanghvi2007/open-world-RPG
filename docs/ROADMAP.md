@@ -62,12 +62,12 @@ One thin, connected, playable loop with placeholders. Crude is fine; connected i
 
 **Done when:** in `L_Matriarch_Village_A`, in one sitting of 5 minutes: talk to Hesper, harvest Ochre, craft Lamp Oil, relight the Lampstand, buy the Ochre attunement, kill the Blotter, see the quest complete, save, quit, load, and find everything as you left it.
 
-### M3. Exploration (high priority)
+### M3. Exploration (high priority) (first pass done; navigation, signposts and the Nape secret remain)
 Traversal, landmarks, secrets, discoverables (lore from `docs/STORY.md`), the sketch-zone rules (low gravity, solid only while lit, Flare, Fixative Flask), the one-sided forest and its passable backs, pentimenti, a compass or signposts, rewards for curiosity, zone exits that connect the three levels.
 
 **Done when:** walk from the village through the Furrow to the Rib Gate and into the Vault without the editor, find one secret cache through a passable back, and cross the Cartoon Gallery using a Flare.
 
-### M4. Combat depth
+### M4. Combat depth (done; not yet played by hand)
 Glim and light as a resource, Strokes for each pigment, the Contrast rule, lock-on, the Moss Poultice, weapon and armour swapping, death and Lampstand respawn with wet-pigment loss.
 
 **Done when:** in the fight room, kill a Blotter with Bone Black Strokes and see the +30% damage number; die once and wake at the Lampstand.

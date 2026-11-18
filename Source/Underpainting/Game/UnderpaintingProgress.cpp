@@ -283,6 +283,19 @@ bool UUnderpaintingProgress::Attune(FName NodeId)
 		SpendPigment(Node->TemperPigment, Node->TemperAmount, true);
 	}
 	Data.Attunements.Add(NodeId);
+
+	// A newly opened pigment goes into the first empty well, so a first build needs no menu.
+	if (Node->Tier == 1 && !IsInWell(Node->Pigment))
+	{
+		for (int32 Index = 0; Index < NumWells; ++Index)
+		{
+			if (GetWell(Index).IsNone())
+			{
+				SetWell(Index, Node->Pigment);
+				break;
+			}
+		}
+	}
 	Notice(FString::Printf(TEXT("Attuned: %s"), *Node->DisplayName));
 	NotifyEvent(EVENT_Attune, NodeId, 1);
 	Changed();
@@ -294,8 +307,9 @@ float UUnderpaintingProgress::GetAttunementValue(FName EffectType) const
 	float Total = 0.0f;
 	for (const FName& NodeId : Data.Attunements)
 	{
+		// A pigment's effects apply only while it sits in one of the wells (GDD 4.4).
 		const FAttunementRow* Node = Find<FAttunementRow>(AttunementsTable, NodeId);
-		if (Node && Node->EffectType == EffectType)
+		if (Node && Node->EffectType == EffectType && IsInWell(Node->Pigment))
 		{
 			Total += Node->EffectValue;
 		}
@@ -757,4 +771,51 @@ FName UUnderpaintingProgress::GetCurrentObjectiveTarget(FName QuestId) const
 	const FQuestRow* Row = Find<FQuestRow>(QuestsTable, QuestId);
 	const FQuestProgress* Progress = Data.Quests.Find(QuestId);
 	return Row && Progress && Row->Objectives.IsValidIndex(Progress->Step) ? Row->Objectives[Progress->Step].Target : NAME_None;
+}
+
+// --- The palette ---
+
+bool UUnderpaintingProgress::CanPlaceInWell(FName PigmentId) const
+{
+	for (const FName& NodeId : Data.Attunements)
+	{
+		const FAttunementRow* Node = Find<FAttunementRow>(AttunementsTable, NodeId);
+		if (Node && Node->Pigment == PigmentId && Node->Tier == 1)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool UUnderpaintingProgress::SetWell(int32 Index, FName PigmentId)
+{
+	if (Index < 0 || Index >= NumWells || (!PigmentId.IsNone() && !CanPlaceInWell(PigmentId)))
+	{
+		return false;
+	}
+	Data.Wells.SetNum(NumWells);
+
+	// A pigment sits in one well only: placing it again moves it.
+	for (int32 Other = 0; Other < NumWells; ++Other)
+	{
+		if (Other != Index && !PigmentId.IsNone() && Data.Wells[Other] == PigmentId)
+		{
+			Data.Wells[Other] = Data.Wells[Index];
+		}
+	}
+	Data.Wells[Index] = PigmentId;
+	Changed();
+	return true;
+}
+
+void UUnderpaintingProgress::SwapActiveWell()
+{
+	const int32 Other = (Data.ActiveWell + 1) % NumWells;
+	if (!GetWell(Other).IsNone())
+	{
+		Data.ActiveWell = Other;
+		Notice(FString::Printf(TEXT("Well: %s"), *GetDisplayName(GetWell(Other))));
+		Changed();
+	}
 }

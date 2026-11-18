@@ -8,6 +8,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnVitalsDamaged, float, Damage, float, StaggerDamage, AActor*, DamageCauser);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnVitalsDeath, AActor*, Killer);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnVitalsDodged, AActor*, Attacker);
 
 UCLASS(ClassGroup = (Underpainting), meta = (BlueprintSpawnableComponent))
 class UUnderpaintingVitalsComponent : public UActorComponent
@@ -55,6 +56,14 @@ public:
 
 	/** Restores saved values after a load. */
 	void SetHealthAndGlim(float NewHealth, float NewGlim);
+
+	/** Heals this much in total, spread evenly over the time (a Moss Poultice: 40 over 4 s). */
+	void StartHealOverTime(float TotalAmount, float Duration);
+
+	/** Changes maximum Health, keeping current Health within it. */
+	void SetMaxHealth(float NewMax);
+
+	void AddStamina(float Amount) { if (!bDead) { Stamina = FMath::Clamp(Stamina + Amount, 0.0f, MaxStamina); } }
 
 	/** Full Health and Stamina (resting at a Lampstand). */
 	void Refill();
@@ -118,11 +127,17 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Vitals")
 	FOnVitalsDeath OnDeath;
 
+	/** A hit arrived while invulnerable: the dodge worked. */
+	UPROPERTY(BlueprintAssignable, Category = "Vitals")
+	FOnVitalsDodged OnDodged;
+
 private:
 
 	float Health = 100.0f;
 	float Stamina = 100.0f;
 	float Glim = 100.0f;
 	float TimeSinceStaminaSpend = 100.0f;
+	float HealPerSecond = 0.0f;
+	float HealRemaining = 0.0f;
 	bool bDead = false;
 };

@@ -5,6 +5,7 @@ Last updated: 2026-11-18, night. Claude keeps this page current while you are aw
 ## What is playable
 
 - **The walking skeleton (M2):** one connected loop in the village. Talk to Hesper, harvest, craft, relight the Lampstand, rest, attune, finish the quest, fight a Blotter, save and load.
+- **Combat depth (M4):** two palette wells, six Strokes that cost light, the Contrast rule (+30% in the complementary colour), lock-on, poultice and lamp oil, the perfect dodge.
 - **Exploration, first pass (M3):** the three zones connect through blue doorways; the Flare; sketched platforms; one-sided walls with caches behind them; 18 notes to find; a compass.
 - **The style kit:** every grey-box level is now painted in the Glaze look (sky, haze, violet shadows, brush strokes) with no models.
 - **A fight room** with one Blotter, and a **look test** in the chosen art style (Glaze).
@@ -13,7 +14,7 @@ Last updated: 2026-11-18, night. Claude keeps this page current while you are aw
 
 1. Open **Unreal**. If it is not open, type `/ready` to Claude.
 2. **The loop (6 min).** Content Drawer → Maps → Matriarch → **L_Matriarch_Village_A** → Play.
-   Keys: **WASD** move, **mouse** look, **E** use or talk, **1-9** choose, **Q** close a menu, **Tab** pack, **left / right mouse** attack, **Left Ctrl** dodge, **Left Shift** sprint, **F** flare, **G** fix a sketched platform, **F5** save, **F9** load, **F8** new game. **Esc** stops.
+   Keys: **WASD** move, **mouse** look, **E** use or talk, **1-9** choose, **Q** close a menu, **Tab** pack, **left mouse** light attack, **right mouse** heavy (hold it for the Stroke), **Q** lock on, **Z** swap well, **H** poultice, **J** lamp oil, **Left Ctrl** dodge, **Left Shift** sprint, **F** flare, **G** fix a sketched platform, **F5** save, **F9** load, **F8** new game. **Esc** stops.
    Follow the quest text at the top right: talk to Hesper (the teal figure by the tall lamp post), go up the ramp for Ochre, take linseed from the brown drum, use the grey slab, pour the oil into the lamp post, rest there and press 1, talk to Hesper again. Then go down the other ramp and fight the white figure.
    Press **F5**, stop, press Play again: you are where you were, with what you had.
    Then walk through the blue doorway at the north end of the square into the forest, and on to the Vault.
@@ -36,6 +37,10 @@ These are the things only hands can judge. For each, the question to answer is i
 6. *Your swings.* Light takes 0.75 s, heavy 1.3 s, and you can only shuffle while swinging. Is that "weighty and deliberate" or just slow? There are no animations yet, only a thin outline where the swing reaches, so judge the timing, not the look.
 7. *Stamina.* 100, with 12 per light attack and 20 per dodge. Do you run out at interesting moments or annoying ones?
 8. *Stagger.* Three light hits in a row stagger the Blotter for 2 seconds. Does that feel earned?
+
+9a. *Strokes.* After attuning Ochre, hold right mouse for Glaze. Does "hold for the special, tap for the heavy" feel natural, or do you get the wrong one? The hold is 0.28 s.
+9b. *Lock-on* (Q). Does the camera help or fight you?
+9c. *Two at once.* The forest has pairs of Blotters. Too much for a first fight outside the village?
 
 **Exploration**
 9. *"Use" follows your eyes.* Stand between Hesper and the Lampstand and turn: does the prompt switch when you expect it to?

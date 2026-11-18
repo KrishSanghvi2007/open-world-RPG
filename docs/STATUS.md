@@ -24,6 +24,7 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - **Look test** (`/Game/LookTest/Maps/`, pictures in `docs/looktest/`): one corner of the village square in three painterly styles, built by `tools/looktest/`. Working choice: B, Glaze.
 - **First combat** (`Source/Underpainting/Combat/`): stamina, sprint, dodge, light and heavy attacks, and a data-driven Blotter, in `/Game/Maps/Dev/L_Combat_Greybox`. Tests: `Underpainting.Combat.*`.
 - **Story** written: `docs/STORY.md`.
+- **Combat depth (M4)**: palette wells, six Strokes with Glim cost by light, the Contrast rule, lock-on, Moss Poultice, Lamp Oil, perfect dodge, attunement passives. Rules in `Source/Underpainting/Combat/UnderpaintingCombatRules.h`. Devlog: `docs/devlog/005-combat-depth.md`.
 - **Story on paper** (parallel track): `docs/story/` has outlines of Act 2 (the Wader), Act 3 (the Studio) and the Finale, and `FORESHADOWING.md`. Hesper, Bartram, Corin and Ilka have new lines in `data/dialogue.json` that plant what those acts need.
 - **Style kit** (parallel track): `tools/stylekit/stylekit.py` and `/Game/StyleKit`. One Glaze material that paints three values from one colour, and a look per zone, applied automatically to the grey-box and to the C++ placeholders. Devlog: `docs/devlog/004-style-kit.md`.
 - **Exploration, first pass (M3)**: zone exits, gaze-based "Use", the Flare, sketched platforms, one-sided walls and caches, 18 lore notes from `data/lore.json`, named places, a compass. Code in `Source/Underpainting/Game/UnderpaintingExploration.*`. Devlog: `docs/devlog/003-exploration-first-pass.md`.
@@ -40,6 +41,6 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 
 ## Next (Claude does these; see `docs/ROADMAP.md`)
 Scope is the Act 1 slice only. In order:
-1. Finish **M3**: navigation for enemies, signposts, the Nape Overlook secret, one style probe.
-2. **M4, combat depth:** Glim costs, Strokes, the Contrast rule, lock-on, the Moss Poultice, Lampstand respawn.
-3. Then M5 to M9.
+1. **M5, enemies and the boss:** Madderback, Pentiment, the three-attackers limit, Old Palimpsest with two phases, the heartbeat, and the first enemy style probe.
+2. Left over from **M3**: navigation for enemies, signposts, the Nape Overlook secret.
+3. **M6** quests and dialogue, **M7** crafting and attunement depth, **M8** the region shift, **M9** the UI.

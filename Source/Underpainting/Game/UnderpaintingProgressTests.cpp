@@ -108,6 +108,16 @@ bool FUnderpaintingFirstQuestTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("Warm Ground gives +20 Glim"), Progress->GetAttunementValue(TEXT("MaxGlim")), 20.0f);
 	TestEqual(TEXT("Attune step done"), Progress->GetQuestProgress(Quest)->Step, 6);
 
+	// The first pigment you open goes into the first well and becomes the active one; passives need a well.
+	TestEqual(TEXT("Ochre is in the first well"), Progress->GetWell(0), Ochre);
+	TestEqual(TEXT("Ochre is the active pigment"), Progress->GetActivePigment(), Ochre);
+	TestTrue(TEXT("The second well is empty"), Progress->GetWell(1).IsNone());
+	TestFalse(TEXT("A pigment you have not opened cannot be placed"), Progress->SetWell(1, TEXT("Sanguine")));
+	Progress->SetWell(0, NAME_None);
+	TestEqual(TEXT("Out of its well, Warm Ground gives nothing"), Progress->GetAttunementValue(TEXT("MaxGlim")), 0.0f);
+	Progress->SetWell(0, Ochre);
+	TestEqual(TEXT("Back in its well, +20 again"), Progress->GetAttunementValue(TEXT("MaxGlim")), 20.0f);
+
 	// 7. Back to Hesper for the lantern.
 	TestEqual(TEXT("Hesper gives the lantern"), Talk(Progress, TEXT("HesperVane"))[0], FName(TEXT("Hesper_Lantern")));
 	TestTrue(TEXT("Quest complete"), Progress->IsQuestComplete(Quest));

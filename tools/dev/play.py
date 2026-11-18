@@ -7,6 +7,8 @@ the same Interact and menu functions the keys call. Used to check the walking sk
     play.py goto <Kind> <Id> [n]  stand next to a marker (e.g. goto Enemy Blotter)
     play.py light | heavy | dodge one combat action
     play.py save | load
+    play.py build <Pigment> [<Pigment>]   attune tier 1 of one or two pigments (debug shortcut)
+    play.py stroke | lock | swap | poultice | lampoil   combat depth
     play.py flare | flask         light a Flare; throw a Fixative Flask at the platform in view
     play.py read <LoreId>         walk to a note and read it
     play.py lookaway <Kind> <Id>  stand by something but face away from it
@@ -101,6 +103,31 @@ def main(args):
             pawn.start_heavy_attack()
         else:
             pawn.start_light_attack()
+    elif command == "build":
+        # Give the player a pigment build without playing for it: build <Pigment> [<Pigment>]
+        for i, pigment in enumerate(args[1:3]):
+            pawn.dev_grant(unreal.Name(pigment), 3)
+            print("attuned", pigment, pawn.dev_attune(unreal.Name(pigment + "_T1")))
+    elif command == "grant":
+        pawn.dev_grant(unreal.Name(args[1]), int(args[2]))
+    elif command == "stroke":
+        enemy = find(world, "Enemy", args[1] if len(args) > 1 else "Blotter")
+        to_me = pawn.get_actor_location() - enemy.get_actor_location()
+        to_me.z = 0.0
+        direction = to_me.normal() if to_me.length() > 1.0 else unreal.Vector(-1.0, 0.0, 0.0)
+        spot = enemy.get_actor_location() + direction * 140.0
+        pawn.set_actor_location(unreal.Vector(spot.x, spot.y, pawn.get_actor_location().z), False, True)
+        pawn.set_actor_rotation((direction * -1.0).rotator(), True)
+        print("stroke started:", pawn.start_stroke())
+    elif command == "lock":
+        look_at(pawn, find(world, "Enemy", args[1] if len(args) > 1 else "Blotter").get_actor_location())
+        pawn.toggle_lock_on()
+    elif command == "swap":
+        pawn.swap_well()
+    elif command == "poultice":
+        print("poultice used:", pawn.use_poultice())
+    elif command == "lampoil":
+        print("lamp oil used:", pawn.use_lamp_oil())
     elif command == "light":
         pawn.start_light_attack()
     elif command == "heavy":

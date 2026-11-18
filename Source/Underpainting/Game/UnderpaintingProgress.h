@@ -50,6 +50,9 @@ struct FUnderpaintingProgressData
 	UPROPERTY(SaveGame) TArray<FName> Flags;
 	UPROPERTY(SaveGame) TArray<FName> LitLampstands;
 	UPROPERTY(SaveGame) TArray<FName> DepletedNodes;
+	/** The two palette wells: which pigments are active. None means an empty well. */
+	UPROPERTY(SaveGame) TArray<FName> Wells;
+	UPROPERTY(SaveGame) int32 ActiveWell = 0;
 	UPROPERTY(SaveGame) TArray<FName> FoundLore;
 	UPROPERTY(SaveGame) TArray<FName> DiscoveredPlaces;
 	UPROPERTY(SaveGame) TArray<FName> OpenedCaches;
@@ -112,7 +115,28 @@ public:
 	float GetAttunementValue(FName EffectType) const;
 	TArray<FName> GetAllAttunementNodes() const;
 
-	// --- Quests ---
+	// --- The palette ---
+
+	static constexpr int32 NumWells = 2;
+
+	/** Pigment in a well, or None. */
+	FName GetWell(int32 Index) const { return Data.Wells.IsValidIndex(Index) ? Data.Wells[Index] : NAME_None; }
+
+	/** The pigment of the well in use: it decides the Stroke. None if that well is empty. */
+	FName GetActivePigment() const { return GetWell(Data.ActiveWell); }
+	int32 GetActiveWellIndex() const { return Data.ActiveWell; }
+
+	/** A pigment can sit in a well once its tier 1 node is owned. */
+	bool CanPlaceInWell(FName PigmentId) const;
+	bool SetWell(int32 Index, FName PigmentId);
+
+	/** Switches to the other well (if it holds something). */
+	void SwapActiveWell();
+
+	/** True if this pigment is in either well: its passives only apply then. */
+	bool IsInWell(FName PigmentId) const { return Data.Wells.Contains(PigmentId); }
+
+
 
 	bool StartQuest(FName QuestId);
 	bool IsQuestActive(FName QuestId) const;

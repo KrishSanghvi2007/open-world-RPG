@@ -3,6 +3,7 @@
 
 #include "Misc/AutomationTest.h"
 
+#include "UnderpaintingCombatRules.h"
 #include "UnderpaintingCombatTypes.h"
 #include "UnderpaintingDataSubsystem.h"
 #include "UnderpaintingVitalsComponent.h"
@@ -120,6 +121,58 @@ bool FUnderpaintingEnemyDataTest::RunTest(const FString& Parameters)
 		TestEqual(TEXT("Heavy hits to kill a Blotter"), FMath::CeilToInt(float(Blotter->MaxHP) / Knife->HeavyDamage), 3);
 		TestEqual(TEXT("Light hits to stagger a Blotter"), FMath::CeilToInt(float(Blotter->Poise) / (Knife->LightDamage * Knife->StaggerMultiplier)), 3);
 	}
+
+	return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FUnderpaintingContrastTest, "Underpainting.Combat.ContrastAndLight", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FUnderpaintingContrastTest::RunTest(const FString& Parameters)
+{
+	using namespace UnderpaintingCombatRules;
+
+	TArray<FString> Problems;
+	UDataTable* Enemies = UUnderpaintingDataSubsystem::LoadTableFromJson(GetTransientPackage(), TEXT("enemies"), FEnemyRow::StaticStruct(), Problems);
+	UDataTable* Pigments = UUnderpaintingDataSubsystem::LoadTableFromJson(GetTransientPackage(), TEXT("pigments"), FPigmentRow::StaticStruct(), Problems);
+	UDataTable* Regions = UUnderpaintingDataSubsystem::LoadTableFromJson(GetTransientPackage(), TEXT("regions"), FRegionRow::StaticStruct(), Problems);
+	if (!TestNotNull(TEXT("tables"), Enemies) || !Pigments || !Regions)
+	{
+		return false;
+	}
+	const FEnemyRow* Blotter = Enemies->FindRow<FEnemyRow>(TEXT("Blotter"), TEXT("Test"), false);
+
+	// The Contrast rule against a white Blotter: Bone Black is its complement, Ceruse is its own hue.
+	const FContrast Strong = Contrast(TEXT("BoneBlack"), Blotter->Weaknesses, Blotter->Resistances);
+	TestEqual(TEXT("Complement: +30% damage"), Strong.DamageMultiplier, 1.3f);
+	TestEqual(TEXT("Complement: +50% stagger"), Strong.StaggerMultiplier, 1.5f);
+	const FContrast Muddy = Contrast(TEXT("Ceruse"), Blotter->Weaknesses, Blotter->Resistances);
+	TestEqual(TEXT("Own hue: -30% damage"), Muddy.DamageMultiplier, 0.7f);
+	TestEqual(TEXT("Own hue: stagger unchanged"), Muddy.StaggerMultiplier, 1.0f);
+	const FContrast Plain = Contrast(TEXT("Ochre"), Blotter->Weaknesses, Blotter->Resistances);
+	TestEqual(TEXT("Neither: no change"), Plain.DamageMultiplier, 1.0f);
+	TestEqual(TEXT("A plain attack has no pigment"), Contrast(NAME_None, Blotter->Weaknesses, Blotter->Resistances).Sign, 0);
+
+	// Every enemy's weakness is the complement of its hue, and its resistance the pigment of its hue.
+	TMap<EPigmentHue, FName> ByHue;
+	TMap<FName, FName> ComplementOf;
+	Pigments->ForeachRow<FPigmentRow>(TEXT("Test"), [&](const FName& Name, const FPigmentRow& Row) { ByHue.Add(Row.Hue, Name); ComplementOf.Add(Name, Row.Complement); });
+	Enemies->ForeachRow<FEnemyRow>(TEXT("Test"), [&](const FName& Name, const FEnemyRow& Row)
+	{
+		const FName Own = ByHue.FindRef(Row.Hue);
+		TestTrue(*FString::Printf(TEXT("%s resists its own hue"), *Name.ToString()), Row.Resistances.Contains(Own));
+		TestTrue(*FString::Printf(TEXT("%s is weak to its complement"), *Name.ToString()), Row.Weaknesses.Contains(ComplementOf.FindRef(Own)));
+	});
+
+	// The price of light: free in the painted village, half in the forest, full in the Vault, and a Flare helps.
+	const int32 ImpastoCost = Pigments->FindRow<FPigmentRow>(TEXT("BoneBlack"), TEXT("Test"), false)->LightCost;
+	const float Village = Regions->FindRow<FRegionRow>(TEXT("VarnishVillage"), TEXT("Test"), false)->AmbientLight;
+	const float Forest = Regions->FindRow<FRegionRow>(TEXT("Scumblewood"), TEXT("Test"), false)->AmbientLight;
+	const float Vault = Regions->FindRow<FRegionRow>(TEXT("GrisailleVault"), TEXT("Test"), false)->AmbientLight;
+	TestEqual(TEXT("Impasto in the village is free"), StrokeGlimCost(ImpastoCost, Village), 0);
+	TestEqual(TEXT("Impasto in the forest is half price"), StrokeGlimCost(ImpastoCost, Forest), 5);
+	TestEqual(TEXT("Impasto in the Vault is full price"), StrokeGlimCost(ImpastoCost, Vault), 10);
+	TestEqual(TEXT("A Flare in the Vault halves it"), StrokeGlimCost(ImpastoCost, EffectiveLight(Vault, true)), 5);
+	TestEqual(TEXT("Odd costs round up"), StrokeGlimCost(15, 0.5f), 8);
 
 	return !HasAnyErrors();
 }

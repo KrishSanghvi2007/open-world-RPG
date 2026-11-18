@@ -152,6 +152,16 @@ void AUnderpaintingEnemy::Tick(float DeltaTime)
 	StateTime += DeltaTime;
 	TimeSinceHit += DeltaTime;
 	CooldownRemaining = FMath::Max(0.0f, CooldownRemaining - DeltaTime);
+	SlowRemaining = FMath::Max(0.0f, SlowRemaining - DeltaTime);
+	VulnerableRemaining = FMath::Max(0.0f, VulnerableRemaining - DeltaTime);
+	GetCharacterMovement()->MaxWalkSpeed = Row.MoveSpeed * (SlowRemaining > 0.0f ? SlowMultiplier : 1.0f);
+	if (ReelRemaining > 0.0f)
+	{
+		// Reeling from an erased attack: no action until it passes.
+		ReelRemaining -= DeltaTime;
+		UpdateTelegraph();
+		return;
+	}
 	if (TimeSinceHit >= PoiseResetTime)
 	{
 		PoiseDamage = 0.0f;
@@ -375,4 +385,32 @@ void AUnderpaintingEnemy::UpdateTelegraph()
 	// A staggered or dead enemy slumps.
 	const float Lean = State == EEnemyState::Staggered ? 25.0f : (State == EEnemyState::Dead ? 85.0f : 0.0f);
 	PlaceholderBody->SetRelativeRotation(FRotator(Lean, 0.0f, 0.0f));
+}
+
+void AUnderpaintingEnemy::ApplySlow(float SpeedMultiplier, float Duration)
+{
+	SlowMultiplier = FMath::Clamp(SpeedMultiplier, 0.1f, 1.0f);
+	SlowRemaining = FMath::Max(SlowRemaining, Duration);
+}
+
+void AUnderpaintingEnemy::ApplyVulnerable(float ExtraDamageFraction, float Duration)
+{
+	VulnerableFraction = ExtraDamageFraction;
+	VulnerableRemaining = FMath::Max(VulnerableRemaining, Duration);
+}
+
+bool AUnderpaintingEnemy::CancelAttack(float ReelSeconds)
+{
+	const EAttackPhase Phase = AttackClock.GetPhase();
+	if (State != EEnemyState::Attacking || (Phase != EAttackPhase::Windup && Phase != EAttackPhase::Active))
+	{
+		return false;
+	}
+	AttackClock.Stop();
+	CurrentAttack = INDEX_NONE;
+	CooldownRemaining = AttackCooldown;
+	ReelRemaining = ReelSeconds;
+	SetState(EEnemyState::Chasing);
+	UE_LOG(LogUnderpainting, Log, TEXT("%s had its attack erased"), *GetName());
+	return true;
 }
