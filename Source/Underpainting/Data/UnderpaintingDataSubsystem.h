@@ -78,6 +78,11 @@ public:
 	const FRegionRow* FindRegion(FName RowName) const;
 	const FSoundRow* FindSound(FName RowName) const;
 
+	UDataTable* GetHints() const { return Hints; }
+
+	/** The zones in the order they lie along the road (the order of their rows in regions.json). */
+	TArray<FName> GetZoneOrder() const;
+
 	/** Converts "#RRGGBB" from the data files into a colour. Returns magenta if the text is not a valid hex colour. */
 	UFUNCTION(BlueprintPure, Category = "Underpainting|Data")
 	static FLinearColor HexToColour(const FString& Hex);
@@ -113,4 +118,7 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UDataTable> Sounds;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UDataTable> Hints;
 };

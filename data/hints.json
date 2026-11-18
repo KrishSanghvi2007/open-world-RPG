@@ -1,0 +1,134 @@
+[
+  {
+    "Name": "Move",
+    "Trigger": "Start",
+    "Text": "Move with W A S D. Look with the mouse. Jump with Space.",
+    "Seconds": 14
+  },
+  {
+    "Name": "Use",
+    "Trigger": "NearUsable",
+    "Text": "Look at something and press {Use} to use it or talk.",
+    "Seconds": 12
+  },
+  {
+    "Name": "Journal",
+    "Trigger": "AfterFirstTalk",
+    "Text": "What to do next is always at the top right. {Pack} opens your satchel: pack, journal, notes and settings.",
+    "Seconds": 11
+  },
+  {
+    "Name": "Sprint",
+    "Trigger": "Walked",
+    "Text": "Hold {Sprint} to run. Running spends Stamina, the green bar.",
+    "Seconds": 9
+  },
+  {
+    "Name": "Harvest",
+    "Trigger": "NearNode",
+    "Text": "Pigment grows here. Press {Use} to harvest it.",
+    "Seconds": 12
+  },
+  {
+    "Name": "Wet",
+    "Trigger": "FirstHarvest",
+    "Text": "Fresh pigment is wet. Rest at a lit Lampstand to dry it: only dry pigment is safe, and only dry pigment can be spent on yourself.",
+    "Seconds": 12
+  },
+  {
+    "Name": "Craft",
+    "Trigger": "NearStation",
+    "Text": "A station turns pigment and materials into things. Press {Use}, then choose a recipe.",
+    "Seconds": 12
+  },
+  {
+    "Name": "DarkLamp",
+    "Trigger": "NearDarkLamp",
+    "Text": "This Lampstand has gone out. Lamp Oil lights it: press {Use}.",
+    "Seconds": 12
+  },
+  {
+    "Name": "Rest",
+    "Trigger": "LitLamp",
+    "Text": "A lit Lampstand is a place to rest. Resting heals you, dries your pigment, saves, and opens your palette.",
+    "Seconds": 12
+  },
+  {
+    "Name": "Stroke",
+    "Trigger": "FirstWell",
+    "Text": "{Pigment} is in your palette. Hold {HeavyAttack} for its Stroke, {Stroke}. Tap for a plain heavy attack.",
+    "Seconds": 14
+  },
+  {
+    "Name": "Glim",
+    "Trigger": "DarkZone",
+    "Text": "Strokes cost Glim, the light in your lantern (the orange bar), wherever the world is dark. Here a Stroke costs {Cost}. In full light they are free.",
+    "Seconds": 14
+  },
+  {
+    "Name": "Fight",
+    "Trigger": "EnemyNear",
+    "Text": "{LightAttack} light attack. {HeavyAttack} heavy. {Dodge} dodge. The glow and the mark on the ground show where a hit will land, and when.",
+    "Seconds": 15
+  },
+  {
+    "Name": "Dodge",
+    "Trigger": "FirstHurt",
+    "Text": "Dodge through an attack just before it lands and it passes through you. A late dodge gives Glim back.",
+    "Seconds": 11
+  },
+  {
+    "Name": "LockOn",
+    "Trigger": "EnemyStillNear",
+    "Text": "{LockOn} locks your view onto an enemy. Press it again to let go.",
+    "Seconds": 9
+  },
+  {
+    "Name": "Contrast",
+    "Trigger": "Weakness",
+    "Text": "Every creature has a colour. Its opposite hurts it more. {Enemy} is weak to {Weakness}.",
+    "Seconds": 13
+  },
+  {
+    "Name": "Stagger",
+    "Trigger": "StaggerBar",
+    "Text": "Hits fill the thin bar under an enemy's health. Fill it and the enemy is helpless for a moment: use a heavy attack or a Stroke.",
+    "Seconds": 11
+  },
+  {
+    "Name": "GlimBack",
+    "Trigger": "LowGlim",
+    "Text": "Low on Glim. It comes back when you finish an enemy, dodge at the last moment, pour Lamp Oil ({LampOil}) or rest.",
+    "Seconds": 11
+  },
+  {
+    "Name": "Poultice",
+    "Trigger": "LowHealth",
+    "Text": "{Poultice} uses a Moss Poultice. Resting tops you up to two.",
+    "Seconds": 10
+  },
+  {
+    "Name": "Wells",
+    "Trigger": "TwoWells",
+    "Text": "You have two palette wells. {SwapWell} swaps between them.",
+    "Seconds": 10
+  },
+  {
+    "Name": "Flare",
+    "Trigger": "VaultDark",
+    "Text": "There is no light here. {Flare} lights a Flare for 8 seconds: sketched things are solid while it burns, and hidden writing shows.",
+    "Seconds": 14
+  },
+  {
+    "Name": "Canvas",
+    "Trigger": "NearCanvas",
+    "Text": "Pale cross-hatched canvas is unpainted. Nothing was ever put there. You can walk through it.",
+    "Seconds": 12
+  },
+  {
+    "Name": "Death",
+    "Trigger": "AfterDeath",
+    "Text": "You wake where you last rested or arrived. From now on, dying costs half your wet pigment. Dry pigment is safe.",
+    "Seconds": 12
+  }
+]

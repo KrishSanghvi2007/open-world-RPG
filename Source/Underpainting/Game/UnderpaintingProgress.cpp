@@ -827,6 +827,13 @@ FName UUnderpaintingProgress::GetCurrentObjectiveTarget(FName QuestId) const
 	return Row && Progress && Row->Objectives.IsValidIndex(Progress->Step) ? Row->Objectives[Progress->Step].Target : NAME_None;
 }
 
+FName UUnderpaintingProgress::GetCurrentObjectiveZone(FName QuestId) const
+{
+	const FQuestRow* Row = Find<FQuestRow>(QuestsTable, QuestId);
+	const FQuestProgress* Progress = Data.Quests.Find(QuestId);
+	return Row && Progress && Row->Objectives.IsValidIndex(Progress->Step) ? Row->Objectives[Progress->Step].Zone : NAME_None;
+}
+
 // --- The palette ---
 
 bool UUnderpaintingProgress::CanPlaceInWell(FName PigmentId) const

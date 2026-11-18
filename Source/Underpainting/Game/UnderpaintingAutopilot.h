@@ -59,6 +59,7 @@ private:
 	bool TickWalk(const FVector& Target, bool bSprint, float StopDistance, float DeltaTime);
 	bool TickFight(float Skill, float Timeout, float DeltaTime);
 	bool TickTalk(const FStep& Step, float DeltaTime);
+	bool TickTrial(const FStep& Step, float DeltaTime);
 	AActor* FindMarker(const FStep& Step, int32 FirstArg) const;
 	AUnderpaintingEnemy* NearestEnemy(float Range) const;
 	void Note(const FString& Text);
@@ -77,6 +78,10 @@ private:
 	float SinceProgress = 0.0f;
 	float WalkedDistance = 0.0f;
 
+	/** While walking, fight whatever attacks with this skill (below 0: walk on regardless). */
+	float GuardSkill = -1.0f;
+	float GuardTime = 0.0f;
+
 	// Background follow.
 	bool bFollow = false;
 	float FollowDistance = 170.0f;
@@ -89,6 +94,16 @@ private:
 	int32 HitsTaken = 0;
 	float LastHealth = 0.0f;
 	int32 Dodges = 0;
+	float DamageTaken = 0.0f;
+
+	// Trials: the same fight several times over, to measure how hard an enemy is.
+	TWeakObjectPtr<AUnderpaintingEnemy> TrialEnemy;
+	int32 TrialRound = 0;
+	float TrialStartTime = 0.0f;
+	float TrialStartDamage = 0.0f;
+	int32 TrialStartHits = 0;
+	TArray<float> TrialDamages;
+	TArray<float> TrialTimes;
 
 	// Talking.
 	int32 TalkLine = 0;

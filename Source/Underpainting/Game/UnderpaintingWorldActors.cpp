@@ -236,6 +236,8 @@ AUnderpaintingLampstand::AUnderpaintingLampstand()
 	Flame->SetAttenuationRadius(1200.0f);
 	Flame->bUseInverseSquaredFalloff = false;
 	Flame->SetIntensity(0.0f);
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.TickInterval = 0.05f;
 }
 
 bool AUnderpaintingLampstand::IsLit() const
@@ -276,9 +278,27 @@ void AUnderpaintingLampstand::Interact(AUnderpaintingPlayerCharacter* Player)
 
 void AUnderpaintingLampstand::Refresh()
 {
+	// A lit Lampstand is the brightest warm thing in sight: it is how you find your way. Its light reaches far and casts no shadow.
 	const bool bLit = IsLit();
-	Flame->SetIntensity(bLit ? 14.0f : 1.5f);
+	Flame->SetAttenuationRadius(bLit ? 2600.0f : 1200.0f);
+	Flame->SetIntensity(bLit ? 22.0f : 1.5f);
 	SetColour(bLit ? HexColour(TEXT("E8923A")) : HexColour(TEXT("4B4A48")));
+}
+
+void AUnderpaintingLampstand::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	// A lit flame breathes; a guttering one stutters, which is what catches the eye from across a clearing.
+	const float T = GetWorld()->GetTimeSeconds() + GetActorLocation().X * 0.01f;
+	if (IsLit())
+	{
+		Flame->SetIntensity(22.0f * (0.93f + 0.07f * FMath::Sin(T * 2.3f)));
+	}
+	else
+	{
+		const float Stutter = FMath::PerlinNoise1D(T * 3.1f);
+		Flame->SetIntensity(Stutter > 0.25f ? 5.0f : 0.8f);
+	}
 }
 
 // --- NPC ---

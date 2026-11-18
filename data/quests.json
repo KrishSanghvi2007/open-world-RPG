@@ -21,37 +21,44 @@
       {
         "Event": "Talk",
         "Target": "HesperVane",
-        "Count": 1
+        "Count": 1,
+        "Zone": "VarnishVillage"
       },
       {
         "Event": "Have",
         "Target": "Ochre",
-        "Count": 4
+        "Count": 4,
+        "Zone": "VarnishVillage"
       },
       {
         "Event": "Have",
         "Target": "LinseedOil",
-        "Count": 1
+        "Count": 1,
+        "Zone": "VarnishVillage"
       },
       {
         "Event": "Craft",
         "Target": "LampOil",
-        "Count": 1
+        "Count": 1,
+        "Zone": "VarnishVillage"
       },
       {
         "Event": "Relight",
         "Target": "Varnish",
-        "Count": 1
+        "Count": 1,
+        "Zone": "VarnishVillage"
       },
       {
         "Event": "Attune",
         "Target": "Ochre_T1",
-        "Count": 1
+        "Count": 1,
+        "Zone": "VarnishVillage"
       },
       {
         "Event": "Talk",
         "Target": "HesperVane",
-        "Count": 1
+        "Count": 1,
+        "Zone": "VarnishVillage"
       }
     ],
     "Prerequisites": [],
@@ -64,10 +71,14 @@
       {
         "Id": "MossPoultice",
         "Count": 3
+      },
+      {
+        "Id": "LampOil",
+        "Count": 2
       }
     ],
     "RewardPigments": [],
-    "RewardNotes": "Unlocks Recipe_MossPoultice, Recipe_Mahlstick, Recipe_MossCloak and Recipe_BraidedWick. Opens the gate to the Scumblewood."
+    "RewardNotes": "Unlocks Recipe_MossPoultice, Recipe_Mahlstick, Recipe_MossCloak and Recipe_BraidedWick. Opens the gate to the Scumblewood. Also 2 Lamp Oil: one for the Rib Gate Lampstand, one to spare, so nobody reaches the Rib Gate unable to light it."
   },
   {
     "Name": "MQ_ColdUnderTheRibs",
@@ -92,42 +103,50 @@
       {
         "Event": "Reach",
         "Target": "RibGate",
-        "Count": 1
+        "Count": 1,
+        "Zone": "Scumblewood"
       },
       {
         "Event": "Relight",
         "Target": "RibGate",
-        "Count": 1
+        "Count": 1,
+        "Zone": "Scumblewood"
       },
       {
         "Event": "Reach",
         "Target": "GrisailleVault",
-        "Count": 1
+        "Count": 1,
+        "Zone": "GrisailleVault"
       },
       {
         "Event": "Reach",
         "Target": "GalleryFarLedge",
-        "Count": 1
+        "Count": 1,
+        "Zone": "GrisailleVault"
       },
       {
         "Event": "Kill",
         "Target": "ThePalimpsest",
-        "Count": 1
+        "Count": 1,
+        "Zone": "GrisailleVault"
       },
       {
         "Event": "Choose",
         "Target": "MQ_ColdUnderTheRibs",
-        "Count": 1
+        "Count": 1,
+        "Zone": "GrisailleVault"
       },
       {
         "Event": "Reach",
         "Target": "StairOfSpines",
-        "Count": 1
+        "Count": 1,
+        "Zone": "Scumblewood"
       },
       {
         "Event": "Talk",
         "Target": "HesperVane",
-        "Count": 1
+        "Count": 1,
+        "Zone": "VarnishVillage"
       }
     ],
     "Prerequisites": [
@@ -213,22 +232,26 @@
       {
         "Event": "Talk",
         "Target": "CorinHalfSeen",
-        "Count": 1
+        "Count": 1,
+        "Zone": "Scumblewood"
       },
       {
         "Event": "Reach",
         "Target": "CorinsBack",
-        "Count": 1
+        "Count": 1,
+        "Zone": "Scumblewood"
       },
       {
         "Event": "Talk",
         "Target": "CorinHalfSeen",
-        "Count": 1
+        "Count": 1,
+        "Zone": "Scumblewood"
       },
       {
         "Event": "Choose",
         "Target": "SQ_TheUnseenSide",
-        "Count": 1
+        "Count": 1,
+        "Zone": "Scumblewood"
       }
     ],
     "Prerequisites": [
@@ -305,22 +328,26 @@
       {
         "Event": "Talk",
         "Target": "IlkaThrum",
-        "Count": 1
+        "Count": 1,
+        "Zone": "Scumblewood"
       },
       {
         "Event": "Inspect",
         "Target": "BloodWell",
-        "Count": 3
+        "Count": 3,
+        "Zone": "Scumblewood"
       },
       {
         "Event": "Reach",
         "Target": "BroodNest",
-        "Count": 1
+        "Count": 1,
+        "Zone": "Scumblewood"
       },
       {
         "Event": "Choose",
         "Target": "SQ_TickWardensLedger",
-        "Count": 1
+        "Count": 1,
+        "Zone": "Scumblewood"
       }
     ],
     "Prerequisites": [
@@ -383,17 +410,20 @@
       {
         "Event": "Talk",
         "Target": "BartramSedge",
-        "Count": 1
+        "Count": 1,
+        "Zone": "VarnishVillage"
       },
       {
         "Event": "Talk",
         "Target": "BartramSedge",
-        "Count": 1
+        "Count": 1,
+        "Zone": "VarnishVillage"
       },
       {
         "Event": "Choose",
         "Target": "SQ_AFairGrind",
-        "Count": 1
+        "Count": 1,
+        "Zone": "VarnishVillage"
       }
     ],
     "Prerequisites": [

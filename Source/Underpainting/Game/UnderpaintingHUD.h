@@ -74,6 +74,14 @@ public:
 
 	int32 GetSatchelTab() const { return SatchelTab; }
 
+	/** A teaching prompt: one line near the bottom of the screen, for at most this long. */
+	void ShowHint(const FString& Text, float Seconds);
+
+	/** The player has done the thing: the prompt can go. */
+	void EndHintSoon();
+
+	bool IsHintShowing() const { return HintRemaining > 0.0f; }
+
 	/** The mouse button, while a menu is open: presses whatever row or button the pointer is on. */
 	void Click();
 
@@ -109,6 +117,15 @@ private:
 	void DrawChoice(const UUnderpaintingProgress* Progress);
 	void DrawTurning(const AUnderpaintingPlayerCharacter* Player, UUnderpaintingProgress* Progress);
 	void DrawFeel(const AUnderpaintingPlayerCharacter* Player);
+	void DrawHint();
+	void DrawObjective(const AUnderpaintingPlayerCharacter* Player, const UUnderpaintingProgress* Progress);
+
+	/** The thing the tracked quest's current step is about: the nearest one in this level, or the door that leads toward it. */
+	const AActor* FindObjective(const AUnderpaintingPlayerCharacter* Player, const UUnderpaintingProgress* Progress) const;
+
+	FString HintText;
+	float HintRemaining = 0.0f;
+	float HintAge = 0.0f;
 	void DrawVital(float X, float Y, float Width, float Height, float Fraction, float& Ghost, const FLinearColor& Fill, const FString& Label, float DeniedAt, bool bLow);
 	void Sound(FName Row, float Volume = 0.7f);
 

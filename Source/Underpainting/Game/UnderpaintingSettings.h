@@ -47,6 +47,12 @@ public:
 	UPROPERTY(SaveGame) int32 TextSizeStep = 1;
 
 	UPROPERTY(SaveGame) bool bKeyHints = true;
+
+	/** The teaching prompts that appear the first time something matters. */
+	UPROPERTY(SaveGame) bool bTeaching = true;
+
+	/** The marker that shows where the current quest step is. */
+	UPROPERTY(SaveGame) bool bObjectiveMarker = true;
 };
 
 UCLASS()
@@ -66,6 +72,8 @@ public:
 	void ResetKeys();
 	void CycleTextSize();
 	void ToggleKeyHints();
+	void ToggleTeaching();
+	void ToggleObjectiveMarker();
 
 	/** Fired when any key changes, so the player can bind again. */
 	FSimpleMulticastDelegate OnKeysChanged;

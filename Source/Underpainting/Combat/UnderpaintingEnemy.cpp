@@ -201,6 +201,7 @@ void AUnderpaintingEnemy::BeginAttack(int32 AttackIndex)
 {
 	const FEnemyAttack& Attack = Row.Attacks[AttackIndex];
 	CurrentAttack = AttackIndex;
+	AttackBeganAt = GetWorld()->GetTimeSeconds();
 	bAttackLanded = false;
 	HitsLanded = 0;
 	// A multi-hit attack stays live long enough for all its hits.
@@ -280,8 +281,10 @@ void AUnderpaintingEnemy::Tick(float DeltaTime)
 		}
 
 		FaceTowards(Target->GetActorLocation(), DeltaTime);
-		// Never more than three enemies attacking at once (enemy design principle 4).
-		const int32 Attack = CooldownRemaining <= 0.0f && CountAttackers(this) < MaxAttackers ? ChooseAttack(Distance) : INDEX_NONE;
+		// Never more than two attacking at once, and never two beginning together (enemy design principle 4 allows up to three;
+		// Act 1 teaches, so its groups take turns).
+		const bool bMyTurn = CountAttackers(this) < MaxAttackers && SecondsSinceAnyAttackBegan(this) >= AttackStagger;
+		const int32 Attack = CooldownRemaining <= 0.0f && bMyTurn ? ChooseAttack(Distance) : INDEX_NONE;
 		if (Attack != INDEX_NONE)
 		{
 			BeginAttack(Attack);
@@ -439,7 +442,15 @@ void AUnderpaintingEnemy::HitTest(const FEnemyAttack& Attack)
 
 		if (UUnderpaintingVitalsComponent* OtherVitals = Other->FindComponentByClass<UUnderpaintingVitalsComponent>())
 		{
+			// A blow that is dodged is spent: it passed through. Without this, an attack that stays live longer than a dodge
+			// protects would land anyway the moment the protection ended, and dodging well would be worth nothing.
+			const bool bDodged = OtherVitals->bInvulnerable;
 			const float Taken = OtherVitals->ApplyDamage(Attack.Damage, Attack.Damage, this);
+			if (bDodged)
+			{
+				bAttackLanded = true;
+				break;
+			}
 			if (Taken > 0.0f)
 			{
 				bAttackLanded = true;
@@ -740,6 +751,16 @@ void AUnderpaintingEnemy::ForceStagger()
 		CurrentAttack = INDEX_NONE;
 		SetState(EEnemyState::Staggered);
 	}
+}
+
+float AUnderpaintingEnemy::SecondsSinceAnyAttackBegan(const UObject* WorldContext)
+{
+	float Latest = -100.0f;
+	for (TActorIterator<AUnderpaintingEnemy> It(WorldContext->GetWorld()); It; ++It)
+	{
+		Latest = FMath::Max(Latest, It->AttackBeganAt);
+	}
+	return WorldContext->GetWorld()->GetTimeSeconds() - Latest;
 }
 
 int32 AUnderpaintingEnemy::CountAttackers(const UObject* WorldContext)

@@ -558,6 +558,10 @@ struct FQuestObjective
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
 	int32 Count = 1;
+
+	/** The zone (regions.json) where this step happens, so the objective marker can point at the right door from elsewhere. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
+	FName Zone;
 };
 
 USTRUCT(BlueprintType)
@@ -809,4 +813,27 @@ struct FSoundRow : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
 	FString Source;
 };
+
+// ---------------------------------------------------------------------------
+// hints.json: the teaching prompts
+// ---------------------------------------------------------------------------
+
+USTRUCT(BlueprintType)
+struct FHintRow : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	/** When it appears. The triggers are code: AUnderpaintingPlayerCharacter::TickHints. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hint")
+	FName Trigger;
+
+	/** One short line. {Use} and the other action names become the player's keys. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hint")
+	FString Text;
+
+	/** The longest it stays up. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hint")
+	float Seconds = 10.0f;
+};
+
 

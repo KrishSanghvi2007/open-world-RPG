@@ -2,6 +2,7 @@
 
 #include "UnderpaintingDataSubsystem.h"
 #include "UnderpaintingEnemy.h"
+#include "UnderpaintingExploration.h"
 #include "UnderpaintingFeel.h"
 #include "UnderpaintingPlayerCharacter.h"
 #include "UnderpaintingProgressSubsystem.h"
@@ -165,7 +166,7 @@ void AUnderpaintingHUD::MoveTab(int32 Direction)
 
 int32 AUnderpaintingHUD::SettingsRowCount() const
 {
-	return 2 + UUnderpaintingSettingsSave::Actions().Num() + 2;        // text size, hints, the keys, reset keys, new game
+	return 4 + UUnderpaintingSettingsSave::Actions().Num() + 3;        // four general rows, the keys, reset keys, I am stuck, new game
 }
 
 void AUnderpaintingHUD::MoveCursor(int32 Direction)
@@ -194,7 +195,7 @@ void AUnderpaintingHUD::ActivateSetting()
 		return;
 	}
 	const TArray<FUnderpaintingAction>& Actions = UUnderpaintingSettingsSave::Actions();
-	const int32 KeyRow = SettingsCursor - 2;
+	const int32 KeyRow = SettingsCursor - 4;
 	if (SettingsCursor == 0)
 	{
 		Settings->CycleTextSize();
@@ -202,6 +203,14 @@ void AUnderpaintingHUD::ActivateSetting()
 	else if (SettingsCursor == 1)
 	{
 		Settings->ToggleKeyHints();
+	}
+	else if (SettingsCursor == 2)
+	{
+		Settings->ToggleTeaching();
+	}
+	else if (SettingsCursor == 3)
+	{
+		Settings->ToggleObjectiveMarker();
 	}
 	else if (Actions.IsValidIndex(KeyRow))
 	{
@@ -211,6 +220,15 @@ void AUnderpaintingHUD::ActivateSetting()
 	{
 		Settings->ResetKeys();
 		AddNotice(TEXT("Keys put back as they were."));
+	}
+	else if (KeyRow == Actions.Num() + 1)
+	{
+		// Wedged somewhere: back to where you last stood safely a few seconds ago.
+		CloseMenu();
+		if (AUnderpaintingPlayerCharacter* Player = Cast<AUnderpaintingPlayerCharacter>(GetOwningPawn()))
+		{
+			Player->ReturnToSafeGround(true);
+		}
 	}
 	else if (!bConfirmNewGame)
 	{
@@ -660,7 +678,9 @@ void AUnderpaintingHUD::DrawHUD()
 	if (Player && Progress && Menu == EUnderpaintingMenu::None)
 	{
 		DrawCompass(Player, Progress);
+		DrawObjective(Player, Progress);
 	}
+	DrawHint();
 	if (Progress)
 	{
 		if (Menu != EUnderpaintingMenu::Inventory)
@@ -1229,11 +1249,14 @@ void AUnderpaintingHUD::DrawSettingsTab(float X, float Y, float Width)
 	TArray<FRow> Rows;
 	Rows.Add({ TEXT("Text size"), Sizes[FMath::Clamp(Save->TextSizeStep, 0, 3)] });
 	Rows.Add({ TEXT("Key hints along the bottom"), Save->bKeyHints ? TEXT("shown") : TEXT("hidden") });
+	Rows.Add({ TEXT("Teaching prompts"), Save->bTeaching ? TEXT("shown") : TEXT("hidden") });
+	Rows.Add({ TEXT("Objective marker"), Save->bObjectiveMarker ? TEXT("shown") : TEXT("hidden") });
 	for (const FUnderpaintingAction& Action : Actions)
 	{
 		Rows.Add({ Action.Label, CapturingAction == Action.Id ? FString(TEXT("press a key...")) : Save->DescribeKey(Action.Id) });
 	}
 	Rows.Add({ TEXT("Put all keys back"), FString() });
+	Rows.Add({ TEXT("I am stuck: put me back on safe ground"), FString() });
 	Rows.Add({ TEXT("New game"), bConfirmNewGame ? FString(TEXT("Press again to erase your save. This cannot be undone.")) : FString() });
 
 	// Two columns so everything fits on the sheet: general on the left with the first keys, the rest on the right.
@@ -1251,7 +1274,7 @@ void AUnderpaintingHUD::DrawSettingsTab(float X, float Y, float Width)
 			DrawText(TEXT(">"), InkRed, RowX - 4.0f, RowY, nullptr, 1.0f);
 		}
 		DrawText(Rows[Index].Label, SheetInk, RowX + 14.0f, RowY, nullptr, 0.95f);
-		const bool bWarn = Index == Rows.Num() - 1 || (Index >= 2 && Index < 2 + Actions.Num() && CapturingAction == Actions[Index - 2].Id);
+		const bool bWarn = Index == Rows.Num() - 1 || (Index >= 4 && Index < 4 + Actions.Num() && CapturingAction == Actions[Index - 4].Id);
 		DrawText(Rows[Index].Value, bWarn ? InkRed : InkGreen, RowX + (Index == Rows.Num() - 1 ? 110.0f : 270.0f), RowY, nullptr, Index == Rows.Num() - 1 ? 0.8f : 0.95f);
 	}
 	const FString UseKey = Save->DescribeKey(TEXT("Use"));
@@ -1315,35 +1338,149 @@ void AUnderpaintingHUD::DrawCompass(const AUnderpaintingPlayerCharacter* Player,
 	Mark(180.0f, TEXT("S"), DimColour, 1.0f);
 	Mark(-90.0f, TEXT("LAMP"), GlimColour, 0.9f);
 
-	// The current quest step, if what it is about is somewhere in this level.
-	const TArray<FName> ActiveQuests = Progress->GetActiveQuests();
-	if (ActiveQuests.Num() > 0)
+	// The current quest step: the thing itself if it is in this level, otherwise the door that leads toward it.
+	if (const AActor* Objective = FindObjective(Player, Progress))
 	{
-		const FName Target = Progress->GetCurrentObjectiveTarget(ActiveQuests[0]);
-		TArray<AActor*> Tagged;
-		UGameplayStatics::GetAllActorsWithTag(this, Target, Tagged);
-		const AActor* Nearest = nullptr;
-		float NearestDistance = TNumericLimits<float>::Max();
-		for (const AActor* Actor : Tagged)
+		const FVector To = Objective->GetActorLocation() - Player->GetActorLocation();
+		Mark(To.Rotation().Yaw, FString::Printf(TEXT("v %dm"), FMath::RoundToInt(To.Size() / 100.0f)), GoodColour, 0.9f);
+	}
+}
+
+const AActor* AUnderpaintingHUD::FindObjective(const AUnderpaintingPlayerCharacter* Player, const UUnderpaintingProgress* Progress) const
+{
+	const TArray<FName> ActiveQuests = Progress->GetActiveQuests();
+	if (ActiveQuests.Num() == 0)
+	{
+		return nullptr;
+	}
+	const FName Target = Progress->GetCurrentObjectiveTarget(ActiveQuests[0]);
+	TArray<AActor*> Tagged;
+	UGameplayStatics::GetAllActorsWithTag(this, Target, Tagged);
+	const AActor* Nearest = nullptr;
+	float NearestDistance = TNumericLimits<float>::Max();
+	for (const AActor* Actor : Tagged)
+	{
+		const AUnderpaintingInteractable* Usable = Cast<AUnderpaintingInteractable>(Actor);
+		if ((Usable && Usable->GetUsablePrompt().IsEmpty()) || Actor->IsHidden())
 		{
-			const AUnderpaintingInteractable* Usable = Cast<AUnderpaintingInteractable>(Actor);
-			if (Usable && Usable->GetUsablePrompt().IsEmpty())
-			{
-				continue;   // an emptied node is not where the objective is
-			}
-			const float Distance = FVector::Dist(Actor->GetActorLocation(), Player->GetActorLocation());
-			if (Distance < NearestDistance)
-			{
-				Nearest = Actor;
-				NearestDistance = Distance;
-			}
+			continue;   // an emptied node, or something not in the world yet, is not where the objective is
 		}
-		if (Nearest)
+		const float Distance = FVector::Dist(Actor->GetActorLocation(), Player->GetActorLocation());
+		if (Distance < NearestDistance)
 		{
-			const FVector To = Nearest->GetActorLocation() - Player->GetActorLocation();
-			Mark(To.Rotation().Yaw, FString::Printf(TEXT("v %dm"), FMath::RoundToInt(NearestDistance / 100.0f)), GoodColour, 0.9f);
+			Nearest = Actor;
+			NearestDistance = Distance;
 		}
 	}
+	if (Nearest)
+	{
+		return Nearest;
+	}
+
+	// It is in another zone: point at the door on the road toward it.
+	const UUnderpaintingDataSubsystem* Data = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>() : nullptr;
+	if (!Data)
+	{
+		return nullptr;
+	}
+	const TArray<FName> Road = Data->GetZoneOrder();
+	const int32 Here = Road.IndexOfByKey(Data->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(this, true)));
+	const int32 There = Road.IndexOfByKey(Progress->GetCurrentObjectiveZone(ActiveQuests[0]));
+	if (Here == INDEX_NONE || There == INDEX_NONE || Here == There)
+	{
+		return nullptr;
+	}
+	const FName NextZone = Road[Here + (There > Here ? 1 : -1)];
+	for (TActorIterator<AUnderpaintingZoneExit> It(GetWorld()); It; ++It)
+	{
+		if (It->TargetZone == NextZone)
+		{
+			return *It;
+		}
+	}
+	return nullptr;
+}
+
+void AUnderpaintingHUD::DrawObjective(const AUnderpaintingPlayerCharacter* Player, const UUnderpaintingProgress* Progress)
+{
+	const UUnderpaintingSettings* Settings = UUnderpaintingSettings::Get(this);
+	const AActor* Objective = Settings && Settings->Read()->bObjectiveMarker ? FindObjective(Player, Progress) : nullptr;
+	const AController* Controller = Player->GetController();
+	if (!Objective || !Controller)
+	{
+		return;
+	}
+	const FVector Where = Objective->GetActorLocation() + FVector(0.0f, 0.0f, 150.0f);
+	const float Distance = FVector::Dist(Objective->GetActorLocation(), Player->GetActorLocation());
+	if (Distance < 400.0f)
+	{
+		return;        // you are there: the Use prompt takes over
+	}
+	const float W = Canvas->ClipX, H = Canvas->ClipY;
+	const FVector Screen = Project(Where);
+	const FString Metres = FString::Printf(TEXT("%d m"), FMath::RoundToInt(Distance / 100.0f));
+	const FLinearColor Colour(0.55f, 0.85f, 0.5f, 0.95f);
+	const bool bOnScreen = Screen.Z > 0.0f && Screen.X > 40.0f && Screen.X < W - 40.0f && Screen.Y > 80.0f && Screen.Y < H - 150.0f;
+	if (bOnScreen)
+	{
+		// A small diamond over the thing, with how far it is.
+		for (int32 Row = -4; Row <= 4; ++Row)
+		{
+			const float Half = 5.0f - FMath::Abs(Row);
+			DrawRect(Colour, Screen.X - Half, Screen.Y + Row * 1.6f, Half * 2.0f, 1.8f);
+		}
+		DrawText(Metres, Colour, Screen.X + 10.0f, Screen.Y - 8.0f, nullptr, 0.85f);
+	}
+	else
+	{
+		// Out of view: a mark on a ring round the middle of the screen, on the side it lies.
+		FVector To = Objective->GetActorLocation() - Player->GetActorLocation();
+		To.Z = 0.0f;
+		const float Angle = FMath::DegreesToRadians(FRotator::NormalizeAxis(To.Rotation().Yaw - Controller->GetControlRotation().Yaw));
+		const float Radius = FMath::Min(W, H) * 0.36f;
+		const FVector2D At(W * 0.5f + FMath::Sin(Angle) * Radius, H * 0.45f - FMath::Cos(Angle) * Radius * 0.8f);
+		DrawRect(Colour, At.X - 6.0f, At.Y - 6.0f, 12.0f, 12.0f);
+		DrawRect(FLinearColor(0.02f, 0.02f, 0.03f, 0.9f), At.X - 3.0f, At.Y - 3.0f, 6.0f, 6.0f);
+		DrawText(Metres, Colour, At.X + 12.0f, At.Y - 8.0f, nullptr, 0.85f);
+	}
+}
+
+void AUnderpaintingHUD::ShowHint(const FString& Text, float Seconds)
+{
+	HintText = Text;
+	HintRemaining = Seconds;
+	HintAge = 0.0f;
+	Sound(TEXT("ui_move"), 0.5f);
+}
+
+void AUnderpaintingHUD::EndHintSoon()
+{
+	HintRemaining = FMath::Min(HintRemaining, 0.8f);
+}
+
+void AUnderpaintingHUD::DrawHint()
+{
+	if (HintRemaining <= 0.0f)
+	{
+		return;
+	}
+	const float Delta = GetWorld()->GetDeltaSeconds();
+	HintRemaining -= Delta;
+	HintAge += Delta;
+	if (Menu != EUnderpaintingMenu::None)
+	{
+		return;        // it waits out the menu's time unseen, and may be gone when the menu closes; it taught while it was up
+	}
+
+	const float Alpha = FMath::Clamp(FMath::Min(HintAge / 0.25f, HintRemaining / 0.5f), 0.0f, 1.0f);
+	const float Width = FMath::Min(700.0f, Canvas->ClipX - 120.0f);
+	const float X = (Canvas->ClipX - Width) * 0.5f;
+	const float Y = Canvas->ClipY - 215.0f;
+	// Measure by drawing off-screen first would cost a pass; two lines at most by the 170-character rule.
+	const float Height = HintText.Len() > 85 ? 62.0f : 40.0f;
+	DrawRect(FLinearColor(BackColour.R, BackColour.G, BackColour.B, 0.88f * Alpha), X, Y, Width, Height);
+	DrawRect(FLinearColor(GlimColour.R, GlimColour.G, GlimColour.B, Alpha), X, Y, 4.0f, Height);
+	DrawWrapped(HintText, X + 18.0f, Y + 9.0f, Width - 36.0f, FLinearColor(TextColour.R, TextColour.G, TextColour.B, Alpha), 1.0f);
 }
 
 void AUnderpaintingHUD::DrawChoice(const UUnderpaintingProgress* Progress)

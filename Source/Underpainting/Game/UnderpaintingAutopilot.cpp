@@ -150,7 +150,11 @@ void UUnderpaintingAutopilot::TickComponent(float DeltaTime, ELevelTick TickType
 	const float Health = Player->GetVitals()->GetHealth();
 	if (Health < LastHealth - 0.5f)
 	{
-		++HitsTaken;
+		if (LastHealth - Health < 500.0f)        // not a blow: Health being put back to normal after a trial
+		{
+			++HitsTaken;
+			DamageTaken += LastHealth - Health;
+		}
 	}
 	LastHealth = Health;
 	if (Player->GetVitals()->IsDead())
@@ -192,6 +196,21 @@ void UUnderpaintingAutopilot::TickComponent(float DeltaTime, ELevelTick TickType
 bool UUnderpaintingAutopilot::TickWalk(const FVector& Target, bool bSprint, float StopDistance, float DeltaTime)
 {
 	AUnderpaintingPlayerCharacter* Player = GetPlayer();
+
+	// On guard: anything that comes for you on the way is fought first, as a person would.
+	if (GuardSkill >= 0.0f)
+	{
+		const AUnderpaintingEnemy* Threat = NearestEnemy(750.0f);
+		if (Threat && Threat->GetState() != EEnemyState::Idle && Threat->GetState() != EEnemyState::Returning)
+		{
+			Player->SetSprinting(false);
+			GuardTime += DeltaTime;
+			TickFight(GuardSkill, 100000.0f, DeltaTime);
+			return false;
+		}
+		Player->LockTarget = nullptr;
+	}
+
 	FVector To = Target - Player->GetActorLocation();
 	To.Z = 0.0f;
 	if (To.Size() <= StopDistance)
@@ -432,11 +451,13 @@ bool UUnderpaintingAutopilot::TickStep(const FStep& Step, float DeltaTime)
 		return true;
 	}
 	if (Verb == TEXT("fight")) { return TickFight(Arg(Step, 0, 0.6f), Arg(Step, 1, 180.0f), DeltaTime); }
+	if (Verb == TEXT("trial")) { return TickTrial(Step, DeltaTime); }
 	if (Verb == TEXT("mark"))
 	{
-		Note(FString::Printf(TEXT("MARK %s"), Step.Args.Num() > 0 ? *Step.Args[0] : TEXT("?")));
+		Note(FString::Printf(TEXT("MARK %s"), Step.Args.Num() > 0 ? *FString::Join(Step.Args, TEXT(" ")) : TEXT("?")));
 		return true;
 	}
+	if (Verb == TEXT("guard")) { GuardSkill = Step.Args.Num() > 0 && Step.Args[0] == TEXT("on") ? Arg(Step, 1, 0.6f) : -1.0f; return true; }
 	if (Verb == TEXT("god")) { Player->DevSetInvulnerable(Step.Args.Num() > 0 && Step.Args[0] == TEXT("on")); return true; }
 	if (Verb == TEXT("grant") && Step.Args.Num() >= 2) { Player->DevGrant(FName(*Step.Args[0]), FCString::Atoi(*Step.Args[1])); return true; }
 	if (Verb == TEXT("attune") && Step.Args.Num() >= 1) { Player->DevAttune(FName(*Step.Args[0])); return true; }
@@ -450,6 +471,118 @@ bool UUnderpaintingAutopilot::TickStep(const FStep& Step, float DeltaTime)
 
 	Note(FString::Printf(TEXT("UNKNOWN step '%s'"), *Verb));
 	return true;
+}
+
+bool UUnderpaintingAutopilot::TickTrial(const FStep& Step, float DeltaTime)
+{
+	// trial <EnemyId> <skill> <rounds>: fights a fresh one that many times and notes the time and the damage taken in each.
+	// The player cannot die during a trial (their Health is topped up between hits); the damage is what is measured.
+	AUnderpaintingPlayerCharacter* Player = GetPlayer();
+	UUnderpaintingVitalsComponent* Vitals = Player->GetVitals();
+	const FString EnemyId = Step.Args.Num() > 0 ? Step.Args[0] : TEXT("Blotter");
+	const float Skill = Arg(Step, 1, 0.6f);
+	const int32 Rounds = FMath::Max(1, int32(Arg(Step, 2, 3.0f)));
+	Vitals->SetMaxHealth(100000.0f);
+	if (Vitals->GetHealth() < 50000.0f)
+	{
+		Vitals->SetHealthAndGlim(100000.0f, Vitals->GetGlim());
+		LastHealth = 100000.0f;
+	}
+
+	AUnderpaintingEnemy* Enemy = TrialEnemy.Get();
+	if (Enemy && Enemy->GetActorLocation().Z < Player->GetActorLocation().Z - 1500.0f)
+	{
+		// It left the room (knocked through a wall). That round does not count.
+		Enemy->Destroy();
+		TrialEnemy = nullptr;
+		Enemy = nullptr;
+		--TrialRound;
+	}
+	if (Enemy && !Enemy->GetVitals()->IsDead() && TotalTime - TrialStartTime < 300.0f)
+	{
+		TickFight(Skill, 100000.0f, DeltaTime);
+		return false;
+	}
+	if (Enemy)
+	{
+		const bool bWon = Enemy->GetVitals()->IsDead();
+		TrialTimes.Add(TotalTime - TrialStartTime);
+		TrialDamages.Add(DamageTaken - TrialStartDamage);
+		Note(FString::Printf(TEXT("TRIAL %s skill %.1f round %d: %s in %.1fs, damage taken %.0f in %d hits"), *EnemyId, Skill, TrialRound,
+			bWon ? TEXT("won") : TEXT("TIMED OUT"), TrialTimes.Last(), TrialDamages.Last(), HitsTaken - TrialStartHits));
+		Enemy->Destroy();
+		TrialEnemy = nullptr;
+		Player->LockTarget = nullptr;
+		Vitals->Refill();
+		if (TrialRound >= Rounds)
+		{
+			float Time = 0.0f, Damage = 0.0f, Worst = 0.0f;
+			for (int32 Round = 0; Round < TrialTimes.Num(); ++Round)
+			{
+				Time += TrialTimes[Round];
+				Damage += TrialDamages[Round];
+				Worst = FMath::Max(Worst, TrialDamages[Round]);
+			}
+			Note(FString::Printf(TEXT("TRIALS %s skill %.1f x%d: mean time %.1fs, mean damage %.0f, worst %.0f"), *EnemyId, Skill, TrialTimes.Num(),
+				Time / TrialTimes.Num(), Damage / TrialTimes.Num(), Worst));
+			TrialRound = 0;
+			TrialTimes.Reset();
+			TrialDamages.Reset();
+			return true;
+		}
+	}
+
+	// A fresh one, nine metres ahead, and nothing else in the room.
+	static const TMap<FString, FString> Classes = { { TEXT("Blotter"), TEXT("BlotterEnemy") }, { TEXT("Madderback"), TEXT("MadderbackEnemy") },
+		{ TEXT("Pentiment"), TEXT("PentimentEnemy") }, { TEXT("ThePalimpsest"), TEXT("OldPalimpsest") } };
+	const FString* ClassName = Classes.Find(EnemyId);
+	UClass* EnemyClass = ClassName ? StaticLoadClass(AUnderpaintingEnemy::StaticClass(), nullptr, *FString::Printf(TEXT("/Script/Underpainting.%s"), **ClassName)) : nullptr;
+	if (!EnemyClass)
+	{
+		Note(FString::Printf(TEXT("TRIAL: no enemy called %s"), *EnemyId));
+		return true;
+	}
+	for (TActorIterator<AUnderpaintingEnemy> It(GetWorld()); It; ++It)
+	{
+		It->Destroy();
+	}
+	// Stood on the ground seven metres ahead (found by looking down), and never nudged: a nudge can push it through the floor.
+	// Whichever way has open floor: ahead first, then round the compass.
+	FVector Where = Player->GetActorLocation();
+	FCollisionQueryParams Query;
+	Query.AddIgnoredActor(Player);
+	for (int32 Turn = 0; Turn < 8; ++Turn)
+	{
+		const FVector Direction = Player->GetActorForwardVector().RotateAngleAxis(Turn * 45.0f, FVector::UpVector);
+		const FVector Spot = Player->GetActorLocation() + Direction * 700.0f;
+		FHitResult Ground, Wall;
+		const bool bFloor = GetWorld()->LineTraceSingleByChannel(Ground, Spot + FVector(0.0f, 0.0f, 100.0f), Spot - FVector(0.0f, 0.0f, 600.0f), ECC_WorldStatic, Query);
+		const bool bBlocked = GetWorld()->LineTraceSingleByChannel(Wall, Player->GetActorLocation(), Spot + Direction * 150.0f, ECC_WorldStatic, Query);
+		if (bFloor && !bBlocked)
+		{
+			Where = Ground.ImpactPoint;
+			break;
+		}
+	}
+	Where.Z += 160.0f;
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	AUnderpaintingEnemy* Fresh = GetWorld()->SpawnActor<AUnderpaintingEnemy>(EnemyClass, Where, (-Player->GetActorForwardVector()).Rotation(), Params);
+	if (!Fresh)
+	{
+		Note(TEXT("TRIAL: could not spawn"));
+		return true;
+	}
+	if (!Fresh->GetController())
+	{
+		Fresh->SpawnDefaultController();
+	}
+	TrialEnemy = Fresh;
+	++TrialRound;
+	TrialStartTime = TotalTime;
+	TrialStartDamage = DamageTaken;
+	TrialStartHits = HitsTaken;
+	return false;
 }
 
 void UUnderpaintingAutopilot::StartRecording(const FString& Name, float Seconds, float Fps)

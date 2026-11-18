@@ -126,3 +126,15 @@ void UUnderpaintingSettings::ToggleKeyHints()
 	Save->bKeyHints = !Save->bKeyHints;
 	Write();
 }
+
+void UUnderpaintingSettings::ToggleTeaching()
+{
+	Save->bTeaching = !Save->bTeaching;
+	Write();
+}
+
+void UUnderpaintingSettings::ToggleObjectiveMarker()
+{
+	Save->bObjectiveMarker = !Save->bObjectiveMarker;
+	Write();
+}

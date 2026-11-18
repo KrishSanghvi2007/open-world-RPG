@@ -19,7 +19,7 @@
     "Attacks": [
       { "AttackName": "Dab", "Phase": 1, "Windup": 0.6, "Active": 0.2, "Recovery": 0.8, "Damage": 14, "Telegraph": "WarmRim", "Notes": "Single forward poke with a rag-wrapped arm. The basic test of a dodge." },
       { "AttackName": "Wipe", "Phase": 1, "Windup": 0.9, "Active": 0.3, "Recovery": 1.0, "Damage": 20, "Telegraph": "WarmRim", "Notes": "Wide horizontal sweep, 2.5 m. Dodge through it, not away." },
-      { "AttackName": "SmearLunge", "Phase": 1, "Windup": 1.1, "Active": 0.35, "Recovery": 1.3, "Damage": 26, "Telegraph": "WarmRim", "Notes": "5 m lunge. On hit it also drains 10 Glim. Long recovery is the punish window." }
+      { "AttackName": "SmearLunge", "Phase": 1, "Windup": 1.1, "Active": 0.35, "Recovery": 1.3, "Damage": 22, "Telegraph": "WarmRim", "Notes": "5 m lunge. On hit it also drains 10 Glim. Long recovery is the punish window. Damage 22 (was 26): it is the first attack most players take, and a quarter of their Health was too much to pay for not knowing the game yet." }
     ],
     "Drops": [
       { "Id": "Ceruse", "Count": 1, "Chance": 0.6 }

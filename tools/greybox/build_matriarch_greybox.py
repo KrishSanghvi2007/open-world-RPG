@@ -607,6 +607,10 @@ def build_village(shifted=False):
     place("SunwardTerraces", "The Sunward Terraces", (0, 30, 8), half=(30, 11, 3))
     place("TheHem", "The Hem", (0, -24, 0), half=(30, 12, 3))
 
+    # The far ends of the Hem and of the top terrace are dead ends: each has something small for whoever walks there.
+    cache("HemCorner", "Cache", (-30, -14, 0), [("ShedHide", 2)])
+    cache("TerraceCorner", "Cache", (31, 39, 8), [("LinseedOil", 2)])
+
     # No combat in the village before the shift (GDD). Combat can be tried in the rooms under Maps/Dev.
 
     player_start((-4, 4, 4), yaw=0.0)
@@ -783,6 +787,11 @@ def build_scumblewood(shifted=False):
     marker("Exit", "GrisailleVault", "The Rib Gate: to the Grisaille Vault", off("RibGate", 10, 0))
 
     # Things to read, and the named places.
+    # In plain sight at the far corner of two clearings: the materials gear is made of. Nobody should have to find
+    # a hidden wall to be able to craft at all, and walking to the end of a clearing should be worth it.
+    cache("BendCorner", "Cache", off("Bend", 7, -7), [("RibSplinter", 2)])
+    cache("DescentCorner", "Cache", off("Descent", -7, 7), [("ShedHide", 1), ("RibSplinter", 1)])
+
     lore("Odile_02", off("FirstWell", 2, -7), yaw=90.0)
     lore("Ledger_Ilka", off("FirstWell", -5, -5), yaw=60.0)
     lore("Odile_03", off("SunwardClearing", -8, 2), yaw=0.0)
@@ -815,7 +824,9 @@ def build_scumblewood(shifted=False):
         if i % 2 == 1 and isinstance(tick, unreal.UnderpaintingEnemy):
             tick.set_editor_property("removed_by_flag", unreal.Name("Scumblewood_MadderbackHalved"))
     # After the Turning the enemies have moved, and two quest endings change their numbers.
-    first_two = (off("Bend", -3, 3), off("SunwardClearing", 6, -6)) if shifted else (off("FirstWell", 6, 2), off("FirstWell", 9, -3))
+    # Before the Turning the first one stands alone in the road, in plain sight from the door: the first fight is one
+    # enemy, seen coming. The second waits at the First Well, too far off to join in.
+    first_two = (off("Bend", -3, 3), off("SunwardClearing", 6, -6)) if shifted else ((22.0, 0.0, -1.8), off("FirstWell", 9, -3))
     for i, p in enumerate(first_two + (off("Descent", -3, -2), off("Descent", 4, 3), off("Approach", 6, -5), off("RibGate", -8, 2))):
         blotter = enemy("Blotter", p)
         if shifted and i >= 4 and isinstance(blotter, unreal.UnderpaintingEnemy):
@@ -948,6 +959,9 @@ def build_vault(shifted=False):
         for p in ((56, 8, PIT), (74, -6, PIT), (109, -5, FLOOR), (118, 4, FLOOR)):
             enemy("Blotter", p)
         enemy("ThePalimpsest", (142, 0, FLOOR))
+
+    # The far corner of the pit is a long way from the ramp back up: it pays for the walk.
+    cache("PitCorner", "Cache", (103, 13, PIT), [("RibSplinter", 2), ("GraphiteShard", 1)])
 
     # Harvest nodes: 3 Bone Black, 3 Slumber Blue (one-time)
     for p in ((43, -10, FLOOR), (96, -10, PIT), (120, 10, FLOOR)):

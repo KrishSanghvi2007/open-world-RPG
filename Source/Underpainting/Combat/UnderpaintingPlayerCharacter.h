@@ -116,6 +116,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Save")
 	void SaveNow();
 
+	/** Puts the player back on firm ground: after a long fall (a small cost), or by choice from the settings page (to where they last woke). */
+	UFUNCTION(BlueprintCallable, Category = "Underpainting|Dev")
+	void ReturnToSafeGround(bool bByChoice);
+
+	virtual void FellOutOfWorld(const class UDamageType& DamageType) override;
+
 	UFUNCTION(BlueprintCallable, Category = "Save")
 	void LoadNow();
 
@@ -449,6 +455,29 @@ private:
 	void LoadAnimations();
 	void Deny(bool bGlim);
 	void TickFeel(float DeltaTime);
+
+	// Teaching prompts (data/hints.json) and the things that keep a playthrough from getting stuck.
+	void TickHints(float DeltaTime);
+	void HintDone(FName HintName);
+	void TickSafeGround(float DeltaTime);
+	void Checkpoint();
+	void NoteProgressChanged() { bProgressDirty = true; }
+
+	FName CurrentHint;
+	float HintClock = 0.0f;
+	float LastHintTime = -100.0f;
+	float WalkedTotal = 0.0f;
+	bool bMenuSeen = false;
+	TSet<FName> LearnedByDoing;
+	bool bArrivedThroughExit = false;
+	bool bInZoneLevel = false;
+	bool bHurtOnce = false;
+	TArray<FVector> SafeTrail;
+	float SafeSampleClock = 0.0f;
+	float FallingTime = 0.0f;
+	bool bProgressDirty = false;
+	float AutosaveClock = 0.0f;
+	FDelegateHandle ProgressDirtyHandle;
 	class AUnderpaintingEnemy* FindAimTarget() const;
 
 	UFUNCTION()

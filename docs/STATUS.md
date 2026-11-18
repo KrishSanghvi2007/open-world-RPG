@@ -55,7 +55,7 @@ Ten steps from the owner, then a devlog with a before/after fight clip, then sto
 - [x] 5. Clarity: every menu row can be clicked, ground marks show where enemy attacks land, a hit-direction indicator. (Mouse checked by scripted click only.)
 
 **Part B, playable design**
-- [ ] 6. Onboarding: contextual prompts that teach each rule in play.
+- [x] 6. Onboarding: 22 one-line prompts in `data/hints.json`, each shown once when the thing it teaches first matters (`AUnderpaintingPlayerCharacter::TickHints`). Seen working through the village and into the forest.
 - [ ] 7. Wayfinding: objective marker, landmarks, light, no unrewarded dead ends.
 - [ ] 8. Pacing: the act planned as a sequence; dull stretches cut.
 - [ ] 9. Difficulty and balance: tuned numbers, a simulated pigment economy, written up.

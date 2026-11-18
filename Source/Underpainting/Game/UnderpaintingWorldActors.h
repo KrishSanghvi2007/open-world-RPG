@@ -178,9 +178,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UPointLightComponent> Flame;
 
-private:
+public:
 
 	bool IsLit() const;
+
+	virtual void Tick(float DeltaTime) override;
 };
 
 /** Someone to talk to. Their lines come from data/dialogue.json. */

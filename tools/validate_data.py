@@ -1,6 +1,6 @@
 import json,sys,re
 D={}
-for f in "pigments recipes items attunements enemies quests regions dialogue lore sounds".split():
+for f in "pigments recipes items attunements enemies quests regions dialogue lore sounds hints".split():
     D[f]=json.load(open(f"data/{f}.json"))
     names=[r["Name"] for r in D[f]]
     assert len(names)==len(set(names)),f
@@ -84,6 +84,17 @@ for d in D["dialogue"]:
     if len(d["Choices"])>6: err.append(("dialogue-too-many-choices",d["Name"]))
 for npc in {d["Npc"] for d in D["dialogue"]}:
     if not entries.get(npc): err.append(("dialogue-no-entry",npc))
+HINT_TRIGGERS={"Start","NearUsable","AfterFirstTalk","Walked","NearNode","FirstHarvest","NearStation","NearDarkLamp","LitLamp","FirstWell","DarkZone","EnemyNear","FirstHurt","EnemyStillNear","Weakness","StaggerBar","LowGlim","LowHealth","TwoWells","VaultDark","NearCanvas","AfterDeath"}
+HINT_TOKENS={"Use","Pack","Sprint","HeavyAttack","LightAttack","Dodge","LockOn","SwapWell","Flare","Poultice","LampOil","Pigment","Stroke","Cost","Enemy","Weakness"}
+import re as _re
+for h in D["hints"]:
+    if h["Trigger"] not in HINT_TRIGGERS: err.append(("hint-trigger",h["Name"]))
+    if not (3 <= h["Seconds"] <= 20) or len(h["Text"]) > 170: err.append(("hint-too-long",h["Name"]))
+    for token in _re.findall(r"\{(\w+)\}", h["Text"]):
+        if token not in HINT_TOKENS: err.append(("hint-token",h["Name"],token))
+for q in D["quests"]:
+    for o in q["Objectives"]:
+        if o["Zone"] not in [r["Name"] for r in D["regions"]]: err.append(("objective-zone",q["Name"]))
 for snd in D["sounds"]:
     if not snd["Assets"]: err.append(("sound-no-assets",snd["Name"]))
     if not (0.0 < snd["Volume"] <= 1.5) or snd["PitchMin"] > snd["PitchMax"] or snd["PitchMin"] <= 0: err.append(("sound-numbers",snd["Name"]))

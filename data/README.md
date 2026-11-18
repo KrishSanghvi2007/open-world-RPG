@@ -237,3 +237,16 @@ What each thing that happens sounds like. Code asks for a row by name (`swing_li
 
 A missing file is not an error: the sound is skipped and the log says so.
 
+## hints.json
+
+The teaching prompts: one short line that appears when the thing it teaches first matters, and never again. Their order in the file is their priority.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `Name` | FName | Saved as the flag `Hint.<Name>` once shown. |
+| `Trigger` | FName | When it appears. The triggers are code (`AUnderpaintingPlayerCharacter::TickHints`); the validator lists them. |
+| `Text` | FString | At most 170 characters. `{Use}`, `{Dodge}` and the other action names become the player's own keys; `{Pigment}`, `{Stroke}`, `{Cost}`, `{Enemy}` and `{Weakness}` are filled from what is in front of them. |
+| `Seconds` | float | The longest it stays up. It goes sooner if the player does the thing. |
+
+Quest objectives also carry a `Zone` (a zone row in regions.json): where that step happens, so the objective marker can point at the right door when it is somewhere else.
+

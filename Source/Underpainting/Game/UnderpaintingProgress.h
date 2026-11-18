@@ -189,6 +189,9 @@ public:
 	/** The quest's row, or null. */
 	const FQuestRow* GetQuestRow(FName QuestId) const;
 
+	/** The zone where the quest's current step happens, or None. */
+	FName GetCurrentObjectiveZone(FName QuestId) const;
+
 	/** True when the quest is waiting for its ending to be chosen. */
 	bool IsAwaitingChoice(FName QuestId) const;
 

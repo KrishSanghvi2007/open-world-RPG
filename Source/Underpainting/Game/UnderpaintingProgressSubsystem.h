@@ -41,7 +41,10 @@ public:
 
 	/** Writes the save. Call with the player so position and health are stored too. */
 	UFUNCTION(BlueprintCallable, Category = "Underpainting|Save")
-	bool SaveGame(APawn* Player);
+	bool SaveGame(APawn* Player, bool bQuiet = false);
+
+	/** Writes what the player has and has done, leaving where they will wake as it was. Does nothing before the first save. */
+	bool SaveProgressOnly();
 
 	/** Reads the save into the running game. Returns false if there is none. */
 	UFUNCTION(BlueprintCallable, Category = "Underpainting|Save")
@@ -81,7 +84,10 @@ public:
 	FName ConsumeArrival();
 
 	/** Asks for the player to be put back at the saved position when the next level starts (after a death). */
-	void RequestRestore() { bRestorePending = true; ArrivingFromZone = NAME_None; }
+	void RequestRestore(bool bAfterDeath = false) { bRestorePending = true; bWakingFromDeath = bAfterDeath; ArrivingFromZone = NAME_None; }
+
+	/** True once, for the level that opens after a death: the player wakes whole. */
+	bool ConsumeWakingFromDeath() { const bool bResult = bWakingFromDeath; bWakingFromDeath = false; return bResult; }
 
 	bool IsRestorePending() const { return bRestorePending; }
 
@@ -105,6 +111,7 @@ private:
 	UPROPERTY(Transient) TObjectPtr<UUnderpaintingSaveGame> LoadedSave;
 	FName ArrivingFromZone;
 	bool bRestorePending = false;
+	bool bWakingFromDeath = false;
 	bool bJustTurned = false;
 	float CarriedHealth = -1.0f;
 	float CarriedGlim = 0.0f;

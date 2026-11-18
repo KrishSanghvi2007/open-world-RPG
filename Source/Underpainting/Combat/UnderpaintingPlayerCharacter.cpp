@@ -92,6 +92,24 @@ void AUnderpaintingPlayerCharacter::BeginPlay()
 	ArriveFromZone();
 	RestoreFromSave();
 
+	// You wake where you last rested or arrived: walking into a zone, or starting out, is a place to wake.
+	// And what you have and have done is written down as you go, so closing the game never costs more than a few seconds.
+	if (UUnderpaintingProgressSubsystem* Saves = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr)
+	{
+		const UUnderpaintingDataSubsystem* Zones = GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>();
+		const bool bInZone = Zones && !Zones->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(this, true)).IsNone();
+		bInZoneLevel = bInZone;
+		if (bInZone && (bArrivedThroughExit || !Saves->GetLoadedSave()))
+		{
+			FTimerHandle Unused;
+			GetWorldTimerManager().SetTimer(Unused, this, &AUnderpaintingPlayerCharacter::Checkpoint, 0.5f, false);
+		}
+		if (UUnderpaintingProgress* Dirty = Saves->GetProgress())
+		{
+			ProgressDirtyHandle = Dirty->OnChanged.AddUObject(this, &AUnderpaintingPlayerCharacter::NoteProgressChanged);
+		}
+	}
+
 	// After the Turning the level is swapped under you: you are still standing where you stood.
 	FTransform Kept;
 	UUnderpaintingProgressSubsystem* Travel = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr;
@@ -142,6 +160,7 @@ void AUnderpaintingPlayerCharacter::ArriveFromZone()
 	{
 		return;
 	}
+	bArrivedThroughExit = true;
 
 	// Appear at the exit that leads back where you came from, a few steps inside it.
 	for (TActorIterator<AUnderpaintingZoneExit> It(GetWorld()); It; ++It)
@@ -189,6 +208,7 @@ bool AUnderpaintingPlayerCharacter::UseFlare()
 		return false;
 	}
 	FlareRemaining = FlareDuration;
+	HintDone(TEXT("Flare"));
 	if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
 	{
 		Feel->Play(TEXT("flare"), GetActorLocation());
@@ -244,6 +264,14 @@ void AUnderpaintingPlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayRe
 	if (UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this))
 	{
 		Progress->OnChanged.Remove(ProgressChangedHandle);
+		Progress->OnChanged.Remove(ProgressDirtyHandle);
+	}
+	if (bProgressDirty && bInZoneLevel && Action != EPlayerAction::Dead)
+	{
+		if (UUnderpaintingProgressSubsystem* Saves = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr)
+		{
+			Saves->SaveProgressOnly();        // leaving, or closing the game: nothing done is lost
+		}
 	}
 	if (UUnderpaintingSettings* Settings = UUnderpaintingSettings::Get(this))
 	{
@@ -301,7 +329,15 @@ void AUnderpaintingPlayerCharacter::RestoreFromSave()
 		{
 			PlayerController->SetControlRotation(Save->PlayerTransform.Rotator());
 		}
-		Vitals->SetHealthAndGlim(Save->Health, Save->Glim);
+		if (Mutable->ConsumeWakingFromDeath())
+		{
+			// After a death you wake whole, with the lantern at least half full: the walk back is the cost, not a second death.
+			Vitals->SetHealthAndGlim(Vitals->MaxHealth, FMath::Max(Save->Glim, Vitals->MaxGlim * 0.5f));
+		}
+		else
+		{
+			Vitals->SetHealthAndGlim(Save->Health, Save->Glim);
+		}
 	}
 }
 
@@ -821,6 +857,7 @@ AUnderpaintingEnemy* AUnderpaintingPlayerCharacter::FindAimTarget() const
 
 void AUnderpaintingPlayerCharacter::HandleDamaged(float Damage, float StaggerDamage, AActor* DamageCauser)
 {
+	bHurtOnce = true;
 	const FVector From = DamageCauser ? DamageCauser->GetActorLocation() : GetActorLocation() - GetActorForwardVector() * 100.0f;
 	if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
 	{
@@ -1023,6 +1060,337 @@ void AUnderpaintingPlayerCharacter::SetSprinting(bool bInWantsSprint)
 	bWantsSprint = bInWantsSprint;
 }
 
+// --- Teaching, and not getting stuck ---
+
+void AUnderpaintingPlayerCharacter::HintDone(FName HintName)
+{
+	if (CurrentHint == HintName)
+	{
+		CurrentHint = NAME_None;
+		if (AUnderpaintingHUD* HUD = GetUnderpaintingHUD())
+		{
+			HUD->EndHintSoon();
+		}
+	}
+}
+
+void AUnderpaintingPlayerCharacter::TickHints(float DeltaTime)
+{
+	// What the player has just done ends the prompt that asked for it.
+	if (!CurrentHint.IsNone())
+	{
+		const bool bSprinting = bWantsSprint && GetVelocity().SizeSquared2D() > FMath::Square(WalkSpeed + 20.0f);
+		if ((CurrentHint == TEXT("Sprint") && bSprinting) || (CurrentHint == TEXT("LockOn") && LockTarget.IsValid())
+			|| (CurrentHint == TEXT("Stroke") && Action == EPlayerAction::Stroke) || (CurrentHint == TEXT("Dodge") && Action == EPlayerAction::Dodge)
+			|| ((CurrentHint == TEXT("Use") || CurrentHint == TEXT("Harvest") || CurrentHint == TEXT("Craft") || CurrentHint == TEXT("DarkLamp") || CurrentHint == TEXT("Rest")) && IsMenuOpen()))
+		{
+			HintDone(CurrentHint);
+		}
+	}
+
+	// A lesson already learned by doing is never taught afterwards.
+	if (bWantsSprint && GetVelocity().SizeSquared2D() > FMath::Square(WalkSpeed + 20.0f)) { LearnedByDoing.Add(TEXT("Sprint")); }
+	if (LockTarget.IsValid()) { LearnedByDoing.Add(TEXT("LockOn")); }
+	if (Action == EPlayerAction::Stroke) { LearnedByDoing.Add(TEXT("Stroke")); }
+	if (FlareRemaining > 0.0f) { LearnedByDoing.Add(TEXT("Flare")); }
+
+	WalkedTotal += GetVelocity().Size2D() * DeltaTime;
+	bMenuSeen |= IsMenuOpen();
+	HintClock += DeltaTime;
+	if (HintClock < 0.25f)
+	{
+		return;
+	}
+	HintClock = 0.0f;
+
+	const UGameInstance* GameInstance = GetGameInstance();
+	const UUnderpaintingDataSubsystem* Data = GameInstance ? GameInstance->GetSubsystem<UUnderpaintingDataSubsystem>() : nullptr;
+	UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
+	AUnderpaintingHUD* HUD = GetUnderpaintingHUD();
+	const UUnderpaintingSettings* Settings = UUnderpaintingSettings::Get(this);
+	if (!Data || !Progress || !HUD || !Settings || !Data->GetHints() || !Settings->Read()->bTeaching || Action == EPlayerAction::Dead || IsMenuOpen()
+		|| Data->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(this, true)).IsNone())
+	{
+		return;        // test rooms teach nothing
+	}
+	const float Now = GetWorld()->GetTimeSeconds();
+	if (HUD->IsHintShowing() ? Now - LastHintTime < 5.0f : Now - LastHintTime < 2.0f)
+	{
+		return;        // one thing at a time, and time to read it
+	}
+
+	// What is true right now.
+	TSet<FName> True;
+	TMap<FString, FString> Words;
+	if (Now > 1.5f)
+	{
+		True.Add(TEXT("Start"));
+	}
+	if (WalkedTotal > 2500.0f)
+	{
+		True.Add(TEXT("Walked"));
+	}
+	if (bMenuSeen)
+	{
+		True.Add(TEXT("AfterFirstTalk"));
+	}
+	if (const AUnderpaintingInteractable* Usable = Focus.Get())
+	{
+		True.Add(TEXT("NearUsable"));
+		if (Usable->IsA<AUnderpaintingHarvestNode>())
+		{
+			True.Add(TEXT("NearNode"));
+		}
+		else if (Usable->IsA<AUnderpaintingCraftingStation>())
+		{
+			True.Add(TEXT("NearStation"));
+		}
+		else if (const AUnderpaintingLampstand* Lampstand = Cast<AUnderpaintingLampstand>(Usable))
+		{
+			if (Lampstand->IsLit())
+			{
+				True.Add(TEXT("LitLamp"));
+			}
+			else if (Progress->GetItemCount(TEXT("LampOil")) > 0)
+			{
+				True.Add(TEXT("NearDarkLamp"));        // only once there is oil to pour: before that it is just a dark lamp
+			}
+		}
+	}
+	for (const TPair<FName, int32>& Wet : Progress->GetData().WetPigment)
+	{
+		if (Wet.Value > 0)
+		{
+			True.Add(TEXT("FirstHarvest"));
+			break;
+		}
+	}
+	const FName Active = Progress->GetActivePigment();
+	const bool bAnyWell = !Progress->GetWell(0).IsNone() || !Progress->GetWell(1).IsNone();
+	if (bAnyWell)
+	{
+		True.Add(TEXT("FirstWell"));
+		const FName Shown = Active.IsNone() ? (Progress->GetWell(0).IsNone() ? Progress->GetWell(1) : Progress->GetWell(0)) : Active;
+		if (const FPigmentRow* Pigment = Data->FindPigment(Shown))
+		{
+			Words.Add(TEXT("{Pigment}"), Pigment->DisplayName);
+			Words.Add(TEXT("{Stroke}"), FName::NameToDisplayString(Pigment->StrokeName.ToString(), false));
+		}
+		if (GetStrokeGlimCost() > 0)
+		{
+			True.Add(TEXT("DarkZone"));
+			Words.Add(TEXT("{Cost}"), FString::FromInt(GetStrokeGlimCost()));
+			if (Vitals->GetGlim() < Vitals->MaxGlim * 0.3f)
+			{
+				True.Add(TEXT("LowGlim"));
+			}
+		}
+	}
+	if (!Progress->GetWell(0).IsNone() && !Progress->GetWell(1).IsNone())
+	{
+		True.Add(TEXT("TwoWells"));
+	}
+	if (bHurtOnce)
+	{
+		True.Add(TEXT("FirstHurt"));
+	}
+	if (Vitals->GetHealth() < Vitals->MaxHealth * 0.45f && Progress->GetItemCount(TEXT("MossPoultice")) > 0)
+	{
+		True.Add(TEXT("LowHealth"));
+	}
+	if (ZoneAmbientLight < 0.15f && Progress->GetItemCount(TEXT("PilotLantern")) > 0)
+	{
+		True.Add(TEXT("VaultDark"));
+	}
+	if (Progress->GetData().Deaths > 0)
+	{
+		True.Add(TEXT("AfterDeath"));
+	}
+
+	const AUnderpaintingEnemy* NearEnemy = nullptr;
+	float NearEnemyDistance = FMath::Square(1300.0f);
+	for (TActorIterator<AUnderpaintingEnemy> It(GetWorld()); It; ++It)
+	{
+		const float Distance = FVector::DistSquared(It->GetActorLocation(), GetActorLocation());
+		if (It->GetState() != EEnemyState::Dead && !It->IsHidden() && Distance < NearEnemyDistance)
+		{
+			NearEnemy = *It;
+			NearEnemyDistance = Distance;
+		}
+	}
+	if (NearEnemy)
+	{
+		True.Add(TEXT("EnemyNear"));
+		if (Progress->HasFlag(TEXT("Hint.Fight")))
+		{
+			True.Add(TEXT("EnemyStillNear"));
+		}
+		const TArray<FName> Weak = NearEnemy->GetActiveWeaknesses();
+		const FPigmentRow* WeakTo = Weak.Num() > 0 ? Data->FindPigment(Weak[0]) : nullptr;
+		if (WeakTo && bAnyWell)
+		{
+			True.Add(TEXT("Weakness"));
+			Words.Add(TEXT("{Enemy}"), NearEnemy->GetDisplayName());
+			Words.Add(TEXT("{Weakness}"), WeakTo->DisplayName);
+		}
+		if (NearEnemy->GetPoiseFraction() > 0.3f)
+		{
+			True.Add(TEXT("StaggerBar"));
+		}
+	}
+	for (TActorIterator<AUnderpaintingPassableBack> It(GetWorld()); It; ++It)
+	{
+		if (FVector::DistSquared(It->GetActorLocation(), GetActorLocation()) < FMath::Square(700.0f))
+		{
+			True.Add(TEXT("NearCanvas"));
+			break;
+		}
+	}
+
+	TSet<FName> Moot = LearnedByDoing;
+	if (bMenuSeen) { Moot.Add(TEXT("Use")); }
+	if (True.Contains(TEXT("FirstHarvest")) || Progress->IsLampstandLit(TEXT("Varnish"))) { Moot.Add(TEXT("Harvest")); }
+	if (Progress->IsLampstandLit(TEXT("Varnish"))) { Moot.Add(TEXT("Craft")); Moot.Add(TEXT("DarkLamp")); }
+	if (bAnyWell) { Moot.Add(TEXT("Rest")); }
+
+	// The first prompt in the file whose moment this is, and which has not been shown.
+	for (const TPair<FName, uint8*>& Pair : Data->GetHints()->GetRowMap())
+	{
+		const FHintRow* Row = reinterpret_cast<const FHintRow*>(Pair.Value);
+		const FName Flag(*FString::Printf(TEXT("Hint.%s"), *Pair.Key.ToString()));
+		if (!True.Contains(Row->Trigger) || Progress->HasFlag(Flag))
+		{
+			continue;
+		}
+		if (Moot.Contains(Pair.Key))
+		{
+			Progress->SetFlag(Flag);
+			continue;
+		}
+		FString Text = Row->Text;
+		for (const FUnderpaintingAction& Key : UUnderpaintingSettingsSave::Actions())
+		{
+			Text.ReplaceInline(*FString::Printf(TEXT("{%s}"), *Key.Id.ToString()), *FString::Printf(TEXT("[%s]"), *Settings->Read()->DescribeKey(Key.Id)));
+		}
+		for (const TPair<FString, FString>& Word : Words)
+		{
+			Text.ReplaceInline(*Word.Key, *Word.Value);
+		}
+		Progress->SetFlag(Flag);
+		HUD->ShowHint(Text, Row->Seconds);
+		CurrentHint = Pair.Key;
+		LastHintTime = Now;
+		UE_LOG(LogUnderpainting, Log, TEXT("HINT %s: %s"), *Pair.Key.ToString(), *Text);
+		break;
+	}
+}
+
+void AUnderpaintingPlayerCharacter::Checkpoint()
+{
+	if (Action == EPlayerAction::Dead)
+	{
+		return;
+	}
+	if (UUnderpaintingProgressSubsystem* Saves = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr)
+	{
+		Saves->SaveGame(this, /*bQuiet*/ true);
+	}
+}
+
+void AUnderpaintingPlayerCharacter::TickSafeGround(float DeltaTime)
+{
+	const UCharacterMovementComponent* Movement = GetCharacterMovement();
+
+	// Remember where the ground was firm. Sketched platforms do not count: they are only there while a Flare burns.
+	SafeSampleClock += DeltaTime;
+	if (SafeSampleClock >= 0.5f && Movement->IsMovingOnGround() && Action != EPlayerAction::Dead)
+	{
+		SafeSampleClock = 0.0f;
+		const AActor* Floor = Movement->CurrentFloor.HitResult.GetActor();
+		if (Floor && !Floor->IsA<AUnderpaintingSketchPlatform>())
+		{
+			SafeTrail.Add(GetActorLocation());
+			if (SafeTrail.Num() > 8)
+			{
+				SafeTrail.RemoveAt(0);
+			}
+		}
+	}
+
+	// A fall with no bottom ends back on the ledge, a little hurt, not in a restart.
+	FallingTime = Movement->IsFalling() ? FallingTime + DeltaTime : 0.0f;
+	if (FallingTime > 2.5f && SafeTrail.Num() > 0 && GetActorLocation().Z < SafeTrail[0].Z - 2000.0f)
+	{
+		ReturnToSafeGround(false);
+	}
+
+	// What you have and have done is written down every few seconds, wherever you will wake.
+	AutosaveClock += DeltaTime;
+	if (bProgressDirty && bInZoneLevel && AutosaveClock > 6.0f && Action != EPlayerAction::Dead)
+	{
+		AutosaveClock = 0.0f;
+		bProgressDirty = false;
+		if (UUnderpaintingProgressSubsystem* Saves = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr)
+		{
+			Saves->SaveProgressOnly();
+		}
+	}
+}
+
+void AUnderpaintingPlayerCharacter::FellOutOfWorld(const UDamageType& DamageType)
+{
+	ReturnToSafeGround(false);        // never destroyed by the bottom of the world
+}
+
+void AUnderpaintingPlayerCharacter::ReturnToSafeGround(bool bByChoice)
+{
+	if (Action == EPlayerAction::Dead)
+	{
+		return;
+	}
+	FVector Where = SafeTrail.Num() > 0 ? SafeTrail[0] : GetActorLocation();
+	const UUnderpaintingProgressSubsystem* Saves = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr;
+	const UUnderpaintingSaveGame* Save = Saves ? Saves->GetLoadedSave() : nullptr;
+	const APlayerStart* Start = Cast<APlayerStart>(UGameplayStatics::GetActorOfClass(this, APlayerStart::StaticClass()));
+	if (bByChoice || SafeTrail.Num() == 0)
+	{
+		// By choice you go back to where you last woke in this zone: far enough to be out of whatever held you.
+		if (Save && Saves->GetSavedLevel() == FName(*UGameplayStatics::GetCurrentLevelName(this, true)))
+		{
+			Where = Save->PlayerTransform.GetLocation();
+		}
+		else if (Start)
+		{
+			Where = Start->GetActorLocation();
+		}
+	}
+	EndAction();
+	GetCharacterMovement()->StopMovementImmediately();
+	SetActorLocation(Where + FVector(0.0f, 0.0f, 20.0f), false, nullptr, ETeleportType::TeleportPhysics);
+	FallingTime = 0.0f;
+	SafeTrail.Reset();
+	SafeTrail.Add(Where);
+	if (!bByChoice)
+	{
+		// Never the blow that kills.
+		const float Cost = FMath::Min(15.0f, Vitals->GetHealth() - 1.0f);
+		if (Cost > 0.0f)
+		{
+			Vitals->SetHealthAndGlim(Vitals->GetHealth() - Cost, Vitals->GetGlim());
+		}
+		if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+		{
+			Feel->Shake(0.4f);
+			Feel->PlayFlat(TEXT("player_hurt"), 0.7f);
+		}
+	}
+	if (UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this))
+	{
+		Progress->OnNotice.Broadcast(bByChoice ? TEXT("Back where you last woke.") : TEXT("You fell. The last firm ground takes you back."));
+	}
+	UE_LOG(LogUnderpainting, Log, TEXT("Returned to safe ground (%s) at %s"), bByChoice ? TEXT("by choice") : TEXT("after a fall"), *Where.ToCompactString());
+}
+
 void AUnderpaintingPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -1068,6 +1436,8 @@ void AUnderpaintingPlayerCharacter::Tick(float DeltaTime)
 	UpdateFocus();
 	TickLockOn(DeltaTime);
 	TickFeel(DeltaTime);
+	TickSafeGround(DeltaTime);
+	TickHints(DeltaTime);
 
 	// Holding the heavy button turns the swing into the active well's Stroke.
 	if (HeavyHeldSince >= 0.0f && GetWorld()->GetTimeSeconds() - HeavyHeldSince >= StrokeHoldTime)
@@ -1718,7 +2088,7 @@ void AUnderpaintingPlayerCharacter::HandleDeath(AActor* Killer)
 		Progress->ApplyDeathPenalty();
 	}
 
-	// Until Lampstands exist (build step 3), death restarts the level.
+	// You wake where you last rested or arrived.
 	GetWorldTimerManager().SetTimer(RestartTimer, this, &AUnderpaintingPlayerCharacter::RestartLevel, 2.5f, false);
 }
 
@@ -1729,7 +2099,8 @@ void AUnderpaintingPlayerCharacter::RestartLevel()
 	const UUnderpaintingSaveGame* Save = Subsystem ? Subsystem->GetLoadedSave() : nullptr;
 	if (Subsystem && Save && !Save->LevelName.IsNone())
 	{
-		Subsystem->RequestRestore();
+		Subsystem->SaveProgressOnly();        // what the death cost is written down too
+		Subsystem->RequestRestore(Action == EPlayerAction::Dead);
 		UGameplayStatics::OpenLevel(this, FName(*FString::Printf(TEXT("/Game/Maps/Matriarch/%s"), *Subsystem->GetSavedLevel().ToString())));
 		return;
 	}

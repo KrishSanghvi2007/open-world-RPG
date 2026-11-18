@@ -35,7 +35,7 @@ bool UUnderpaintingProgressSubsystem::HasSave() const
 	return UGameplayStatics::DoesSaveGameExist(SlotName(), 0);
 }
 
-bool UUnderpaintingProgressSubsystem::SaveGame(APawn* Player)
+bool UUnderpaintingProgressSubsystem::SaveGame(APawn* Player, bool bQuiet)
 {
 	UUnderpaintingSaveGame* Save = Cast<UUnderpaintingSaveGame>(UGameplayStatics::CreateSaveGameObject(UUnderpaintingSaveGame::StaticClass()));
 	Save->Progress = Progress->GetData();
@@ -54,10 +54,23 @@ bool UUnderpaintingProgressSubsystem::SaveGame(APawn* Player)
 	if (bSaved)
 	{
 		LoadedSave = Save;
-		Progress->OnNotice.Broadcast(TEXT("Saved."));
+		if (!bQuiet)
+		{
+			Progress->OnNotice.Broadcast(TEXT("Saved."));
+		}
 	}
 	UE_LOG(LogUnderpainting, Log, TEXT("Save %s"), bSaved ? TEXT("written") : TEXT("FAILED"));
 	return bSaved;
+}
+
+bool UUnderpaintingProgressSubsystem::SaveProgressOnly()
+{
+	if (!LoadedSave)
+	{
+		return false;
+	}
+	LoadedSave->Progress = Progress->GetData();
+	return UGameplayStatics::SaveGameToSlot(LoadedSave, SlotName(), 0);
 }
 
 bool UUnderpaintingProgressSubsystem::LoadGame()

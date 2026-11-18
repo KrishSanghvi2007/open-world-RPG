@@ -82,7 +82,18 @@ public:
 
 	/** Enemies attacking at this moment, across the level. Never more than MaxAttackers start a new attack. */
 	static int32 CountAttackers(const UObject* WorldContext);
-	static constexpr int32 MaxAttackers = 3;
+	static constexpr int32 MaxAttackers = 2;
+
+	/**
+	 * Enemies in a group take turns to begin: no attack starts within this long of another's start, so two blows
+	 * never land in the same instant and each one can be read and dodged. (A boss fights alone; this never holds it.)
+	 */
+	static constexpr float AttackStagger = 0.7f;
+
+	/** Seconds since any enemy in the level last began an attack. */
+	static float SecondsSinceAnyAttackBegan(const UObject* WorldContext);
+
+	float AttackBeganAt = -100.0f;
 
 	/** Slows the enemy (0.6 = 40% slower) for a time. */
 	void ApplySlow(float SpeedMultiplier, float Duration);
