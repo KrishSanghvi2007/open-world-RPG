@@ -27,4 +27,7 @@ Choices Claude made while the owner was away. Each has the question, what was ch
 | 21 | A quest step asks you to reach a place you have already found. | It counts as done. Same for a boss already killed. | Make the player walk there again. | 2026-11-18 |
 | 22 | "A Fair Grind", the stretch quest. | Not built yet; the four core quests come first, as the design says. | Build it now. | 2026-11-18 |
 | 23 | Odile's lantern: can you leave the Vault without it? | Yes. Hesper then gets the plain "I found where she was" and no flame choice. | Force the pickup before the wall can be used. | 2026-11-18 |
+| 24 | You craft a weapon or armour. Does it go on by itself? | Yes, at once, with a notice. Change back from the pack (Tab, then its number). | Leave it in the pack until you choose to put it on. | 2026-11-18 |
+| 25 | Keys for the two new potions. | K Sanguine Draught, L Blue Tincture. | A single "use item" key with a selector (planned for the UI milestone anyway). | 2026-11-18 |
+| 26 | Odile's Lantern copied the Pilot Lantern's Glim numbers. | It is a keepsake with no effect on Glim. | Let carrying it give light, as a reward for taking it. | 2026-11-18 |
 

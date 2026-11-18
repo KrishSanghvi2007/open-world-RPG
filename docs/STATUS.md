@@ -24,6 +24,7 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - **Look test** (`/Game/LookTest/Maps/`, pictures in `docs/looktest/`): one corner of the village square in three painterly styles, built by `tools/looktest/`. Working choice: B, Glaze.
 - **First combat** (`Source/Underpainting/Combat/`): stamina, sprint, dodge, light and heavy attacks, and a data-driven Blotter, in `/Game/Maps/Dev/L_Combat_Greybox`. Tests: `Underpainting.Combat.*`.
 - **Story** written: `docs/STORY.md`.
+- **Crafting and attunement depth (M7)**: all 10 recipes, saved gear (`Equip`, Tab menu), Braided Wick, Sanguine Draught (K), Blue Tincture (L), tier-2 attunement effects, F7 debug fill. Devlog: `docs/devlog/008-crafting-and-attunement.md`.
 - **Quests and choices (M6)**: quest endings made at a place (`AUnderpaintingChoicePoint`), asked twice, setting permanent world flags; inspectables; things that appear or vanish by flag; dialogue for three more quests. Devlog: `docs/devlog/007-quests-and-choices.md`.
 - **Enemies and the boss (M5)**: `Source/Underpainting/Combat/UnderpaintingBestiary.*` (Madderback, Pentiment, Old Palimpsest with two phases and the heartbeat), three-attacker limit, a test room per enemy in `/Game/Maps/Dev`. First enemy style probe done. Devlog: `docs/devlog/006-enemies-and-boss.md`.
 - **Combat depth (M4)**: palette wells, six Strokes with Glim cost by light, the Contrast rule, lock-on, Moss Poultice, Lamp Oil, perfect dodge, attunement passives. Rules in `Source/Underpainting/Combat/UnderpaintingCombatRules.h`. Devlog: `docs/devlog/005-combat-depth.md`.
@@ -43,6 +44,6 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 
 ## Next (Claude does these; see `docs/ROADMAP.md`)
 Scope is the Act 1 slice only. In order:
-1. **M7, crafting and attunement depth:** all 10 recipes, both stations, all 12 attunement nodes with their effects.
-2. **M8** the region shift (also finishes the main quest and the "after the shift" consequences), **M9** the UI.
-3. Left over: enemy navigation, signposts, the Nape Overlook secret (M3); "A Fair Grind" (stretch).
+1. **M8, the region shift:** the Turning, "B" versions of the three levels, the Stair of Spines, the "after the shift" quest consequences, the end of the main quest with Hesper.
+2. **M9** the UI.
+3. Left over: enemy navigation, signposts, the Nape Overlook secret (M3); "A Fair Grind" (stretch); three small attunement effects (see devlog 008).

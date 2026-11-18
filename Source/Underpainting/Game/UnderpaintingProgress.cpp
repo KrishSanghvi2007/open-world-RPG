@@ -154,6 +154,10 @@ bool UUnderpaintingProgress::IsRecipeUnlocked(FName RecipeId) const
 	{
 		return false;
 	}
+	if (Data.Flags.Contains(TEXT("Dev.AllRecipes")))
+	{
+		return true;        // the debug fill (F7) teaches everything, for testing
+	}
 	switch (Recipe->UnlockType)
 	{
 	case ERecipeUnlockType::Quest: return IsQuestComplete(Recipe->UnlockId);
@@ -213,6 +217,14 @@ bool UUnderpaintingProgress::Craft(FName RecipeId)
 	}
 	AddItem(Recipe->OutputItem, Recipe->OutputCount);
 	NotifyEvent(EVENT_Craft, Recipe->OutputItem, 1);
+	// New gear goes straight on: you made it to use it.
+	if (const FItemRow* Made = GetItemRow(Recipe->OutputItem))
+	{
+		if (Made->Type == EItemType::Weapon || Made->Type == EItemType::Armour)
+		{
+			Equip(Recipe->OutputItem);
+		}
+	}
 	return true;
 }
 
@@ -913,4 +925,68 @@ int32 UUnderpaintingProgress::GetNodeYield(FName ZoneId, FName PigmentId, int32 
 	Yield += Data.Flags.Contains(FName(*(Stem + TEXT("Plus1")))) ? 1 : 0;
 	Yield -= Data.Flags.Contains(FName(*(Stem + TEXT("Minus1")))) ? 1 : 0;
 	return FMath::Max(0, Yield);
+}
+
+// --- Gear ---
+
+const FName UUnderpaintingProgress::StartingWeapon(TEXT("LimnersKnife"));
+const FName UUnderpaintingProgress::StartingArmour(TEXT("SizedSmock"));
+
+const FItemRow* UUnderpaintingProgress::GetItemRow(FName ItemId) const
+{
+	return Find<FItemRow>(ItemsTable, ItemId);
+}
+
+TArray<FName> UUnderpaintingProgress::GetGear() const
+{
+	TArray<FName> Result = { StartingWeapon, StartingArmour };
+	if (ItemsTable)
+	{
+		for (const TPair<FName, uint8*>& Pair : ItemsTable->GetRowMap())
+		{
+			const FItemRow* Row = reinterpret_cast<const FItemRow*>(Pair.Value);
+			if ((Row->Type == EItemType::Weapon || Row->Type == EItemType::Armour) && GetItemCount(Pair.Key) > 0)
+			{
+				Result.AddUnique(Pair.Key);
+			}
+		}
+	}
+	return Result;
+}
+
+bool UUnderpaintingProgress::Equip(FName ItemId)
+{
+	const FItemRow* Row = GetItemRow(ItemId);
+	if (!Row || !GetGear().Contains(ItemId))
+	{
+		return false;
+	}
+	if (Row->Type == EItemType::Weapon)
+	{
+		Data.EquippedWeapon = ItemId;
+	}
+	else
+	{
+		Data.EquippedArmour = ItemId;
+	}
+	Notice(FString::Printf(TEXT("%s: %s"), Row->Type == EItemType::Weapon ? TEXT("In hand") : TEXT("Wearing"), *Row->DisplayName));
+	Changed();
+	return true;
+}
+
+float UUnderpaintingProgress::GetUpgradeGlim() const
+{
+	float Total = 0.0f;
+	if (ItemsTable)
+	{
+		for (const TPair<FName, uint8*>& Pair : ItemsTable->GetRowMap())
+		{
+			const FItemRow* Row = reinterpret_cast<const FItemRow*>(Pair.Value);
+			if (Row->Type == EItemType::Upgrade && Row->EffectType == EItemEffectType::GlimCapacity && GetItemCount(Pair.Key) > 0)
+			{
+				Total += Row->EffectValue;
+			}
+		}
+	}
+	return Total;
 }

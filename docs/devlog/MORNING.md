@@ -6,6 +6,7 @@ Last updated: 2026-11-18, night. Claude keeps this page current while you are aw
 
 - **The walking skeleton (M2):** one connected loop in the village. Talk to Hesper, harvest, craft, relight the Lampstand, rest, attune, finish the quest, fight a Blotter, save and load.
 - **Combat depth (M4):** two palette wells, six Strokes that cost light, the Contrast rule (+30% in the complementary colour), lock-on, poultice and lamp oil, the perfect dodge.
+- **Crafting, gear and the full palette (M7):** all 10 recipes, wearable gear, two new potions (K and L), all 12 attunement nodes. **F7** fills your pack for testing. `docs/devlog/008-crafting-and-attunement.md`.
 - **Quests and choices (M6):** three more quests, choices that ask twice and change the world, and the Heart scene with Odile's lantern and note. `docs/devlog/007-quests-and-choices.md`.
 - **Enemies and the boss (M5):** Madderback, Pentiment and Old Palimpsest, each with a test room under Maps → Dev. A first enemy style probe (the Blotter) is in `docs/devlog/006-enemies-and-boss.md`.
 - **Exploration, first pass (M3):** the three zones connect through blue doorways; the Flare; sketched platforms; one-sided walls with caches behind them; 18 notes to find; a compass.
@@ -50,6 +51,9 @@ These are the things only hands can judge. For each, the question to answer is i
 
 9g. *The second ask.* At the brood nest in the forest, pick an ending. Does "This cannot be painted over" make you hesitate, or is it just one more button?
 9h. *The hollow.* After the boss, you find a lantern and a note. Does the note land, read cold, with no cutscene around it?
+
+9i. *Two builds.* Press F7 in the village, attune two colours at the Lampstand, fight in `L_Combat_Greybox`. Then try two others. Do they feel like different ways to play, or the same fight in a different colour?
+9j. *Heavy against light.* Make the Bone Scraper (slow, hits hard) and compare it with the knife. Is slow fun, or just slow?
 
 **Exploration**
 9. *"Use" follows your eyes.* Stand between Hesper and the Lampstand and turn: does the prompt switch when you expect it to?

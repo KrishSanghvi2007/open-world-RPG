@@ -58,6 +58,9 @@ struct FUnderpaintingProgressData
 	UPROPERTY(SaveGame) TArray<FName> OpenedCaches;
 	UPROPERTY(SaveGame) TArray<FName> FixedPlatforms;
 	UPROPERTY(SaveGame) int32 Deaths = 0;
+	/** What is worn and carried. None means the starting knife and smock. */
+	UPROPERTY(SaveGame) FName EquippedWeapon;
+	UPROPERTY(SaveGame) FName EquippedArmour;
 };
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnProgressNotice, const FString&);
@@ -108,6 +111,26 @@ public:
 	// --- Attunement ---
 
 	bool HasAttunement(FName NodeId) const { return Data.Attunements.Contains(NodeId); }
+
+	// --- Gear ---
+
+	static const FName StartingWeapon;
+	static const FName StartingArmour;
+
+	FName GetEquippedWeapon() const { return Data.EquippedWeapon.IsNone() ? StartingWeapon : Data.EquippedWeapon; }
+	FName GetEquippedArmour() const { return Data.EquippedArmour.IsNone() ? StartingArmour : Data.EquippedArmour; }
+
+	/** Every weapon and armour the Limner has: the starting two, then anything crafted. */
+	TArray<FName> GetGear() const;
+
+	/** Puts on a weapon or armour from GetGear. */
+	bool Equip(FName ItemId);
+
+	/** The item's row in data/items.json, or null. */
+	const FItemRow* GetItemRow(FName ItemId) const;
+
+	/** Extra maximum Glim from one-off upgrades in the pack (the Braided Wick). */
+	float GetUpgradeGlim() const;
 	bool CanAttune(FName NodeId, FString* OutWhyNot = nullptr) const;
 	bool Attune(FName NodeId);
 

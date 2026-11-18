@@ -122,6 +122,20 @@ def main(args):
     elif command == "hidden":
         # hidden <Kind> <Id>: is this marker out of the world right now?
         print(args[2], "hidden =", find(world, args[1], args[2]).get_editor_property("hidden"))
+    elif command == "fill":
+        pawn.dev_fill()
+    elif command == "craftall":
+        # craftall <StationId>: open a station and make one of everything it lists.
+        goto(world, pawn, "Station", args[1]); pawn.interact()
+        for number in range(1, 10):
+            pawn.menu_number(number)
+        pawn.menu_close()
+    elif command == "draught":
+        print("draught used:", pawn.use_draught())
+    elif command == "tincture":
+        print("tincture used:", pawn.use_tincture())
+    elif command == "inventory":
+        pawn.inventory_pressed() if hasattr(pawn, "inventory_pressed") else None
     elif command == "count":
         cls = getattr(unreal, args[1])
         print(args[1], len(unreal.GameplayStatics.get_all_actors_of_class(world, cls)))

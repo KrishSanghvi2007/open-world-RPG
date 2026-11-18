@@ -225,6 +225,14 @@ void AUnderpaintingHUD::ChooseNumber(int32 Number)
 			}
 		}
 	}
+	else if (Menu == EUnderpaintingMenu::Inventory)
+	{
+		const TArray<FName> Gear = Progress->GetGear();
+		if (Gear.IsValidIndex(Index))
+		{
+			Progress->Equip(Gear[Index]);
+		}
+	}
 	else if (Menu == EUnderpaintingMenu::Choice)
 	{
 		const FQuestRow* Row = Progress->GetQuestRow(ChoiceQuest);
@@ -425,6 +433,21 @@ void AUnderpaintingHUD::DrawPlayerBars(const AUnderpaintingPlayerCharacter* Play
 		}
 		DrawText(FString::Printf(TEXT("Poultice %d [H]   Lamp Oil %d [J]"), Progress->GetItemCount(TEXT("MossPoultice")), Progress->GetItemCount(TEXT("LampOil"))),
 			DimColour, WellX, Y + 50.0f, nullptr, 0.85f);
+		FString Extras;
+		if (Progress->GetItemCount(TEXT("SanguineDraught")) > 0 || Player->GetDraughtRemaining() > 0.0f)
+		{
+			Extras += FString::Printf(TEXT("Draught %d [K]%s   "), Progress->GetItemCount(TEXT("SanguineDraught")),
+				Player->GetDraughtRemaining() > 0.0f ? *FString::Printf(TEXT(" %.0fs"), Player->GetDraughtRemaining()) : TEXT(""));
+		}
+		if (Progress->GetItemCount(TEXT("BlueTincture")) > 0 || Player->GetTinctureRemaining() > 0.0f)
+		{
+			Extras += FString::Printf(TEXT("Tincture %d [L]%s"), Progress->GetItemCount(TEXT("BlueTincture")),
+				Player->GetTinctureRemaining() > 0.0f ? *FString::Printf(TEXT(" %.0fs"), Player->GetTinctureRemaining()) : TEXT(""));
+		}
+		if (!Extras.IsEmpty())
+		{
+			DrawText(Extras, DimColour, WellX, Y + 70.0f, nullptr, 0.85f);
+		}
 	}
 
 	if (Vitals->IsDead())
@@ -640,6 +663,22 @@ void AUnderpaintingHUD::DrawInventory(const UUnderpaintingProgress* Progress)
 		{
 			Lines.Add(FString::Printf(TEXT("   %s   x%d"), *Progress->GetDisplayName(Pair.Key), Pair.Value));
 		}
+	}
+	Lines.Add(TEXT(""));
+	Lines.Add(TEXT("GEAR (press its number to put it on)"));
+	const TArray<FName> Gear = Progress->GetGear();
+	for (int32 GearIndex = 0; GearIndex < Gear.Num(); ++GearIndex)
+	{
+		const FItemRow* Item = Progress->GetItemRow(Gear[GearIndex]);
+		if (!Item)
+		{
+			continue;
+		}
+		const bool bOn = Gear[GearIndex] == Progress->GetEquippedWeapon() || Gear[GearIndex] == Progress->GetEquippedArmour();
+		const FString Numbers = Item->Type == EItemType::Weapon
+			? FString::Printf(TEXT("%d / %d damage, reach %.1f m"), Item->LightDamage, Item->HeavyDamage, Item->Reach)
+			: FString::Printf(TEXT("stops %.0f%% of damage"), Item->DamageReduction * 100.0f);
+		Lines.Add(FString::Printf(TEXT("   %d.  %s   %s%s"), GearIndex + 1, *Item->DisplayName, *Numbers, bOn ? TEXT("   [ON]") : TEXT("")));
 	}
 	Lines.Add(TEXT(""));
 	Lines.Add(FString::Printf(TEXT("ATTUNED: %d      DEATHS: %d"), Data.Attunements.Num(), Data.Deaths));

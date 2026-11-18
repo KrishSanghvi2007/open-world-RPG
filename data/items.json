@@ -355,8 +355,8 @@
     "Reach": 0.0,
     "StaggerMultiplier": 0.0,
     "DamageReduction": 0.0,
-    "EffectType": "GlimCapacity",
-    "EffectValue": 100,
+    "EffectType": "None",
+    "EffectValue": 0,
     "EffectDuration": 0.0,
     "MaxStack": 1
   }

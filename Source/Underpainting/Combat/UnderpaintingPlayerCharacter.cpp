@@ -187,11 +187,15 @@ void AUnderpaintingPlayerCharacter::ApplyAttunements()
 	{
 		return;
 	}
-	Vitals->SetMaxGlim(100.0f + Progress->GetAttunementValue(TEXT("MaxGlim")));
-	Vitals->StaminaRegenMultiplier = 1.0f + Progress->GetAttunementValue(TEXT("StaminaRegenPercent")) / 100.0f;
+	// Gear follows the save: what was crafted and put on stays on.
+	if (WeaponId != Progress->GetEquippedWeapon()) { EquipWeapon(Progress->GetEquippedWeapon()); }
+	if (ArmourId != Progress->GetEquippedArmour()) { EquipArmour(Progress->GetEquippedArmour()); }
+	Vitals->SetMaxGlim(100.0f + Progress->GetAttunementValue(TEXT("MaxGlim")) + Progress->GetUpgradeGlim());
+	Vitals->StaminaRegenMultiplier = 1.0f + (Progress->GetAttunementValue(TEXT("StaminaRegenPercent")) + ArmourStaminaRegenPercent) / 100.0f;
 	DodgeDistance = BaseDodgeDistance * (1.0f + Progress->GetAttunementValue(TEXT("DodgeDistancePercent")) / 100.0f);
 	// Ceruse is lead: carrying it in a well costs 15 maximum Health.
-	Vitals->SetMaxHealth(Progress->IsInWell(TEXT("Ceruse")) ? 85.0f : 100.0f);
+	// Clean Ground (Ceruse tier 2) eases the toll to 10.
+	Vitals->SetMaxHealth(Progress->IsInWell(TEXT("Ceruse")) ? (Progress->HasAttunement(TEXT("Ceruse_T2")) ? 90.0f : 85.0f) : 100.0f);
 	const float Invulnerable = Progress->GetAttunementValue(TEXT("DodgeInvulnerableSeconds"));
 	DodgeInvulnerableTime = Invulnerable > 0.0f ? Invulnerable : BaseDodgeInvulnerableTime;
 }
@@ -356,6 +360,9 @@ void AUnderpaintingPlayerCharacter::SetupPlayerInputComponent(UInputComponent* P
 	PlayerInputComponent->BindKey(EKeys::Z, IE_Pressed, this, &AUnderpaintingPlayerCharacter::SwapWellPressed);
 	PlayerInputComponent->BindKey(EKeys::H, IE_Pressed, this, &AUnderpaintingPlayerCharacter::PoulticePressed);
 	PlayerInputComponent->BindKey(EKeys::J, IE_Pressed, this, &AUnderpaintingPlayerCharacter::LampOilPressed);
+	PlayerInputComponent->BindKey(EKeys::K, IE_Pressed, this, &AUnderpaintingPlayerCharacter::DraughtPressed);
+	PlayerInputComponent->BindKey(EKeys::L, IE_Pressed, this, &AUnderpaintingPlayerCharacter::TincturePressed);
+	PlayerInputComponent->BindKey(EKeys::F7, IE_Pressed, this, &AUnderpaintingPlayerCharacter::DevFillPressed);
 	PlayerInputComponent->BindKey(EKeys::Gamepad_RightThumbstick, IE_Pressed, this, &AUnderpaintingPlayerCharacter::ToggleLockOn);
 	PlayerInputComponent->BindKey(EKeys::LeftControl, IE_Pressed, this, &AUnderpaintingPlayerCharacter::StartDodge);
 	PlayerInputComponent->BindKey(EKeys::LeftShift, IE_Pressed, this, &AUnderpaintingPlayerCharacter::SprintPressed);
@@ -423,6 +430,7 @@ void AUnderpaintingPlayerCharacter::EquipArmour(FName ItemId)
 
 	ArmourId = ItemId;
 	Vitals->DamageReduction = Row->DamageReduction;
+	ArmourStaminaRegenPercent = Row->EffectType == EItemEffectType::StaminaRegenPercent ? Row->EffectValue : 0.0f;
 }
 
 bool AUnderpaintingPlayerCharacter::CanStartAction() const
@@ -499,6 +507,17 @@ void AUnderpaintingPlayerCharacter::SetSprinting(bool bInWantsSprint)
 void AUnderpaintingPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	DraughtRemaining = FMath::Max(0.0f, DraughtRemaining - DeltaTime);
+	if (TinctureRemaining > 0.0f)
+	{
+		TinctureRemaining -= DeltaTime;
+		if (TinctureRemaining <= 0.0f)
+		{
+			TinctureRemaining = 0.0f;
+			GetCharacterMovement()->GravityScale = 1.0f;
+		}
+	}
 	UpdateFocus();
 	TickLockOn(DeltaTime);
 
@@ -642,11 +661,12 @@ void AUnderpaintingPlayerCharacter::HitTest()
 		}
 		else if (StrokeName == TEXT("Sfumato") && Enemy)
 		{
-			Enemy->ApplySlow(0.6f, 3.0f);
+			// Loosened: 3 seconds, or 5 with Lucid (Slumber Blue tier 2).
+			Enemy->ApplySlow(0.6f, Progress && Progress->HasAttunement(TEXT("SlumberBlue_T2")) ? 5.0f : 3.0f);
 		}
 		else if (StrokeName == TEXT("Scumble"))
 		{
-			Vitals->AddStamina(15.0f);
+			Vitals->AddStamina(Progress && Progress->HasAttunement(TEXT("TerreVerte_T2")) ? 25.0f : 15.0f);
 		}
 		else if (StrokeName == TEXT("AllaPrima"))
 		{
@@ -658,6 +678,12 @@ void AUnderpaintingPlayerCharacter::HitTest()
 		}
 
 		ApplyHit(Target, Damage, Stagger, *FString::Printf(TEXT("%s%s"), *StrokeName.ToString(), Contrast.Sign > 0 ? TEXT(" (contrast)") : (Contrast.Sign < 0 ? TEXT(" (muddy)") : TEXT(""))));
+		// Wet-on-Wet (Sanguine tier 2): a kill with Alla Prima gives its light back.
+		const UUnderpaintingVitalsComponent* HitVitals = Target->FindComponentByClass<UUnderpaintingVitalsComponent>();
+		if (StrokeName == TEXT("AllaPrima") && Progress && Progress->HasAttunement(TEXT("Sanguine_T2")) && HitVitals && HitVitals->IsDead())
+		{
+			Vitals->AddGlim(float(GetStrokeGlimCost()));
+		}
 		if (Progress && Contrast.Sign != 0)
 		{
 			Progress->OnNotice.Broadcast(Contrast.Sign > 0 ? TEXT("Contrast! +30%") : TEXT("Muddy. -30%"));
@@ -676,6 +702,10 @@ void AUnderpaintingPlayerCharacter::ApplyHit(AActor* Target, float Damage, float
 	if (Progress)
 	{
 		StaggerDamage *= 1.0f + Progress->GetAttunementValue(TEXT("StaggerDamagePercent")) / 100.0f;
+	}
+	if (DraughtRemaining > 0.0f)
+	{
+		Damage *= 1.0f + DraughtBonus;        // Sanguine Draught
 	}
 
 	const float Taken = TargetVitals->ApplyDamage(Damage, StaggerDamage, this);
@@ -802,6 +832,63 @@ bool AUnderpaintingPlayerCharacter::UseLampOil()
 	Vitals->AddGlim(40.0f);
 	Progress->OnNotice.Broadcast(TEXT("The lantern drinks. +40 Glim"));
 	return true;
+}
+
+bool AUnderpaintingPlayerCharacter::UseDraught()
+{
+	UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
+	const FItemRow* Row = Progress ? Progress->GetItemRow(TEXT("SanguineDraught")) : nullptr;
+	if (!Row || Action == EPlayerAction::Dead || IsMenuOpen())
+	{
+		return false;
+	}
+	if (!Progress->RemoveItem(TEXT("SanguineDraught"), 1))
+	{
+		Progress->OnNotice.Broadcast(TEXT("No Sanguine Draught."));
+		return false;
+	}
+	DraughtBonus = Row->EffectValue / 100.0f;
+	DraughtRemaining = Row->EffectDuration;
+	Progress->OnNotice.Broadcast(FString::Printf(TEXT("Sanguine Draught. +%.0f%% damage for %.0f seconds"), Row->EffectValue, Row->EffectDuration));
+	return true;
+}
+
+bool AUnderpaintingPlayerCharacter::UseTincture()
+{
+	UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
+	const FItemRow* Row = Progress ? Progress->GetItemRow(TEXT("BlueTincture")) : nullptr;
+	if (!Row || Action == EPlayerAction::Dead || IsMenuOpen())
+	{
+		return false;
+	}
+	if (!Progress->RemoveItem(TEXT("BlueTincture"), 1))
+	{
+		Progress->OnNotice.Broadcast(TEXT("No Blue Tincture."));
+		return false;
+	}
+	GetCharacterMovement()->GravityScale = Row->EffectValue;
+	TinctureRemaining = Row->EffectDuration;
+	Progress->OnNotice.Broadcast(FString::Printf(TEXT("Blue Tincture. You weigh less for %.0f seconds"), Row->EffectDuration));
+	return true;
+}
+
+void AUnderpaintingPlayerCharacter::DevFill()
+{
+	UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
+	if (!Progress)
+	{
+		return;
+	}
+	for (const TCHAR* Pigment : { TEXT("Ochre"), TEXT("TerreVerte"), TEXT("Sanguine"), TEXT("BoneBlack"), TEXT("Ceruse"), TEXT("SlumberBlue") })
+	{
+		Progress->AddPigment(Pigment, 20, false);
+	}
+	for (const TCHAR* Material : { TEXT("LinseedOil"), TEXT("ShedHide"), TEXT("RibSplinter"), TEXT("TickChitin"), TEXT("GraphiteShard") })
+	{
+		Progress->AddItem(Material, 20);
+	}
+	Progress->SetFlag(TEXT("Dev.AllRecipes"));
+	Progress->OnNotice.Broadcast(TEXT("DEBUG: pack filled, every recipe taught."));
 }
 
 void AUnderpaintingPlayerCharacter::HandleDodged(AActor* Attacker)
@@ -958,10 +1045,11 @@ FString AUnderpaintingPlayerCharacter::DescribeState()
 	UpdateFocus();
 	const UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
 	const AUnderpaintingHUD* HUD = GetUnderpaintingHUD();
-	FString Text = FString::Printf(TEXT("level=%s flare=%.1f prompt=[%s] menu=%d row=%s hp=%.0f glim=%.0f/%.0f"),
+	FString Text = FString::Printf(TEXT("level=%s flare=%.1f prompt=[%s] menu=%d row=%s hp=%.0f/%.0f glim=%.0f/%.0f gear=%s+%s(-%.0f%%) regen x%.2f draught=%.0f tincture=%.0f gravity=%.1f"),
 		*UGameplayStatics::GetCurrentLevelName(this, true), FlareRemaining,
 		Focus.IsValid() ? *Focus->GetUsablePrompt() : TEXT(""), HUD ? int32(HUD->GetMenu()) : -1, HUD ? *HUD->GetDialogueRow().ToString() : TEXT(""),
-		Vitals->GetHealth(), Vitals->GetGlim(), Vitals->MaxGlim);
+		Vitals->GetHealth(), Vitals->MaxHealth, Vitals->GetGlim(), Vitals->MaxGlim, *WeaponId.ToString(), *ArmourId.ToString(), Vitals->DamageReduction * 100.0f,
+		Vitals->StaminaRegenMultiplier, DraughtRemaining, TinctureRemaining, GetCharacterMovement()->GravityScale);
 	if (Progress)
 	{
 		for (const FName& Quest : Progress->GetActiveQuests())

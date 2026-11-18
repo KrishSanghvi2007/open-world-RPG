@@ -82,7 +82,7 @@ All slice quests from JSON, branching dialogue, permanent choices with confirmat
 
 **Done when:** play "The Tick-Warden's Ledger" twice with different choices and see different results in the world.
 
-### M7. Crafting and attunement depth
+### M7. Crafting and attunement depth (done; the two-build feel test is the owner's)
 All 10 recipes, both stations, all 12 attunement nodes with their effects, palette wells, wet and dry pigment.
 
 **Done when:** craft every recipe from a debug-filled inventory and feel two different two-pigment builds.

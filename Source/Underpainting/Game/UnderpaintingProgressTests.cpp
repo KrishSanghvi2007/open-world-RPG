@@ -327,4 +327,73 @@ bool FUnderpaintingChoiceTest::RunTest(const FString& Parameters)
 	return !HasAnyErrors();
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FUnderpaintingCraftAllTest, "Underpainting.Game.CraftEverything", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FUnderpaintingCraftAllTest::RunTest(const FString& Parameters)
+{
+	UUnderpaintingProgress* Progress = MakeProgress(*this);
+
+	// Nothing but Lamp Oil is known at the start (a station lists only what you know).
+	const auto Known = [Progress]()
+	{
+		TArray<FName> Result = Progress->GetRecipesForStation(ECraftingStation::GrindingSlab);
+		Result.Append(Progress->GetRecipesForStation(ECraftingStation::ArmatureBench));
+		return Result;
+	};
+	TestEqual(TEXT("One recipe known at the start"), Known().Num(), 1);
+
+	// A full pack, and every recipe taught (what the F7 debug key does).
+	for (const TCHAR* Pigment : { TEXT("Ochre"), TEXT("TerreVerte"), TEXT("Sanguine"), TEXT("BoneBlack"), TEXT("Ceruse"), TEXT("SlumberBlue") })
+	{
+		Progress->AddPigment(Pigment, 20, false);
+	}
+	for (const TCHAR* Material : { TEXT("LinseedOil"), TEXT("ShedHide"), TEXT("RibSplinter"), TEXT("TickChitin"), TEXT("GraphiteShard") })
+	{
+		Progress->AddItem(Material, 20);
+	}
+	Progress->SetFlag(TEXT("Dev.AllRecipes"));
+	const TArray<FName> All = Known();
+	TestEqual(TEXT("Ten recipes across the two stations"), All.Num(), 10);
+
+	TestEqual(TEXT("Starts with the knife"), Progress->GetEquippedWeapon(), FName(TEXT("LimnersKnife")));
+	TestEqual(TEXT("No extra Glim before the Wick"), Progress->GetUpgradeGlim(), 0.0f);
+	for (const FName& Recipe : All)
+	{
+		FString Why;
+		TestTrue(*FString::Printf(TEXT("Can craft %s (%s)"), *Recipe.ToString(), *Why), Progress->CanCraft(Recipe, &Why) && Progress->Craft(Recipe));
+	}
+	TestEqual(TEXT("Poultices come in twos"), Progress->GetItemCount(TEXT("MossPoultice")), 2);
+	TestEqual(TEXT("The Braided Wick adds 20 Glim"), Progress->GetUpgradeGlim(), 20.0f);
+	TestEqual(TEXT("Six pieces of gear: two to start, four made"), Progress->GetGear().Num(), 6);
+
+	// Made gear goes on at once, and can be changed back.
+	TestTrue(TEXT("A crafted weapon is in hand"), Progress->GetEquippedWeapon() != FName(TEXT("LimnersKnife")));
+	TestTrue(TEXT("Back to the knife"), Progress->Equip(TEXT("LimnersKnife")));
+	TestEqual(TEXT("The knife is in hand"), Progress->GetEquippedWeapon(), FName(TEXT("LimnersKnife")));
+	TestTrue(TEXT("Put on the Chitin Jerkin"), Progress->Equip(TEXT("ChitinJerkin")));
+	TestEqual(TEXT("Wearing the Jerkin"), Progress->GetEquippedArmour(), FName(TEXT("ChitinJerkin")));
+	TestFalse(TEXT("Cannot equip a consumable"), Progress->Equip(TEXT("LampOil")));
+
+	// All twelve attunement nodes can be bought from a full palette, tier 1 before tier 2.
+	UUnderpaintingProgress* Palette = MakeProgress(*this);
+	for (const TCHAR* Pigment : { TEXT("Ochre"), TEXT("TerreVerte"), TEXT("Sanguine"), TEXT("BoneBlack"), TEXT("Ceruse"), TEXT("SlumberBlue") })
+	{
+		Palette->AddPigment(Pigment, 20, false);
+	}
+	TestFalse(TEXT("Tier 2 needs tier 1 first"), Palette->Attune(TEXT("Ochre_T2")));
+	int32 Bought = 0;
+	for (const TCHAR* Tier : { TEXT("_T1"), TEXT("_T2") })
+	{
+		for (const TCHAR* Pigment : { TEXT("Ochre"), TEXT("TerreVerte"), TEXT("Sanguine"), TEXT("BoneBlack"), TEXT("Ceruse"), TEXT("SlumberBlue") })
+		{
+			Bought += Palette->Attune(FName(*(FString(Pigment) + Tier))) ? 1 : 0;
+		}
+	}
+	TestEqual(TEXT("Twelve nodes attuned"), Bought, 12);
+	TestEqual(TEXT("Golden Hour: perfect dodge gives 10"), Palette->GetAttunementValue(TEXT("PerfectDodgeGlim")), 10.0f);
+	TestEqual(TEXT("Ochre tier 2 is tempered with 2 Slumber Blue: 20 - 3 - 6 - 2"), Palette->GetPigment(TEXT("SlumberBlue")), 9);
+
+	return !HasAnyErrors();
+}
+
 #endif // WITH_DEV_AUTOMATION_TESTS

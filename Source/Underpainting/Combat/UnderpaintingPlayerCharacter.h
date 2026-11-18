@@ -146,6 +146,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dev")
 	void DevGrant(FName Id, int32 Count);
 
+	/** Debug (F7): 20 of every pigment, dried, a full pack of materials, and every recipe taught. For testing crafting. */
+	UFUNCTION(BlueprintCallable, Category = "Underpainting|Dev")
+	void DevFill();
+
+	/** Sanguine Draught: +20% damage for 30 seconds. */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	bool UseDraught();
+
+	/** Blue Tincture: you fall slowly and jump further for 20 seconds. */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	bool UseTincture();
+
+	float GetDraughtRemaining() const { return DraughtRemaining; }
+	float GetTinctureRemaining() const { return TinctureRemaining; }
+
 	/** For test scripts and debugging: buys an attunement node if it can be afforded. */
 	UFUNCTION(BlueprintCallable, Category = "Dev")
 	bool DevAttune(FName NodeId);
@@ -303,6 +318,9 @@ private:
 	void LockOrClosePressed();
 	void SwapWellPressed() { SwapWell(); }
 	void PoulticePressed() { UsePoultice(); }
+	void DraughtPressed() { UseDraught(); }
+	void TincturePressed() { UseTincture(); }
+	void DevFillPressed() { DevFill(); }
 	void LampOilPressed() { UseLampOil(); }
 	void TickLockOn(float DeltaTime);
 	void ApplyHit(AActor* Target, float Damage, float StaggerDamage, const TCHAR* What);
@@ -333,6 +351,12 @@ private:
 	float WeaponStaminaHeavy = 25.0f;
 	float WeaponReach = 160.0f;
 	float WeaponStaggerMultiplier = 1.0f;
+
+	// Timed consumables.
+	float DraughtRemaining = 0.0f;
+	float DraughtBonus = 0.0f;
+	float TinctureRemaining = 0.0f;
+	float ArmourStaminaRegenPercent = 0.0f;
 
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<AActor>> HitThisSwing;
