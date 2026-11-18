@@ -1,0 +1,128 @@
+[
+  {
+    "Name": "Margin_01",
+    "Kind": "Marginalia",
+    "Title": "In the margin, Rib Stair",
+    "Text": "Too stiff. Loosen the wrist. She should look as if she might turn over.",
+    "Zone": "GrisailleVault"
+  },
+  {
+    "Name": "Margin_02",
+    "Kind": "Marginalia",
+    "Title": "In the margin, Rib Stair",
+    "Text": "Ribs: eleven a side, not twelve. Nobody will count. I will know.",
+    "Zone": "GrisailleVault"
+  },
+  {
+    "Name": "Margin_03",
+    "Kind": "Marginalia",
+    "Title": "In the margin, Cartoon Gallery",
+    "Text": "Leave the far side. They will want something left to do.",
+    "Zone": "GrisailleVault"
+  },
+  {
+    "Name": "Margin_04",
+    "Kind": "Marginalia",
+    "Title": "In the margin, Cartoon Gallery",
+    "Text": "These steps hold if you look at them. Good enough for now. Come back to this.",
+    "Zone": "GrisailleVault"
+  },
+  {
+    "Name": "Margin_05",
+    "Kind": "Marginalia",
+    "Title": "In the margin, behind the paint",
+    "Text": "The little ones keep turning out like me. Stop it. Give this one a different nose.",
+    "Zone": "Scumblewood"
+  },
+  {
+    "Name": "Margin_06",
+    "Kind": "Marginalia",
+    "Title": "In the margin, near the Heart",
+    "Text": "Warmest place in the picture. Put it here.",
+    "Zone": "GrisailleVault"
+  },
+  {
+    "Name": "Margin_07",
+    "Kind": "Marginalia",
+    "Title": "In the margin, the Heart wall",
+    "Text": "No. A stranger. Again.",
+    "Zone": "GrisailleVault"
+  },
+  {
+    "Name": "Margin_08",
+    "Kind": "Marginalia",
+    "Title": "In the margin, the Heart wall",
+    "Text": "Third try at the hands. I cannot do my own hands. I cannot do my own back at all. Who is there to ask?",
+    "Zone": "GrisailleVault"
+  },
+  {
+    "Name": "Odile_01",
+    "Kind": "FieldNote",
+    "Title": "Odile's note, the lower gate",
+    "Text": "H. thinks I'm fetching flax. H. always knows when I'm lying and lets me, which is the whole secret of a marriage.",
+    "Zone": "VarnishVillage"
+  },
+  {
+    "Name": "Odile_02",
+    "Kind": "FieldNote",
+    "Title": "Odile's note, the First Well",
+    "Text": "Ilka's right about the ticks. Don't tell her.",
+    "Zone": "Scumblewood"
+  },
+  {
+    "Name": "Odile_03",
+    "Kind": "FieldNote",
+    "Title": "Odile's note, the Sunward Clearing",
+    "Text": "Met the half-seen lad. He looked at my lantern and said 'that one's going down and not coming up', then apologised for twenty minutes.",
+    "Zone": "Scumblewood"
+  },
+  {
+    "Name": "Odile_04",
+    "Kind": "FieldNote",
+    "Title": "Odile's note, the Rib Gate",
+    "Text": "It's cold coming out of her. Not air. Cold the way a room is after someone's left it.",
+    "Zone": "Scumblewood"
+  },
+  {
+    "Name": "Odile_05",
+    "Kind": "FieldNote",
+    "Title": "Odile's note, the Cartoon Gallery",
+    "Text": "The Hand left notes. THE HAND LEFT NOTES. It worried about noses.",
+    "Zone": "GrisailleVault"
+  },
+  {
+    "Name": "Odile_06",
+    "Kind": "FieldNote",
+    "Title": "Odile's note, before the Heart",
+    "Text": "Figures on the wall with a lantern and a knife. Limners, then. We're older than I thought. Two of them, and a clean place where a third was. Not rubbed. Rubbing leaves a smear. There are footprints in the charcoal dust, bare, walking out.",
+    "Zone": "GrisailleVault"
+  },
+  {
+    "Name": "Odile_07",
+    "Kind": "FieldNote",
+    "Title": "Odile's note, the Heart",
+    "Text": "There's a hollow by her heart the shape of someone sleeping, and nobody in it, and she is so cold, H. It's like a bed gone cold on one side. I've no pigment left to paint her anything. I've oil for the night. I'm going to lie down in it and keep the lamp by her till morning and then come home and you can shout at me. If I'm late: the wick wants trimming on the left. It always did. It's not a fault. It's how I knew it was mine.",
+    "Zone": "GrisailleVault"
+  },
+  {
+    "Name": "Ledger_Hesper",
+    "Kind": "Ledger",
+    "Title": "Hesper's lamp-log",
+    "Text": "One line a day for forty years. Oil per night, in fingers. Three fingers. Three. Three and a half. Four. The number has never once gone down.",
+    "Zone": "VarnishVillage"
+  },
+  {
+    "Name": "Ledger_Ilka",
+    "Kind": "Ledger",
+    "Title": "Ilka's ledger",
+    "Text": "Blood-well warmth, by season. The oldest column begins eleven years ago with a note in the margin: 'new instrument? no. same instrument.' Every figure below it is a little smaller than the one above.",
+    "Zone": "Scumblewood"
+  },
+  {
+    "Name": "Ledger_Bartram",
+    "Kind": "Ledger",
+    "Title": "Bartram's receipts",
+    "Text": "A spike of old bills. Madder, one bolt's worth, 'for O.V., who will not be told'. Ceruse, bought by the pound and sold by the pinch, back when nobody knew.",
+    "Zone": "VarnishVillage"
+  }
+]

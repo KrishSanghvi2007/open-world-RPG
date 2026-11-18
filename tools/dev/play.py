@@ -7,6 +7,11 @@ the same Interact and menu functions the keys call. Used to check the walking sk
     play.py goto <Kind> <Id> [n]  stand next to a marker (e.g. goto Enemy Blotter)
     play.py light | heavy | dodge one combat action
     play.py save | load
+    play.py flare | flask         light a Flare; throw a Fixative Flask at the platform in view
+    play.py read <LoreId>         walk to a note and read it
+    play.py lookaway <Kind> <Id>  stand by something but face away from it
+    play.py probe                 count solid sketch platforms and open passable backs
+    play.py wall front|behind     stand on one side of the forest's lesson wall
 """
 
 import sys
@@ -34,7 +39,15 @@ def goto(world, pawn, kind, data_id, index=1, distance=130.0):
     target = find(world, kind, data_id, index).get_actor_location()
     here = unreal.Vector(target.x - distance, target.y, target.z + 120.0)
     pawn.set_actor_location(here, False, True)
-    pawn.set_actor_rotation(unreal.Rotator(roll=0.0, pitch=0.0, yaw=0.0), True)
+    look_at(pawn, target)
+
+
+def look_at(pawn, target):
+    """Turns the player and the camera toward a point, as a player would with the mouse. "Use" follows the view."""
+    eye = pawn.get_actor_location() + unreal.Vector(0.0, 0.0, 60.0)
+    aim = (target - eye).rotator()
+    pawn.set_actor_rotation(unreal.Rotator(roll=0.0, pitch=0.0, yaw=aim.yaw), True)
+    pawn.get_controller().set_control_rotation(unreal.Rotator(roll=0.0, pitch=aim.pitch, yaw=aim.yaw))
 
 
 def say(pawn, what):
@@ -45,7 +58,7 @@ def talk(pawn, reply=1):
     """Talks to whoever is in reach, taking the given reply whenever one is offered."""
     pawn.interact()
     for _ in range(12):
-        if "menu=1" not in pawn.describe_state():
+        if "menu=1 " not in pawn.describe_state():
             break
         print("    line:", pawn.describe_state().split("row=")[1].split(" ")[0])
         pawn.menu_number(reply)
@@ -94,6 +107,32 @@ def main(args):
         pawn.start_heavy_attack()
     elif command == "dodge":
         pawn.start_dodge()
+    elif command == "flare":
+        print("flare lit:", pawn.use_flare())
+    elif command == "flask":
+        print("flask used:", pawn.use_fixative_flask())
+    elif command == "read":
+        goto(world, pawn, "Lore", args[1]); pawn.interact(); say(pawn, "reading " + args[1]); pawn.interact()
+    elif command == "lookaway":
+        # Stand next to something but look the other way: "Use" must not pick it.
+        goto(world, pawn, args[1], args[2])
+        yaw = pawn.get_actor_rotation().yaw + 180.0
+        pawn.get_controller().set_control_rotation(unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw))
+    elif command == "probe":
+        solid = [a.get_actor_label() for a in unreal.GameplayStatics.get_all_actors_of_class(world, unreal.UnderpaintingSketchPlatform) if a.is_solid()]
+        backs = {a.get_name(): a.is_open() for a in unreal.GameplayStatics.get_all_actors_of_class(world, unreal.UnderpaintingPassableBack)}
+        print("solid platforms:", len(solid), "| passable backs open:", sorted(k for k, v in backs.items() if v), "of", len(backs))
+    elif command == "wall":
+        # Stand in front of, or behind, the lesson wall. args[1] is "front" or "behind".
+        wall = [a for a in unreal.GameplayStatics.get_all_actors_with_tag(world, unreal.Name("MainRoute"))][0]
+        forward = wall.get_actor_forward_vector()
+        sign = 1.0 if args[1] == "front" else -1.0
+        spot = wall.get_actor_location() + forward * (300.0 * sign)
+        pawn.set_actor_location(unreal.Vector(spot.x, spot.y, wall.get_actor_location().z + 60.0), False, True)
+        look_at(pawn, wall.get_actor_location())
+    elif command == "walk":
+        # Walks forward for one call (movement is applied over the next frames).
+        pawn.add_movement_input(pawn.get_actor_forward_vector(), 1.0, True)
     elif command == "save":
         pawn.save_now()
     elif command == "load":

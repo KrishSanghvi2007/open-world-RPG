@@ -196,6 +196,18 @@ One row per line of dialogue. A conversation is a chain of rows.
 
 A finished conversation counts as the event `Talk` with the NPC as target.
 
+## lore.json (`FLoreRow`)
+
+Things to find and read. The texts are written in `docs/STORY.md` section 9; this file is what the game shows.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `Name` | row key | Lore ID. |
+| `Kind` | enum | `Marginalia` (the Hand's working notes: invisible until a Flare is lit nearby, then readable for good), `FieldNote` (Odile Vane's notes, always visible), `Ledger` (the village's records, always visible). |
+| `Title` | string | Heading shown above the text and in the journal. |
+| `Text` | string | The words. |
+| `Zone` | FName | Zone row in `regions.json` where it is found. |
+
 ## Cross-reference checklist
 
 When adding rows, keep these true (a validation script should check them):

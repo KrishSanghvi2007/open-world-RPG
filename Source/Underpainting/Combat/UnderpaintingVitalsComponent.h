@@ -43,6 +43,9 @@ public:
 	/** Drains Stamina over time (sprinting). Returns false once it runs out. */
 	bool DrainStamina(float Amount);
 
+	/** Spends Glim if the lantern holds enough. */
+	bool TrySpendGlim(float Amount);
+
 	/** Adds or removes Glim, clamped to 0..Max. */
 	UFUNCTION(BlueprintCallable, Category = "Vitals")
 	void AddGlim(float Amount);

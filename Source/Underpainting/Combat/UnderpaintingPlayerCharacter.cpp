@@ -4,9 +4,12 @@
 #include "UnderpaintingDataSubsystem.h"
 #include "UnderpaintingHUD.h"
 #include "UnderpaintingProgressSubsystem.h"
+#include "UnderpaintingExploration.h"
 #include "UnderpaintingWorldActors.h"
+#include "Components/PointLightComponent.h"
 #include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/PlayerStart.h"
 #include "UnderpaintingVitalsComponent.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
@@ -23,6 +26,15 @@ AUnderpaintingPlayerCharacter::AUnderpaintingPlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	Vitals = CreateDefaultSubobject<UUnderpaintingVitalsComponent>(TEXT("Vitals"));
+
+	FlareLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("FlareLight"));
+	FlareLight->SetupAttachment(RootComponent);
+	FlareLight->SetRelativeLocation(FVector(0.0f, 0.0f, 120.0f));
+	FlareLight->SetCastShadows(false);
+	FlareLight->SetLightColor(FLinearColor(1.0f, 0.62f, 0.25f));
+	FlareLight->SetAttenuationRadius(FlareRadius);
+	FlareLight->bUseInverseSquaredFalloff = false;
+	FlareLight->SetIntensity(0.0f);
 }
 
 void AUnderpaintingPlayerCharacter::BeginPlay()
@@ -43,7 +55,109 @@ void AUnderpaintingPlayerCharacter::BeginPlay()
 		ProgressChangedHandle = Progress->OnChanged.AddUObject(this, &AUnderpaintingPlayerCharacter::ApplyAttunements);
 	}
 	ApplyAttunements();
+	ArriveFromZone();
 	RestoreFromSave();
+}
+
+void AUnderpaintingPlayerCharacter::ArriveFromZone()
+{
+	UUnderpaintingProgressSubsystem* Subsystem = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr;
+	const FName From = Subsystem ? Subsystem->ConsumeArrival() : NAME_None;
+	if (From.IsNone())
+	{
+		return;
+	}
+
+	// Appear at the exit that leads back where you came from, a few steps inside it.
+	for (TActorIterator<AUnderpaintingZoneExit> It(GetWorld()); It; ++It)
+	{
+		if (It->TargetZone == From)
+		{
+			FVector Inward = FVector::ZeroVector - It->GetActorLocation();
+			if (const APlayerStart* Start = Cast<APlayerStart>(UGameplayStatics::GetActorOfClass(this, APlayerStart::StaticClass())))
+			{
+				Inward = Start->GetActorLocation() - It->GetActorLocation();
+			}
+			Inward.Z = 0.0f;
+			Inward = Inward.GetSafeNormal();
+			SetActorLocation(It->GetActorLocation() + Inward * 350.0f + FVector(0.0f, 0.0f, 100.0f), false, nullptr, ETeleportType::TeleportPhysics);
+			if (AController* PlayerController = GetController())
+			{
+				PlayerController->SetControlRotation(Inward.Rotation());
+			}
+			break;
+		}
+	}
+
+	// Arriving in a zone counts as reaching it.
+	const UUnderpaintingDataSubsystem* Data = GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>();
+	const FName Zone = Data ? Data->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(this, true)) : NAME_None;
+	if (UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this))
+	{
+		const FRegionRow* Row = Data ? Data->FindRegion(Zone) : nullptr;
+		Progress->ReachPlace(Zone, Row ? Row->DisplayName : FString());
+	}
+}
+
+bool AUnderpaintingPlayerCharacter::UseFlare()
+{
+	if (Action == EPlayerAction::Dead || IsMenuOpen() || FlareRemaining > 0.0f)
+	{
+		return false;
+	}
+	if (!Vitals->TrySpendGlim(FlareGlimCost))
+	{
+		if (UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this))
+		{
+			Progress->OnNotice.Broadcast(TEXT("The lantern is too low to flare."));
+		}
+		return false;
+	}
+	FlareRemaining = FlareDuration;
+	return true;
+}
+
+bool AUnderpaintingPlayerCharacter::IsFlareLighting(const FVector& Location) const
+{
+	return FlareRemaining > 0.0f && FVector::DistSquared(Location, GetActorLocation()) <= FMath::Square(FlareRadius);
+}
+
+bool AUnderpaintingPlayerCharacter::UseFixativeFlask()
+{
+	UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
+	if (!Progress || Action == EPlayerAction::Dead || IsMenuOpen())
+	{
+		return false;
+	}
+
+	// The platform nearest the centre of the view, within throwing range.
+	FVector ViewLocation = GetActorLocation();
+	FRotator ViewRotation = GetActorRotation();
+	if (const AController* PlayerController = GetController())
+	{
+		PlayerController->GetPlayerViewPoint(ViewLocation, ViewRotation);
+	}
+	AUnderpaintingSketchPlatform* Best = nullptr;
+	float BestScore = 0.6f;
+	for (TActorIterator<AUnderpaintingSketchPlatform> It(GetWorld()); It; ++It)
+	{
+		if (Progress->IsPlatformFixed(It->GetPlatformKey()) || FVector::Dist(It->GetActorLocation(), GetActorLocation()) > 1200.0f)
+		{
+			continue;
+		}
+		const float Score = FVector::DotProduct(ViewRotation.Vector(), (It->GetActorLocation() - ViewLocation).GetSafeNormal());
+		if (Score > BestScore)
+		{
+			Best = *It;
+			BestScore = Score;
+		}
+	}
+	if (!Best)
+	{
+		Progress->OnNotice.Broadcast(TEXT("Nothing sketched is in reach."));
+		return false;
+	}
+	return Progress->FixPlatform(Best->GetPlatformKey());
 }
 
 void AUnderpaintingPlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -75,7 +189,8 @@ void AUnderpaintingPlayerCharacter::RestoreFromSave()
 	const UGameInstance* GameInstance = GetGameInstance();
 	const UUnderpaintingProgressSubsystem* Subsystem = GameInstance ? GameInstance->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr;
 	const UUnderpaintingSaveGame* Save = Subsystem ? Subsystem->GetLoadedSave() : nullptr;
-	if (Save && Save->LevelName == FName(*UGameplayStatics::GetCurrentLevelName(this, true)))
+	UUnderpaintingProgressSubsystem* Mutable = GameInstance ? GameInstance->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr;
+	if (Save && Mutable && Mutable->ConsumeRestore() && Save->LevelName == FName(*UGameplayStatics::GetCurrentLevelName(this, true)))
 	{
 		SetActorTransform(Save->PlayerTransform, false, nullptr, ETeleportType::TeleportPhysics);
 		if (AController* PlayerController = GetController())
@@ -109,17 +224,39 @@ void AUnderpaintingPlayerCharacter::DoMove(float Right, float Forward)
 
 void AUnderpaintingPlayerCharacter::UpdateFocus()
 {
+	// "Use" goes to what you are looking at. In third person that means: of the usable things in reach of the
+	// character, the one closest to the direction the camera is pointing. Height is ignored, so a node on the
+	// ground and a tall lamp are equally easy; wide things forgive a little more.
 	AUnderpaintingInteractable* Best = nullptr;
-	float BestDistance = 280.0f;
+	float BestAngle = UseViewAngle;
 	if (Action == EPlayerAction::None && !IsMenuOpen())
 	{
+		const float ViewYaw = GetController() ? GetController()->GetControlRotation().Yaw : GetActorRotation().Yaw;
+		const FVector Here = GetActorLocation();
+
 		for (TActorIterator<AUnderpaintingInteractable> It(GetWorld()); It; ++It)
 		{
-			const float Distance = FVector::Dist2D(It->GetActorLocation(), GetActorLocation());
-			if (Distance < BestDistance && FMath::Abs(It->GetActorLocation().Z - GetActorLocation().Z) < 300.0f && !It->GetPrompt().IsEmpty())
+			FVector Origin, Extent;
+			It->GetActorBounds(false, Origin, Extent);
+			const FVector To = Origin - Here;
+			const float Distance = To.Size2D();
+			const float HalfWidth = FMath::Max(Extent.X, Extent.Y);
+			if (Distance - HalfWidth > UseReach || FMath::Abs(To.Z) > 320.0f + Extent.Z || It->GetPrompt().IsEmpty())
+			{
+				continue;
+			}
+
+			// Standing on top of something counts as looking at it.
+			float Angle = 0.0f;
+			if (Distance > HalfWidth + 30.0f)
+			{
+				Angle = FMath::Abs(FRotator::NormalizeAxis(To.Rotation().Yaw - ViewYaw));
+				Angle = FMath::Max(0.0f, Angle - FMath::RadiansToDegrees(FMath::Atan2(HalfWidth, Distance)));
+			}
+			if (Angle < BestAngle || (FMath::IsNearlyEqual(Angle, BestAngle, 0.5f) && Best && Distance < FVector::Dist2D(Best->GetActorLocation(), Here)))
 			{
 				Best = *It;
-				BestDistance = Distance;
+				BestAngle = Angle;
 			}
 		}
 	}
@@ -213,6 +350,9 @@ void AUnderpaintingPlayerCharacter::SetupPlayerInputComponent(UInputComponent* P
 	PlayerInputComponent->BindKey(EKeys::F5, IE_Pressed, this, &AUnderpaintingPlayerCharacter::SavePressed);
 	PlayerInputComponent->BindKey(EKeys::F9, IE_Pressed, this, &AUnderpaintingPlayerCharacter::LoadPressed);
 	PlayerInputComponent->BindKey(EKeys::F8, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NewGamePressed);
+	PlayerInputComponent->BindKey(EKeys::F, IE_Pressed, this, &AUnderpaintingPlayerCharacter::FlarePressed);
+	PlayerInputComponent->BindKey(EKeys::G, IE_Pressed, this, &AUnderpaintingPlayerCharacter::FlaskPressed);
+	PlayerInputComponent->BindKey(EKeys::Gamepad_DPad_Left, IE_Pressed, this, &AUnderpaintingPlayerCharacter::FlarePressed);
 	PlayerInputComponent->BindKey(EKeys::One, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<1>);
 	PlayerInputComponent->BindKey(EKeys::Two, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<2>);
 	PlayerInputComponent->BindKey(EKeys::Three, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<3>);
@@ -342,6 +482,13 @@ void AUnderpaintingPlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	UpdateFocus();
 
+	if (FlareRemaining > 0.0f)
+	{
+		FlareRemaining = FMath::Max(0.0f, FlareRemaining - DeltaTime);
+	}
+	// The flare burns bright and gutters in its last second, so you can feel it running out.
+	FlareLight->SetIntensity(FlareRemaining > 0.0f ? 28.0f * FMath::Min(1.0f, FlareRemaining) : 0.0f);
+
 	switch (Action)
 	{
 	case EPlayerAction::LightAttack:
@@ -466,6 +613,15 @@ void AUnderpaintingPlayerCharacter::HandleDeath(AActor* Killer)
 
 void AUnderpaintingPlayerCharacter::RestartLevel()
 {
+	// Wake where you last rested: reload the save's position (and its level, if it was another zone).
+	UUnderpaintingProgressSubsystem* Subsystem = GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>();
+	const UUnderpaintingSaveGame* Save = Subsystem ? Subsystem->GetLoadedSave() : nullptr;
+	if (Subsystem && Save && !Save->LevelName.IsNone())
+	{
+		Subsystem->RequestRestore();
+		UGameplayStatics::OpenLevel(this, FName(*FString::Printf(TEXT("/Game/Maps/Matriarch/%s"), *Save->LevelName.ToString())));
+		return;
+	}
 	UGameplayStatics::OpenLevel(this, FName(*UGameplayStatics::GetCurrentLevelName(this, true)));
 }
 
@@ -474,7 +630,8 @@ FString AUnderpaintingPlayerCharacter::DescribeState()
 	UpdateFocus();
 	const UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
 	const AUnderpaintingHUD* HUD = GetUnderpaintingHUD();
-	FString Text = FString::Printf(TEXT("prompt=[%s] menu=%d row=%s hp=%.0f glim=%.0f/%.0f"),
+	FString Text = FString::Printf(TEXT("level=%s flare=%.1f prompt=[%s] menu=%d row=%s hp=%.0f glim=%.0f/%.0f"),
+		*UGameplayStatics::GetCurrentLevelName(this, true), FlareRemaining,
 		Focus.IsValid() ? *Focus->GetPrompt() : TEXT(""), HUD ? int32(HUD->GetMenu()) : -1, HUD ? *HUD->GetDialogueRow().ToString() : TEXT(""),
 		Vitals->GetHealth(), Vitals->GetGlim(), Vitals->MaxGlim);
 	if (Progress)
@@ -488,6 +645,7 @@ FString AUnderpaintingPlayerCharacter::DescribeState()
 		for (const TPair<FName, int32>& Pair : Data.DryPigment) { if (Pair.Value > 0) { Text += FString::Printf(TEXT(" | dry %s %d"), *Pair.Key.ToString(), Pair.Value); } }
 		for (const TPair<FName, int32>& Pair : Data.Items) { if (Pair.Value > 0) { Text += FString::Printf(TEXT(" | %s x%d"), *Pair.Key.ToString(), Pair.Value); } }
 		for (const FName& Node : Data.Attunements) { Text += FString::Printf(TEXT(" | attuned %s"), *Node.ToString()); }
+		Text += FString::Printf(TEXT(" | lore %d places %d caches %d fixed %d"), Data.FoundLore.Num(), Data.DiscoveredPlaces.Num(), Data.OpenedCaches.Num(), Data.FixedPlatforms.Num());
 		for (const TPair<FName, FQuestProgress>& Pair : Data.Quests) { if (Pair.Value.bComplete) { Text += FString::Printf(TEXT(" | DONE %s"), *Pair.Key.ToString()); } }
 	}
 	return Text;

@@ -26,6 +26,17 @@ Every milestone ends with a "done when" test the owner can do in under 5 minutes
 - If Unreal crashes or disconnects, reopen it and continue. If something is blocked, note it and move to the next task.
 - `docs/devlog/MORNING.md` is kept ready for the owner's return: what is playable, how to test it in 10 minutes, what is broken, and the open questions.
 
+## Scope and parallel tracks (owner, 2026-11-18)
+
+**Scope:** the Act 1 vertical slice only, M3 to M9 below. Acts 2 and 3 are **not** built, and there is no full art pass yet.
+
+Two tracks run alongside, worked on between milestones:
+
+| Track | What | Where | State |
+|---|---|---|---|
+| **Story on paper** | Outlines of the Act 2 and 3 regions, quests, characters and key dialogue scenes; foreshadowing added back into Act 1's content. | `docs/story/` | To start after M3 |
+| **Style kit** | A reusable Glaze master material, post-process and haze, applied automatically to all placeholder geometry so playtests look coherent and painterly without real models. No new models beyond first-of-kind style probes. | `tools/stylekit/`, `/Game/StyleKit/` | To start after M3 |
+
 ## Milestones
 
 ### M0. Foundations (done)

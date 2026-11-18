@@ -206,6 +206,7 @@ MARKER_STYLES = {
     "Exit": (CUBE, (4.0, 0.3, 4.0), "#2F4BA8"),
     "Cache": (CUBE, (0.8, 0.8, 0.6), "#C4574B"),
     "Note": (SPHERE, (0.4, 0.4, 0.4), "#4A3558"),
+    "Lore": (CUBE, (0.05, 0.5, 0.65), "#F2E3C0"),
 }
 
 PIGMENT_COLOURS = {
@@ -256,6 +257,16 @@ def _spawn_working_actor(kind, data_id, text, ground, yaw):
             actor.set_editor_property("source_name", source)
     elif kind == "Enemy" and data_id == "Blotter":
         actor = spawn("BlotterEnemy", 1.3)
+    elif kind == "Exit":
+        actor = spawn("UnderpaintingZoneExit", 2.0)
+        if actor:
+            actor.set_editor_property("target_zone", unreal.Name(data_id))
+    elif kind == "Cache":
+        actor = spawn("UnderpaintingCache", 0.3)
+    elif kind == "Lore":
+        actor = spawn("UnderpaintingLoreNote", 1.2)
+        if actor:
+            actor.set_editor_property("lore_id", unreal.Name(data_id))
     return actor
 
 
@@ -279,7 +290,77 @@ def marker(kind, data_id, text, ground, colour=None, yaw=0.0):
                             "Markers/" + kind, unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw),
                             collide=False, tags=("Marker", kind, data_id))
         Zone.unlit = was_unlit
-    label(text, (ground[0], ground[1], ground[2] + size[2] + 0.5), "Markers/" + kind + "/Labels")
+    if kind != "Lore":      # things to find do not announce themselves
+        label(text, (ground[0], ground[1], ground[2] + size[2] + 0.5), "Markers/" + kind + "/Labels")
+    return actor
+
+
+LORE = {row["Name"]: row for row in json.load(open(os.path.join(unreal.Paths.project_dir(), "data", "lore.json")))}
+
+
+def lore(lore_id, ground, yaw=0.0):
+    """Something to read (a row of data/lore.json)."""
+    return marker("Lore", lore_id, LORE[lore_id]["Title"], ground, yaw=yaw)
+
+
+def cache(cache_id, text, ground, contents):
+    """A one-time store. contents: (pigment or item ID, count) pairs."""
+    actor = marker("Cache", cache_id, text, ground)
+    if hasattr(unreal, "UnderpaintingCache") and isinstance(actor, unreal.UnderpaintingCache):
+        entries = []
+        for item_id, count in contents:
+            entry = unreal.IdCount()
+            entry.set_editor_property("id", unreal.Name(item_id))
+            entry.set_editor_property("count", count)
+            entries.append(entry)
+        actor.set_editor_property("contents", entries)
+    return actor
+
+
+def place(place_id, name, centre, half=(5.0, 5.0, 3.0)):
+    """A named place: walking in discovers it and counts as reaching it for quests. Invisible."""
+    if not hasattr(unreal, "UnderpaintingPlace"):
+        return None
+    actor = actors.spawn_actor_from_class(unreal.UnderpaintingPlace, v((centre[0], centre[1], centre[2] + half[2])), unreal.Rotator(0, 0, 0))
+    actor.set_editor_property("place_id", unreal.Name(place_id))
+    actor.set_editor_property("display_name", name)
+    actor.get_component_by_class(unreal.BoxComponent).set_box_extent(unreal.Vector(half[0] * 100.0, half[1] * 100.0, half[2] * 100.0))
+    actor.set_actor_label("Place_" + place_id)
+    actor.set_folder_path("Gameplay/Places")
+    actor.tags = [unreal.Name(t) for t in ("Marker", "Place", place_id)]
+    _counts[("Place", place_id)] = _counts.get(("Place", place_id), 0) + 1
+    return actor
+
+
+def sketch_platform(name, x0, x1, y0, y1, top, thickness=0.4, tags=()):
+    """A sketched platform: solid only while a Flare lights it, or once fixed with a Fixative Flask."""
+    if not hasattr(unreal, "UnderpaintingSketchPlatform"):
+        return slab(name, x0, x1, y0, y1, top, "#2F4BA8", "Geometry/SketchPlatforms", bottom=top - thickness, tags=("SketchPlatform",) + tuple(tags))
+    centre = ((x0 + x1) / 2.0, (y0 + y1) / 2.0, top - thickness / 2.0)
+    actor = actors.spawn_actor_from_class(unreal.UnderpaintingSketchPlatform, v(centre), unreal.Rotator(0, 0, 0))
+    actor.set_actor_scale3d(unreal.Vector(abs(x1 - x0), abs(y1 - y0), thickness))
+    actor.set_actor_label(name)
+    actor.set_folder_path("Gameplay/SketchPlatforms")
+    actor.tags = [unreal.Name(t) for t in ("SketchPlatform",) + tuple(tags)]
+    return actor
+
+
+def passable_back(name, centre, size, front_yaw, tags=()):
+    """A front with nothing behind it. Solid from its painted side (front_yaw points out of that side);
+    from behind, where the charcoal cross-hatch mark is, you can walk through."""
+    if not hasattr(unreal, "UnderpaintingPassableBack"):
+        return box(name, centre, size, "#3A3A3A", "Geometry/PassableBacks", yaw=front_yaw, collide=False, tags=("PassableBack",) + tuple(tags))
+    actor = actors.spawn_actor_from_class(unreal.UnderpaintingPassableBack, v(centre), unreal.Rotator(roll=0.0, pitch=0.0, yaw=front_yaw))
+    actor.set_actor_scale3d(unreal.Vector(*size))
+    comp = actor.get_component_by_class(unreal.StaticMeshComponent)
+    comp.set_material(0, material("#3A3A3A", Zone.unlit))
+    actor.set_actor_label(name)
+    actor.set_folder_path("Gameplay/PassableBacks")
+    actor.tags = [unreal.Name(t) for t in ("PassableBack",) + tuple(tags)]
+    # The mark that makes it fair: a pale cross-hatched patch on the back, always the same.
+    back = math.radians(front_yaw + 180.0)
+    mark = (centre[0] + math.cos(back) * (size[0] / 2.0 + 0.03), centre[1] + math.sin(back) * (size[0] / 2.0 + 0.03), centre[2])
+    box(name + "_Mark", mark, (0.04, min(size[1], 1.6), min(size[2], 1.6)), "#D8CBB0", "Geometry/PassableBacks", yaw=front_yaw, collide=False)
     return actor
 
 
@@ -367,6 +448,10 @@ def end_level(zone_id):
     lampstands = sum(n for (kind, _), n in _counts.items() if kind == "Lampstand")
     if lampstands != row["Lampstands"]:
         problems.append("%s: %d Lampstands placed, data says %d" % (zone_id, lampstands, row["Lampstands"]))
+    expected_lore = sorted(name for name, entry in LORE.items() if entry["Zone"] == zone_id)
+    placed_lore = sorted(data_id for (kind, data_id) in _counts if kind == "Lore")
+    if expected_lore != placed_lore:
+        problems.append("%s: lore placed %s, data says %s" % (zone_id, placed_lore, expected_lore))
     for (kind, data_id) in _counts:
         if kind == "Enemy" and data_id not in row["Enemies"] + row["EnemiesAfterShift"]:
             problems.append("%s: enemy %s is not listed for this zone" % (zone_id, data_id))
@@ -445,6 +530,14 @@ def build_village():
     marker("Note", "LowerGate", "Lower gate (appears after the shift)", (0, -37, 0))
     marker("Note", "HemFlaking", "The Hem: paint starting to flake", (-17, -22, 0))
 
+    # Things to read, and the named places.
+    lore("Odile_01", (3.0, -36.5, 0), yaw=90.0)
+    lore("Ledger_Hesper", (1.6, 3.4, 4), yaw=200.0)
+    lore("Ledger_Bartram", (-6.4, -6.2, 4), yaw=120.0)
+    place("LampstandSquare", "The Lampstand Square", (0, 4, 4), half=(14, 12, 3))
+    place("SunwardTerraces", "The Sunward Terraces", (0, 30, 8), half=(30, 11, 3))
+    place("TheHem", "The Hem", (0, -24, 0), half=(30, 12, 3))
+
     # Walking-skeleton only: one Blotter by the lower gate, so the whole loop can be tried in one level.
     # The design has no combat in the village before the shift; this one leaves when the forest is playable.
     enemy("Blotter", (-2, -33, 0))
@@ -515,18 +608,34 @@ def build_scumblewood():
     for i, p in enumerate(trunks, 1):
         cylinder("Trunk_%02d" % i, p, 0.6, 9.0, UMBER, "Geometry/Trunks")
 
-    # One-sided rule: passable backs. Each is a front with no collision, carrying the charcoal cross-hatch mark.
-    # 1 of 6 is the lesson on the main route, beside the Sunward Clearing Lampstand; the other 5 hide caches.
-    lesson = off("SunwardClearing", 15.5, -7)
-    box("PassableBack_01_Lesson", (lesson[0], lesson[1], lesson[2] + 4.0), (1.0, 12.0, 8.0), CHARCOAL,
-        "Geometry/PassableBacks", collide=False, tags=("PassableBack", "MainRoute"))
-    marker("Note", "PassableBackLesson", "Passable back (lesson): walk through", (lesson[0] - 2, lesson[1], lesson[2]))
-    hidden = [off("FirstWell", 4, 6), off("Bend", -4, -5), off("Descent", 2, 5),
-              off("HollowVertebra", 8, 9), off("Approach", -3, 5)]
-    for i, p in enumerate(hidden, 2):
-        box("PassableBack_%02d" % i, (p[0], p[1], p[2] + 3.0), (4.0, 4.0, 6.0), CHARCOAL,
-            "Geometry/PassableBacks", collide=False, tags=("PassableBack", "Optional"))
-        marker("Cache", "Cache%02d" % (i - 1), "Cache (inside a passable back)", p)
+    # One-sided rule: passable backs (GDD section 6). There are 6. The main route needs the trick exactly once,
+    # beside the Sunward Clearing Lampstand: going down, you meet the bare back of a painted cliff and walk
+    # through it. Coming back up you face its painted front, which is solid, so a ramp climbs over it and you
+    # drop down on the village side.
+    heading = math.atan2(at["Descent"][1] - at["SunwardClearing"][1], at["Descent"][0] - at["SunwardClearing"][0])
+    ux, uy = math.cos(heading), math.sin(heading)
+    lx, ly, lz = at["SunwardClearing"][0] + ux * 19.0, at["SunwardClearing"][1] + uy * 19.0, at["SunwardClearing"][2] - 0.4
+    passable_back("PassableBack_01_Lesson", (lx, ly, lz + 1.75), (1.0, 12.0, 3.5), math.degrees(heading), tags=("MainRoute",))
+    marker("Note", "PassableBackLesson", "Bare canvas, cross-hatched: walk through", (lx - ux * 2.5, ly - uy * 2.5, lz + 0.3))
+    side = (-uy * 4.0, ux * 4.0)                                        # the ramp hugs one side of the gorge
+    ramp("LessonReturn_Ramp", (lx + ux * 10.0 + side[0], ly + uy * 10.0 + side[1], lz - 0.9),
+         (lx + ux * 0.5 + side[0], ly + uy * 0.5 + side[1], lz + 3.5), 3.0, UMBER)
+
+    # The other five hide something: a painted rock or trunk that is only a front, entered from its sun-away side.
+    hidden = [
+        (off("FirstWell", 4, 6), "Cache01", [("TerreVerte", 2)]),
+        (off("Bend", -4, -5), "Cache02", [("BoneBlack", 2), ("RibSplinter", 1)]),
+        (off("Descent", 2, 5), "Cache03", [("ShedHide", 2)]),
+        (off("HollowVertebra", 8, 9), "Cache04", [("Sanguine", 2), ("RibSplinter", 2)]),
+        (off("Approach", -3, 5), "Cache05", [("LampOil", 1), ("ShedHide", 1)]),
+    ]
+    for i, (p, cache_id, contents) in enumerate(hidden, 2):
+        passable_back("PassableBack_%02d" % i, (p[0], p[1] - 2.0, p[2] + 2.5), (0.6, 4.4, 5.0), -90.0, tags=("Optional",))   # front faces the sun (-Y)
+        for j, x_offset in enumerate((-2.2, 2.2)):
+            box("FalseFront_%02d_Side%d" % (i, j), (p[0] + x_offset, p[1], p[2] + 2.5), (0.5, 4.0, 5.0), UMBER, "Geometry/PassableBacks")
+        box("FalseFront_%02d_Top" % i, (p[0], p[1], p[2] + 5.2), (4.9, 4.4, 0.5), UMBER, "Geometry/PassableBacks")
+        cache(cache_id, "Cache", p, contents)
+    lore("Margin_05", (hidden[2][0][0] + 1.2, hidden[2][0][1] + 0.5, hidden[2][0][2]), yaw=-90.0)
 
     # The Nape Overlook: visible from the route, not reachable before the shift.
     slab("NapeOverlook", 140, 160, 44, 58, 14.0, CANVAS, bottom=-22.0)
@@ -539,8 +648,19 @@ def build_scumblewood():
     marker("NPC", "CorinHalfSeen", "Corin Half-Seen", off("SunwardClearing", -2, 4))
     marker("Note", "BroodNest", "Hollow Vertebra: Madderback brood nest", off("HollowVertebra", 0, 10))
     marker("Lampstand", "RibGate", "Lampstand", off("RibGate", -6, -6))
-    marker("NPC", "IlkaThrum", "Ilka Thrum", off("RibGate", -3, 5))
+    marker("NPC", "IlkaThrum", "Ilka Thrum", off("FirstWell", -3, -4))
     marker("Exit", "GrisailleVault", "The Rib Gate: to the Grisaille Vault", off("RibGate", 10, 0))
+
+    # Things to read, and the named places.
+    lore("Odile_02", off("FirstWell", 2, -7), yaw=90.0)
+    lore("Ledger_Ilka", off("FirstWell", -5, -5), yaw=60.0)
+    lore("Odile_03", off("SunwardClearing", -8, 2), yaw=0.0)
+    lore("Odile_04", off("RibGate", 3, -7), yaw=90.0)
+    place("FirstWell", "The First Well", at["FirstWell"], half=(9, 9, 4))
+    place("SunwardClearing", "The Sunward Clearing", at["SunwardClearing"], half=(14, 14, 4))
+    place("CorinsBack", "", off("SunwardClearing", -2, 6.5), half=(1.5, 1.2, 2))
+    place("BroodNest", "The Hollow Vertebra", at["HollowVertebra"], half=(13, 13, 4))
+    place("RibGate", "The Rib Gate", at["RibGate"], half=(10, 10, 4))
 
     # Enemies: 6 Madderbacks and 6 Blotters
     for p in (off("Bend", 3, -3), off("HollowVertebra", -5, -3), off("HollowVertebra", 4, 4),
@@ -591,10 +711,8 @@ def build_vault():
     slab("Gallery_PitFloor", 46, 106, -16, 16, PIT, GREY)
     platforms = [(51, 0, 0.0), (61, 3, 0.5), (71, -2, 0.0), (81, 3, -0.5), (91, -1, 0.5), (101, 0, 0.0)]
     for i, (x, y, dz) in enumerate(platforms, 1):
-        slab("SketchPlatform_%02d" % i, x - 2, x + 2, y - 2, y + 2, FLOOR + dz, BLUE,
-             "Geometry/SketchPlatforms", bottom=FLOOR + dz - 0.4, tags=("SketchPlatform",))
-    slab("SketchPlatform_Side", 79, 83, -12, -8, FLOOR, BLUE, "Geometry/SketchPlatforms",
-         bottom=FLOOR - 0.4, tags=("SketchPlatform", "Optional"))
+        sketch_platform("SketchPlatform_%02d" % i, x - 2, x + 2, y - 2, y + 2, FLOOR + dz)
+    sketch_platform("SketchPlatform_Side", 79, 83, -12, -8, FLOOR, tags=("Optional",))
     # A way back up for anyone who falls: there is no fall damage here, so a fall costs time, not health.
     ramp("Gallery_ReturnRamp", (68, -14, PIT), (46, -14, FLOOR), 3.0, GREY)
     slab("RibStair_Foot_Ledge", 44, 46, -16, -12, FLOOR, PAPER, bottom=PIT - 1.0)
@@ -625,6 +743,22 @@ def build_vault():
     marker("Note", "CartoonGallery", "Cartoon Gallery: platforms are solid only while lit", (44, 6, FLOOR))
     marker("Lampstand", "RibStairHeart", "Lampstand", (116, -8, FLOOR))
     marker("Note", "TheHeart", "The Heart: boss arena and the Heart choice", (126, 0, FLOOR))
+
+    # Things to read. The Hand's marginalia are invisible until a Flare is lit near them.
+    lore("Margin_01", (12, 3.6, -3.6), yaw=-90.0)
+    lore("Margin_02", (24, -3.6, -7.6), yaw=90.0)
+    lore("Odile_05", (43, 9, FLOOR), yaw=180.0)
+    lore("Margin_03", (45.0, -3, FLOOR), yaw=180.0)
+    lore("Margin_04", (108, 9, FLOOR), yaw=0.0)
+    lore("Odile_06", (119, -10, FLOOR), yaw=90.0)
+    lore("Margin_06", (121, 3, FLOOR), yaw=0.0)
+    lore("Margin_07", (150, 6, FLOOR), yaw=180.0)
+    lore("Margin_08", (150, -6, FLOOR), yaw=180.0)
+    lore("Odile_07", (153, 2.6, FLOOR), yaw=180.0)
+    place("RibStair", "The Rib Stair", (16, 0, -5), half=(15, 5, 6))
+    place("CartoonGallery", "The Cartoon Gallery", (40, 0, FLOOR), half=(5, 11, 3))
+    place("GalleryFarLedge", "", (112, 0, FLOOR), half=(5, 11, 3))
+    place("TheHeart", "The Heart", (140, 0, FLOOR), half=(14, 14, 4))
 
     # Enemies: 6 Pentiments, 4 Blotters and the boss
     for p in ((36, -6, FLOOR), (40, 7, FLOOR), (61, 3, FLOOR + 0.5), (81, 3, FLOOR - 0.5),

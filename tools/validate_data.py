@@ -1,6 +1,6 @@
 import json,sys,re
 D={}
-for f in "pigments recipes items attunements enemies quests regions dialogue".split():
+for f in "pigments recipes items attunements enemies quests regions dialogue lore".split():
     D[f]=json.load(open(f"data/{f}.json"))
     names=[r["Name"] for r in D[f]]
     assert len(names)==len(set(names)),f
@@ -79,6 +79,10 @@ for d in D["dialogue"]:
     if len(d["Choices"])>4: err.append(("dialogue-too-many-choices",d["Name"]))
 for npc in {d["Npc"] for d in D["dialogue"]}:
     if not entries.get(npc): err.append(("dialogue-no-entry",npc))
+for l in D["lore"]:
+    if l["Kind"] not in {"Marginalia","FieldNote","Ledger"}: err.append(("lore-kind",l["Name"]))
+    chk(l["Zone"],["regions"],"lore-zone")
+    if not l["Text"].strip() or not l["Title"].strip(): err.append(("lore-empty",l["Name"]))
 for r in D["regions"]:
     if r["ParentRegion"]: chk(r["ParentRegion"],["regions"],"par")
     [chk(x,["enemies"],"re") for x in r["Enemies"]+r["EnemiesAfterShift"]]

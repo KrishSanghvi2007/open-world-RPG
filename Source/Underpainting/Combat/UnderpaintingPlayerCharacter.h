@@ -93,6 +93,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Save")
 	void StartNewGame();
 
+	/** Lights a Flare: 20 Glim for 8 seconds of light in an 8 m radius (docs/GDD.md 4.5). */
+	UFUNCTION(BlueprintCallable, Category = "Exploration")
+	bool UseFlare();
+
+	/** Throws a Fixative Flask at the sketched platform being looked at (or the nearest within 10 m). */
+	UFUNCTION(BlueprintCallable, Category = "Exploration")
+	bool UseFixativeFlask();
+
+	/** True if a Flare is burning and this point is inside its light. */
+	UFUNCTION(BlueprintPure, Category = "Exploration")
+	bool IsFlareLighting(const FVector& Location) const;
+
+	UFUNCTION(BlueprintPure, Category = "Exploration")
+	float GetFlareTimeRemaining() const { return FlareRemaining; }
+
 	/** One line describing what the player would see: prompt, open menu, quest step, pack. For scripts and tests. */
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	FString DescribeState();
@@ -145,6 +160,28 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Tuning")
 	float AttackMoveSpeed = 120.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Exploration|Tuning")
+	float FlareGlimCost = 20.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Exploration|Tuning")
+	float FlareDuration = 8.0f;
+
+	/** Centimetres. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Exploration|Tuning")
+	float FlareRadius = 800.0f;
+
+	/** How far (cm) the player can reach to use something. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Exploration|Tuning")
+	float UseReach = 320.0f;
+
+	/** How far off the centre of the view (degrees) something may be and still be the thing you are looking at. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Exploration|Tuning")
+	float UseViewAngle = 35.0f;
+
+	/** The Flare: a small light, so it casts no shadow. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<class UPointLightComponent> FlareLight;
+
 	/** Optional animations. The rules work without them. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Animation")
 	TObjectPtr<UAnimMontage> LightAttackMontage;
@@ -183,6 +220,10 @@ private:
 	bool IsMenuOpen() const;
 
 	TWeakObjectPtr<class AUnderpaintingInteractable> Focus;
+	float FlareRemaining = 0.0f;
+	void FlarePressed() { UseFlare(); }
+	void FlaskPressed() { UseFixativeFlask(); }
+	void ArriveFromZone();
 	FDelegateHandle ProgressChangedHandle;
 	float BaseDodgeDistance = 450.0f;
 	float BaseDodgeInvulnerableTime = 0.30f;

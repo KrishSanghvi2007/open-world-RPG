@@ -50,6 +50,10 @@ struct FUnderpaintingProgressData
 	UPROPERTY(SaveGame) TArray<FName> Flags;
 	UPROPERTY(SaveGame) TArray<FName> LitLampstands;
 	UPROPERTY(SaveGame) TArray<FName> DepletedNodes;
+	UPROPERTY(SaveGame) TArray<FName> FoundLore;
+	UPROPERTY(SaveGame) TArray<FName> DiscoveredPlaces;
+	UPROPERTY(SaveGame) TArray<FName> OpenedCaches;
+	UPROPERTY(SaveGame) TArray<FName> FixedPlatforms;
 	UPROPERTY(SaveGame) int32 Deaths = 0;
 };
 
@@ -64,7 +68,7 @@ class UUnderpaintingProgress : public UObject
 public:
 
 	/** The content tables the rules read. Must be called before anything else. */
-	void SetTables(UDataTable* InPigments, UDataTable* InItems, UDataTable* InRecipes, UDataTable* InAttunements, UDataTable* InQuests, UDataTable* InDialogue);
+	void SetTables(UDataTable* InPigments, UDataTable* InItems, UDataTable* InRecipes, UDataTable* InAttunements, UDataTable* InQuests, UDataTable* InDialogue, UDataTable* InLore = nullptr);
 
 	/** Wipes everything and starts the first main quest. */
 	void NewGame();
@@ -116,6 +120,9 @@ public:
 	const FQuestProgress* GetQuestProgress(FName QuestId) const { return Data.Quests.Find(QuestId); }
 	TArray<FName> GetActiveQuests() const;
 
+	/** What the quest's current step is about (the objective's Target), or None. */
+	FName GetCurrentObjectiveTarget(FName QuestId) const;
+
 	/** Journal text of the quest's current step, or empty. */
 	FString GetCurrentStepText(FName QuestId) const;
 
@@ -162,6 +169,32 @@ public:
 	/** Resting at a lit Lampstand: wet pigment dries, nodes that regrow do, and poultices are topped up to 2. */
 	void Rest();
 
+	// --- Exploration ---
+
+	const FLoreRow* GetLore(FName LoreId) const;
+	bool HasFoundLore(FName LoreId) const { return Data.FoundLore.Contains(LoreId); }
+
+	/** Records a piece of lore as read. Returns true the first time. */
+	bool FindLore(FName LoreId);
+
+	/** How many pieces of this kind exist, and how many have been found. */
+	void CountLore(ELoreKind Kind, int32& OutFound, int32& OutTotal) const;
+
+	bool HasDiscovered(FName PlaceId) const { return Data.DiscoveredPlaces.Contains(PlaceId); }
+
+	/** Arriving somewhere with a name. Counts as the Reach event every time; announces the place the first time. */
+	void ReachPlace(FName PlaceId, const FString& DisplayName);
+
+	bool IsCacheOpened(FName CacheKey) const { return Data.OpenedCaches.Contains(CacheKey); }
+
+	/** Takes everything from a cache, once. */
+	bool OpenCache(FName CacheKey, const TArray<FIdCount>& Contents);
+
+	bool IsPlatformFixed(FName PlatformKey) const { return Data.FixedPlatforms.Contains(PlatformKey); }
+
+	/** Spends 1 Fixative Flask to make a sketched object solid for good. */
+	bool FixPlatform(FName PlatformKey);
+
 	/** Death: half of each wet pigment is lost, rounded down. The first death of a save costs nothing. */
 	void ApplyDeathPenalty();
 
@@ -198,6 +231,7 @@ private:
 	UPROPERTY(Transient) TObjectPtr<UDataTable> AttunementsTable;
 	UPROPERTY(Transient) TObjectPtr<UDataTable> QuestsTable;
 	UPROPERTY(Transient) TObjectPtr<UDataTable> Dialogue;
+	UPROPERTY(Transient) TObjectPtr<UDataTable> LoreTable;
 
 	bool bAdvancing = false;
 };

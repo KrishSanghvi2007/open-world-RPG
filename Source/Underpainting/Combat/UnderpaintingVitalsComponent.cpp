@@ -115,3 +115,13 @@ void UUnderpaintingVitalsComponent::Refill()
 		Stamina = MaxStamina;
 	}
 }
+
+bool UUnderpaintingVitalsComponent::TrySpendGlim(float Amount)
+{
+	if (bDead || Glim < Amount)
+	{
+		return false;
+	}
+	Glim -= Amount;
+	return true;
+}

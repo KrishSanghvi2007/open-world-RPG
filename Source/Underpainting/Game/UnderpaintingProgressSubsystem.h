@@ -57,10 +57,25 @@ public:
 	/** The last save read or written, for the player to restore position and health from. */
 	const UUnderpaintingSaveGame* GetLoadedSave() const { return LoadedSave; }
 
+	/** Walks through a zone exit: loads the other zone's level and remembers where the player came from. */
+	UFUNCTION(BlueprintCallable, Category = "Underpainting|Travel")
+	bool TravelToZone(const UObject* WorldContext, FName TargetZone);
+
+	/** The zone the player just left through an exit, or None. Cleared once read. */
+	FName ConsumeArrival();
+
+	/** Asks for the player to be put back at the saved position when the next level starts (after a death). */
+	void RequestRestore() { bRestorePending = true; ArrivingFromZone = NAME_None; }
+
+	/** True once after a load: the player should be put back where the save says. */
+	bool ConsumeRestore();
+
 	static const TCHAR* SlotName() { return TEXT("Underpainting"); }
 
 private:
 
 	UPROPERTY(Transient) TObjectPtr<UUnderpaintingProgress> Progress;
 	UPROPERTY(Transient) TObjectPtr<UUnderpaintingSaveGame> LoadedSave;
+	FName ArrivingFromZone;
+	bool bRestorePending = false;
 };

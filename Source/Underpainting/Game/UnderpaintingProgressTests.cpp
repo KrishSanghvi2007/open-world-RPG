@@ -29,7 +29,8 @@ namespace
 			Test.AddError(Problem);
 		}
 		UUnderpaintingProgress* Progress = NewObject<UUnderpaintingProgress>();
-		Progress->SetTables(Pigments, Items, Recipes, Attunements, Quests, Dialogue);
+		UDataTable* Lore = UUnderpaintingDataSubsystem::LoadTableFromJson(Outer, TEXT("lore"), FLoreRow::StaticStruct(), Problems);
+		Progress->SetTables(Pigments, Items, Recipes, Attunements, Quests, Dialogue, Lore);
 		Progress->NewGame();
 		return Progress;
 	}
@@ -164,6 +165,48 @@ bool FUnderpaintingDeathRuleTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("A single wet unit is always safe"), Progress->GetWetPigment(Ochre), 1);
 	Progress->ApplyDeathPenalty();
 	TestEqual(TEXT("Still one"), Progress->GetWetPigment(Ochre), 1);
+
+	return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FUnderpaintingExplorationTest, "Underpainting.Game.Exploration", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FUnderpaintingExplorationTest::RunTest(const FString& Parameters)
+{
+	UUnderpaintingProgress* Progress = MakeProgress(*this);
+
+	// Lore is counted by kind and only once.
+	int32 Found = 0, Total = 0;
+	Progress->CountLore(ELoreKind::Marginalia, Found, Total);
+	TestEqual(TEXT("Eight marginalia in Act 1"), Total, 8);
+	Progress->CountLore(ELoreKind::FieldNote, Found, Total);
+	TestEqual(TEXT("Seven of Odile's notes"), Total, 7);
+	TestTrue(TEXT("First reading counts"), Progress->FindLore(TEXT("Odile_01")));
+	TestFalse(TEXT("Second reading does not"), Progress->FindLore(TEXT("Odile_01")));
+	Progress->CountLore(ELoreKind::FieldNote, Found, Total);
+	TestEqual(TEXT("One found"), Found, 1);
+	TestFalse(TEXT("Unknown lore is refused"), Progress->FindLore(TEXT("NoSuchNote")));
+
+	// A cache gives its contents once: pigment arrives wet, items go to the pack.
+	TArray<FIdCount> Contents;
+	Contents.Add({ TEXT("SlumberBlue"), 2 });
+	Contents.Add({ TEXT("ShedHide"), 3 });
+	TestTrue(TEXT("Cache opens"), Progress->OpenCache(TEXT("Forest.Cache1"), Contents));
+	TestEqual(TEXT("Slumber Blue from the cache"), Progress->GetWetPigment(TEXT("SlumberBlue")), 2);
+	TestEqual(TEXT("Shed Hide from the cache"), Progress->GetItemCount(TEXT("ShedHide")), 3);
+	TestFalse(TEXT("A cache cannot be emptied twice"), Progress->OpenCache(TEXT("Forest.Cache1"), Contents));
+
+	// Fixing a sketched platform costs a Fixative Flask and lasts.
+	TestFalse(TEXT("No flask, no fix"), Progress->FixPlatform(TEXT("Vault.Platform1")));
+	Progress->AddItem(TEXT("FixativeFlask"), 1);
+	TestTrue(TEXT("Fix with a flask"), Progress->FixPlatform(TEXT("Vault.Platform1")));
+	TestTrue(TEXT("It stays fixed"), Progress->IsPlatformFixed(TEXT("Vault.Platform1")));
+	TestEqual(TEXT("The flask is used up"), Progress->GetItemCount(TEXT("FixativeFlask")), 0);
+
+	// Reaching a named place is remembered, and counts for quests every time.
+	TestFalse(TEXT("Not yet discovered"), Progress->HasDiscovered(TEXT("RibGate")));
+	Progress->ReachPlace(TEXT("RibGate"), TEXT("The Rib Gate"));
+	TestTrue(TEXT("Discovered"), Progress->HasDiscovered(TEXT("RibGate")));
 
 	return !HasAnyErrors();
 }

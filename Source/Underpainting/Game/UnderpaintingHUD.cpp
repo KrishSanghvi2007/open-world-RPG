@@ -11,6 +11,8 @@
 #include "Engine/DataTable.h"
 #include "Engine/Engine.h"
 #include "EngineUtils.h"
+#include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 namespace
 {
@@ -94,6 +96,12 @@ void AUnderpaintingHUD::OpenCrafting(ECraftingStation Station)
 void AUnderpaintingHUD::OpenAttunement()
 {
 	Menu = EUnderpaintingMenu::Attunement;
+}
+
+void AUnderpaintingHUD::OpenReading(FName LoreId)
+{
+	Menu = EUnderpaintingMenu::Reading;
+	ReadingLore = LoreId;
 }
 
 void AUnderpaintingHUD::ToggleInventory()
@@ -294,6 +302,10 @@ void AUnderpaintingHUD::DrawHUD()
 	{
 		DrawPlayerBars(Player);
 	}
+	if (Player && Progress && Menu == EUnderpaintingMenu::None)
+	{
+		DrawCompass(Player, Progress);
+	}
 	if (Progress)
 	{
 		DrawTracker(Progress);
@@ -303,6 +315,7 @@ void AUnderpaintingHUD::DrawHUD()
 		case EUnderpaintingMenu::Crafting: DrawCrafting(Progress); break;
 		case EUnderpaintingMenu::Attunement: DrawAttunement(Progress); break;
 		case EUnderpaintingMenu::Inventory: DrawInventory(Progress); break;
+		case EUnderpaintingMenu::Reading: DrawReading(Progress); break;
 		default: break;
 		}
 	}
@@ -345,7 +358,7 @@ void AUnderpaintingHUD::DrawPlayerBars(const AUnderpaintingPlayerCharacter* Play
 	}
 	else if (Menu == EUnderpaintingMenu::None)
 	{
-		DrawText(TEXT("E use/talk   Tab pack   Mouse L/R attack   L-Ctrl dodge   L-Shift sprint   F5 save   F9 load   F8 new game"), DimColour, X, Canvas->ClipY - 30.0f, nullptr, 0.85f);
+		DrawText(TEXT("E use/talk   F flare   G fix   Tab pack   Mouse L/R attack   L-Ctrl dodge   L-Shift sprint   F5 save   F9 load   F8 new game"), DimColour, X, Canvas->ClipY - 30.0f, nullptr, 0.85f);
 	}
 }
 
@@ -542,6 +555,16 @@ void AUnderpaintingHUD::DrawInventory(const UUnderpaintingProgress* Progress)
 	}
 	Lines.Add(TEXT(""));
 	Lines.Add(FString::Printf(TEXT("ATTUNED: %d      DEATHS: %d"), Data.Attunements.Num(), Data.Deaths));
+	Lines.Add(TEXT(""));
+	Lines.Add(TEXT("FOUND"));
+	int32 Found = 0, Total = 0;
+	Progress->CountLore(ELoreKind::FieldNote, Found, Total);
+	Lines.Add(FString::Printf(TEXT("   Odile's notes   %d of %d"), Found, Total));
+	Progress->CountLore(ELoreKind::Marginalia, Found, Total);
+	Lines.Add(FString::Printf(TEXT("   Marginalia   %d of %d"), Found, Total));
+	Progress->CountLore(ELoreKind::Ledger, Found, Total);
+	Lines.Add(FString::Printf(TEXT("   Ledgers   %d of %d"), Found, Total));
+	Lines.Add(FString::Printf(TEXT("   Places   %d      Caches   %d"), Data.DiscoveredPlaces.Num(), Data.OpenedCaches.Num()));
 
 	DrawPanel(X, Y, Width, 60.0f + Lines.Num() * LineHeight);
 	DrawText(TEXT("Your pack"), GlimColour, X + 20.0f, Y + 14.0f, nullptr, 1.2f);
@@ -550,5 +573,89 @@ void AUnderpaintingHUD::DrawInventory(const UUnderpaintingProgress* Progress)
 	{
 		DrawText(Line, Line.StartsWith(TEXT("   ")) ? TextColour : DimColour, X + 20.0f, Cursor, nullptr, 1.0f);
 		Cursor += LineHeight;
+	}
+}
+
+void AUnderpaintingHUD::DrawReading(const UUnderpaintingProgress* Progress)
+{
+	const FLoreRow* Row = Progress->GetLore(ReadingLore);
+	if (!Row)
+	{
+		return;
+	}
+
+	// A sheet of paper: cream for Odile and the ledgers, the Vault's blue-grey for the Hand.
+	const bool bHand = Row->Kind == ELoreKind::Marginalia;
+	const float Width = FMath::Min(760.0f, Canvas->ClipX - 80.0f);
+	const float X = (Canvas->ClipX - Width) * 0.5f;
+	const float Y = Canvas->ClipY * 0.22f;
+	const FLinearColor Paper = bHand ? FLinearColor(0.62f, 0.64f, 0.70f, 0.96f) : FLinearColor(0.87f, 0.76f, 0.52f, 0.96f);
+	const FLinearColor Ink = bHand ? FLinearColor(0.03f, 0.07f, 0.38f) : FLinearColor(0.08f, 0.05f, 0.04f);
+	DrawRect(Paper, X, Y, Width, 300.0f);
+	DrawText(Row->Title, Ink * 0.8f + FLinearColor(0.1f, 0.1f, 0.1f), X + 30.0f, Y + 22.0f, nullptr, 0.95f);
+	DrawWrapped(Row->Text, X + 30.0f, Y + 62.0f, Width - 60.0f, Ink, 1.15f);
+	DrawText(TEXT("[E] put it away"), Ink * 0.7f + FLinearColor(0.15f, 0.15f, 0.15f), X + 30.0f, Y + 268.0f, nullptr, 0.85f);
+}
+
+void AUnderpaintingHUD::DrawCompass(const AUnderpaintingPlayerCharacter* Player, const UUnderpaintingProgress* Progress)
+{
+	// A strip at the top of the screen. The dying Lamp hangs in the west and never moves, so it is the one fixed
+	// bearing everyone in this world steers by. In level space, north is +X and west is -Y.
+	const APlayerController* Controller = Cast<APlayerController>(Player->GetController());
+	if (!Controller)
+	{
+		return;
+	}
+	const float ViewYaw = Controller->GetControlRotation().Yaw;
+	const float Width = 460.0f;
+	const float Centre = Canvas->ClipX * 0.5f;
+	const float Y = 26.0f;
+	const float DegreesShown = 150.0f;
+	DrawRect(BackColour, Centre - Width * 0.5f, Y - 6.0f, Width, 34.0f);
+	DrawRect(TextColour, Centre - 1.0f, Y + 24.0f, 2.0f, 6.0f);
+
+	const auto Mark = [&](float WorldYaw, const FString& Text, const FLinearColor& Colour, float Scale)
+	{
+		const float Delta = FRotator::NormalizeAxis(WorldYaw - ViewYaw);
+		if (FMath::Abs(Delta) <= DegreesShown * 0.5f)
+		{
+			float TextWidth = 0.0f, TextHeight = 0.0f;
+			GetTextSize(Text, TextWidth, TextHeight, nullptr, Scale);
+			DrawText(Text, Colour, Centre + Delta / DegreesShown * Width - TextWidth * 0.5f, Y, nullptr, Scale);
+		}
+	};
+	Mark(0.0f, TEXT("N"), DimColour, 1.0f);
+	Mark(90.0f, TEXT("E"), DimColour, 1.0f);
+	Mark(180.0f, TEXT("S"), DimColour, 1.0f);
+	Mark(-90.0f, TEXT("LAMP"), GlimColour, 0.9f);
+
+	// The current quest step, if what it is about is somewhere in this level.
+	const TArray<FName> ActiveQuests = Progress->GetActiveQuests();
+	if (ActiveQuests.Num() > 0)
+	{
+		const FName Target = Progress->GetCurrentObjectiveTarget(ActiveQuests[0]);
+		TArray<AActor*> Tagged;
+		UGameplayStatics::GetAllActorsWithTag(this, Target, Tagged);
+		const AActor* Nearest = nullptr;
+		float NearestDistance = TNumericLimits<float>::Max();
+		for (const AActor* Actor : Tagged)
+		{
+			const AUnderpaintingInteractable* Usable = Cast<AUnderpaintingInteractable>(Actor);
+			if (Usable && Usable->GetPrompt().IsEmpty())
+			{
+				continue;   // an emptied node is not where the objective is
+			}
+			const float Distance = FVector::Dist(Actor->GetActorLocation(), Player->GetActorLocation());
+			if (Distance < NearestDistance)
+			{
+				Nearest = Actor;
+				NearestDistance = Distance;
+			}
+		}
+		if (Nearest)
+		{
+			const FVector To = Nearest->GetActorLocation() - Player->GetActorLocation();
+			Mark(To.Rotation().Yaw, FString::Printf(TEXT("v %dm"), FMath::RoundToInt(NearestDistance / 100.0f)), GoodColour, 0.9f);
+		}
 	}
 }

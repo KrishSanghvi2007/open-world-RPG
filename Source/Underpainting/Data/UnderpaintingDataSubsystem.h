@@ -59,6 +59,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Underpainting|Data")
 	UDataTable* GetDialogue() const { return Dialogue; }
 
+	UFUNCTION(BlueprintPure, Category = "Underpainting|Data")
+	UDataTable* GetLore() const { return Lore; }
+
+	/** The zone row whose level is the one given (for example "L_Matriarch_Vault_A"), or None. */
+	FName FindZoneForLevel(const FString& LevelName) const;
+
 	/** Typed row lookups for C++. Return null if the row does not exist. */
 	const FPigmentRow* FindPigment(FName RowName) const;
 	const FItemRow* FindItem(FName RowName) const;
@@ -97,4 +103,7 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UDataTable> Dialogue;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UDataTable> Lore;
 };

@@ -18,7 +18,8 @@ enum class EUnderpaintingMenu : uint8
 	Dialogue,
 	Crafting,
 	Attunement,
-	Inventory
+	Inventory,
+	Reading
 };
 
 UCLASS()
@@ -40,6 +41,9 @@ public:
 	void OpenCrafting(ECraftingStation Station);
 	void OpenAttunement();
 	void ToggleInventory();
+
+	/** Shows a piece of lore from data/lore.json. */
+	void OpenReading(FName LoreId);
 	void CloseMenu();
 
 	/** The Interact key while a menu is open: next line of dialogue, or close. */
@@ -64,6 +68,8 @@ private:
 	void DrawCrafting(const UUnderpaintingProgress* Progress);
 	void DrawAttunement(const UUnderpaintingProgress* Progress);
 	void DrawInventory(const UUnderpaintingProgress* Progress);
+	void DrawReading(const UUnderpaintingProgress* Progress);
+	void DrawCompass(const class AUnderpaintingPlayerCharacter* Player, const UUnderpaintingProgress* Progress);
 	void ShowDialogueRow(FName RowId);
 	void AddNotice(const FString& Text);
 	TArray<FName> GetAttunementList(const UUnderpaintingProgress* Progress) const;
@@ -73,6 +79,7 @@ private:
 	FName DialogueNpc;
 	FName DialogueRow;
 	ECraftingStation CraftingStation = ECraftingStation::GrindingSlab;
+	FName ReadingLore;
 
 	struct FNotice
 	{

@@ -68,6 +68,7 @@ int32 UUnderpaintingDataSubsystem::ReloadAll()
 	Quests = LoadTableFromJson(this, TEXT("quests"), FQuestRow::StaticStruct(), Problems);
 	Regions = LoadTableFromJson(this, TEXT("regions"), FRegionRow::StaticStruct(), Problems);
 	Dialogue = LoadTableFromJson(this, TEXT("dialogue"), FDialogueRow::StaticStruct(), Problems);
+	Lore = LoadTableFromJson(this, TEXT("lore"), FLoreRow::StaticStruct(), Problems);
 
 	for (const FString& Problem : Problems)
 	{
@@ -110,4 +111,20 @@ FLinearColor UUnderpaintingDataSubsystem::HexToColour(const FString& Hex)
 
 	// The data stores colours as they look on screen (sRGB), so convert to linear for rendering.
 	return FLinearColor::FromSRGBColor(FColor::FromHex(Digits));
+}
+
+FName UUnderpaintingDataSubsystem::FindZoneForLevel(const FString& LevelName) const
+{
+	if (Regions)
+	{
+		for (const TPair<FName, uint8*>& Pair : Regions->GetRowMap())
+		{
+			const FRegionRow* Row = reinterpret_cast<const FRegionRow*>(Pair.Value);
+			if (Row->RowType == ERegionRowType::Zone && (Row->LevelBefore.ToString() == LevelName || Row->LevelAfter.ToString() == LevelName))
+			{
+				return Pair.Key;
+			}
+		}
+	}
+	return NAME_None;
 }

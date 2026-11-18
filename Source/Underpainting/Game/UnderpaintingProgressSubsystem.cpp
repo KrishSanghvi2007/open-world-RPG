@@ -14,7 +14,7 @@ void UUnderpaintingProgressSubsystem::Initialize(FSubsystemCollectionBase& Colle
 
 	UUnderpaintingDataSubsystem* Data = Collection.InitializeDependency<UUnderpaintingDataSubsystem>();
 	Progress = NewObject<UUnderpaintingProgress>(this);
-	Progress->SetTables(Data->GetPigments(), Data->GetItems(), Data->GetRecipes(), Data->GetAttunements(), Data->GetQuests(), Data->GetDialogue());
+	Progress->SetTables(Data->GetPigments(), Data->GetItems(), Data->GetRecipes(), Data->GetAttunements(), Data->GetQuests(), Data->GetDialogue(), Data->GetLore());
 
 	if (!LoadGame())
 	{
@@ -69,6 +69,7 @@ bool UUnderpaintingProgressSubsystem::LoadGame()
 	}
 
 	LoadedSave = Save;
+	bRestorePending = true;
 	Progress->SetData(Save->Progress);
 	Progress->OnNotice.Broadcast(TEXT("Loaded."));
 	UE_LOG(LogUnderpainting, Log, TEXT("Save loaded"));
@@ -81,4 +82,34 @@ void UUnderpaintingProgressSubsystem::NewGame()
 	LoadedSave = nullptr;
 	Progress->NewGame();
 	Progress->OnNotice.Broadcast(TEXT("New game."));
+}
+
+bool UUnderpaintingProgressSubsystem::TravelToZone(const UObject* WorldContext, FName TargetZone)
+{
+	const UUnderpaintingDataSubsystem* Data = GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>();
+	const FRegionRow* Target = Data ? Data->FindRegion(TargetZone) : nullptr;
+	if (!Target || Target->LevelBefore.IsNone())
+	{
+		UE_LOG(LogUnderpainting, Warning, TEXT("No level for zone '%s'"), *TargetZone.ToString());
+		return false;
+	}
+
+	ArrivingFromZone = Data->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(WorldContext, true));
+	bRestorePending = false;
+	UGameplayStatics::OpenLevel(WorldContext, FName(*FString::Printf(TEXT("/Game/Maps/Matriarch/%s"), *Target->LevelBefore.ToString())));
+	return true;
+}
+
+FName UUnderpaintingProgressSubsystem::ConsumeArrival()
+{
+	const FName Result = ArrivingFromZone;
+	ArrivingFromZone = NAME_None;
+	return Result;
+}
+
+bool UUnderpaintingProgressSubsystem::ConsumeRestore()
+{
+	const bool bResult = bRestorePending;
+	bRestorePending = false;
+	return bResult;
 }

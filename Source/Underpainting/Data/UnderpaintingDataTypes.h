@@ -140,6 +140,17 @@ enum class EPaintState : uint8
 	Mixed
 };
 
+UENUM(BlueprintType)
+enum class ELoreKind : uint8
+{
+	/** The Hand's working notes: invisible until a Flare is lit nearby. */
+	Marginalia,
+	/** Odile Vane's notes, left along her route. */
+	FieldNote,
+	/** The village's own records. */
+	Ledger
+};
+
 // ---------------------------------------------------------------------------
 // Small structs shared between files
 // ---------------------------------------------------------------------------
@@ -739,4 +750,27 @@ struct FDialogueRow : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dialogue")
 	TArray<FDialogueChoice> Choices;
+};
+
+// ---------------------------------------------------------------------------
+// lore.json
+// ---------------------------------------------------------------------------
+
+USTRUCT(BlueprintType)
+struct FLoreRow : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lore")
+	ELoreKind Kind = ELoreKind::FieldNote;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lore")
+	FString Title;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lore")
+	FString Text;
+
+	/** Zone row in regions.json where it is found. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lore")
+	FName Zone;
 };

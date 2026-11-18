@@ -22,7 +22,7 @@ const RowType* UUnderpaintingProgress::Find(const UDataTable* Table, FName Id) c
 	return Table && !Id.IsNone() ? Table->FindRow<RowType>(Id, TEXT("Progress"), false) : nullptr;
 }
 
-void UUnderpaintingProgress::SetTables(UDataTable* InPigments, UDataTable* InItems, UDataTable* InRecipes, UDataTable* InAttunements, UDataTable* InQuests, UDataTable* InDialogue)
+void UUnderpaintingProgress::SetTables(UDataTable* InPigments, UDataTable* InItems, UDataTable* InRecipes, UDataTable* InAttunements, UDataTable* InQuests, UDataTable* InDialogue, UDataTable* InLore)
 {
 	Pigments = InPigments;
 	ItemsTable = InItems;
@@ -30,6 +30,7 @@ void UUnderpaintingProgress::SetTables(UDataTable* InPigments, UDataTable* InIte
 	AttunementsTable = InAttunements;
 	QuestsTable = InQuests;
 	Dialogue = InDialogue;
+	LoreTable = InLore;
 }
 
 void UUnderpaintingProgress::Notice(const FString& Text)
@@ -658,4 +659,102 @@ void UUnderpaintingProgress::ApplyDeathPenalty()
 	}
 	Notice(TEXT("Half of your wet pigment is gone."));
 	Changed();
+}
+
+// --- Exploration ---
+
+const FLoreRow* UUnderpaintingProgress::GetLore(FName LoreId) const
+{
+	return Find<FLoreRow>(LoreTable, LoreId);
+}
+
+void UUnderpaintingProgress::CountLore(ELoreKind Kind, int32& OutFound, int32& OutTotal) const
+{
+	OutFound = 0;
+	OutTotal = 0;
+	if (LoreTable)
+	{
+		for (const TPair<FName, uint8*>& Pair : LoreTable->GetRowMap())
+		{
+			if (reinterpret_cast<const FLoreRow*>(Pair.Value)->Kind == Kind)
+			{
+				OutTotal++;
+				OutFound += Data.FoundLore.Contains(Pair.Key) ? 1 : 0;
+			}
+		}
+	}
+}
+
+bool UUnderpaintingProgress::FindLore(FName LoreId)
+{
+	const FLoreRow* Row = GetLore(LoreId);
+	if (!Row || Data.FoundLore.Contains(LoreId))
+	{
+		return false;
+	}
+
+	Data.FoundLore.Add(LoreId);
+	int32 Found = 0, Total = 0;
+	CountLore(Row->Kind, Found, Total);
+	const TCHAR* KindName = Row->Kind == ELoreKind::Marginalia ? TEXT("Marginalia") : (Row->Kind == ELoreKind::FieldNote ? TEXT("Odile's notes") : TEXT("Ledgers"));
+	Notice(FString::Printf(TEXT("%s: %d of %d"), KindName, Found, Total));
+	NotifyEvent(TEXT("Inspect"), LoreId, 1);
+	return true;
+}
+
+void UUnderpaintingProgress::ReachPlace(FName PlaceId, const FString& DisplayName)
+{
+	if (PlaceId.IsNone())
+	{
+		return;
+	}
+	if (!Data.DiscoveredPlaces.Contains(PlaceId))
+	{
+		Data.DiscoveredPlaces.Add(PlaceId);
+		if (!DisplayName.IsEmpty())
+		{
+			Notice(DisplayName);
+		}
+	}
+	NotifyEvent(TEXT("Reach"), PlaceId, 1);
+}
+
+bool UUnderpaintingProgress::OpenCache(FName CacheKey, const TArray<FIdCount>& Contents)
+{
+	if (IsCacheOpened(CacheKey))
+	{
+		return false;
+	}
+	Data.OpenedCaches.Add(CacheKey);
+	for (const FIdCount& Entry : Contents)
+	{
+		if (IsPigment(Entry.Id)) { AddPigment(Entry.Id, Entry.Count, true); }
+		else { AddItem(Entry.Id, Entry.Count); }
+	}
+	Changed();
+	return true;
+}
+
+bool UUnderpaintingProgress::FixPlatform(FName PlatformKey)
+{
+	if (IsPlatformFixed(PlatformKey))
+	{
+		return false;
+	}
+	if (!RemoveItem(TEXT("FixativeFlask"), 1))
+	{
+		Notice(TEXT("You have no Fixative Flask."));
+		return false;
+	}
+	Data.FixedPlatforms.Add(PlatformKey);
+	Notice(TEXT("Fixed. It will hold now, lit or not."));
+	Changed();
+	return true;
+}
+
+FName UUnderpaintingProgress::GetCurrentObjectiveTarget(FName QuestId) const
+{
+	const FQuestRow* Row = Find<FQuestRow>(QuestsTable, QuestId);
+	const FQuestProgress* Progress = Data.Quests.Find(QuestId);
+	return Row && Progress && Row->Objectives.IsValidIndex(Progress->Step) ? Row->Objectives[Progress->Step].Target : NAME_None;
 }
