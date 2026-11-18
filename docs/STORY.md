@@ -10,7 +10,7 @@ A god the people call **the Hand** painted the world onto the backs of sleeping 
 
 You are a **Limner**, one of the few trusted to decide what gets finished. You walked up out of the gorge below the village of Varnish eleven years ago with wet paint on your hands and no memory of anything before. The lampwright, **Hesper Vane**, took you in the day after her wife, the village's last Limner, went down into the Matriarch's ribs and did not return.
 
-**Act 1, Dusk.** The colossus under Varnish, the Sleeping Matriarch, is shivering. You go down her spine and into her ribcage, where the world is still only a drawing, and find an old Erasure curled in a hollow beside her heart. The hollow has the shape of a person. On the wall beside it are two charcoal studies of a figure with a lantern and a knife. Where the third should be, the wall is blank. You fill the blank, or leave it. Her heart warms, her vast eye half-opens and finds you, and she turns in her sleep to raise a stair that carries you home.
+**Act 1, Dusk.** The colossus under Varnish, the Sleeping Matriarch, is shivering. You go down her spine and into her ribcage, where the world is still only a drawing, and find an old Erasure curled in a person-shaped hollow beside her heart. It is curled around something. When the fight scrapes it down to red, the red is a coat: Hesper's wife, Odile, who found the hollow empty eleven years ago, understood that the Matriarch was freezing, and lay down in it with her lantern to keep the heart warm. She has been doing it ever since. The cold grew over her like frost over a lamp left burning in a window. Her flame is still lit. You carry it home to Hesper. That is the first great reveal of the game, and it is about one marriage. Only afterwards, and quietly, does the other thing register: the hollow was there before Odile, on the wall beside it are two charcoal studies of a figure with a lantern and a knife and a blank where a third was, and the hollow fits you.
 
 **Act 2, Afterglow.** Her child, the Wader, has woken cold and is walking into the Thinner, a sea that dissolves paint, to wash the world off its back. Its people cling to scaffolds as the tide strips their streets to sketch. Wading in, you lose a layer yourself. Under everyone else's paint is white ground. Under yours is charcoal, in the Hand's own line. You are a drawing. Another drawing finds you: a walking draft with your face, who calls itself **Prime** and calls you "Third". It tells you that you are both discards.
 
@@ -44,20 +44,23 @@ You are a **Limner**, one of the few trusted to decide what gets finished. You w
 3. **The gift had a cost the Hand did not foresee.** Open things need light. The Lamp burned the Hand's own life. As the Hand aged, the Lamp dimmed, and what it had left open began to come apart.
 4. **It tried to join them.** It set a mirror on its easel and began a self-portrait in the safest, warmest place in the picture: under the Matriarch's heart. It made three studies. It could not finish any of them. You cannot see your own back, even in a mirror, without a second mirror, and the Hand was alone.
 5. **So it stepped in unfinished.** With the Lamp nearly spent, the Hand put the last of itself into the third study: a figure with a lantern and a knife, painted on the front and bare behind. It kept its skill. It did not keep its memory, because it had not painted that yet. That was the Lifting, 212 years ago. The figure did not walk anywhere. It slid from the wall into a hollow beside the Matriarch's heart and slept there, and for two centuries she lay still around it and kept it warm, and it kept her warm.
-6. **Eleven years ago it woke and walked out.** Barefoot, up the gorge, to the village. The hollow was left empty, and the cold found it.
-7. **The other two studies were left on the wall.** The first, the stiffest, eventually peeled itself free: **Prime**. The second is still there. The lesser scraps and trial heads became the **Pentiments** that haunt the Vault.
-8. **The colossi are waking because they are cold.** They are not enemies. The Matriarch began to shiver the year her sleeper left.
+6. **Eleven years ago it woke and walked out.** Barefoot, up the gorge, to the village. The hollow was left empty and the Matriarch began to freeze.
+7. **Odile Vane found the hollow that same night.** She had gone down to learn why the ground shivered. She found a warm place gone cold beside a heart that was only drawn, and she did the one thing a Limner with no pigment left can do: she lay down in it with her lantern and kept it warm herself. She passed you in the dark of the Furrow on her way down and neither of you knew. The cold came to her warmth and settled over her, layer on layer, and became Old Palimpsest. She is why the Matriarch has only shivered for eleven years instead of waking.
+8. **The other two studies were left on the wall.** The first, the stiffest, eventually peeled itself free: **Prime**. The second is still there. The lesser scraps and trial heads became the **Pentiments** that haunt the Vault.
+9. **The colossi are waking because they are cold.** They are not enemies. The Matriarch began to shiver the year her sleeper left.
 
 ### The mysteries and their reveals
 
 | Mystery | First felt | Complicated | Answered |
 |---|---|---|---|
-| Why is the Matriarch cold? | Act 1, opening: the ground shivers. | Ilka's ledger: her blood has been cooling for exactly eleven years. | Act 1, the Heart: Old Palimpsest lies in the hollow. Later: the hollow is where you were. |
-| What happened to Odile Vane? | Act 1: Hesper hands you a lantern that is not new. | Her field notes, found down the route she took. | Act 1, the Heart: her lantern glass, her last note. Act 3: what she understood. |
+| What happened to Odile Vane? **(the first big reveal: personal)** | Act 1: Hesper hands you a lantern that is not new, and will not say whose the other one was. | Her field notes down the route she took: funny, then short, then tender. Hesper mentions a red coat. | Act 1, the Heart: under the Erasure, a red coat, a woman curled around a lit lantern. She did not die of the dark. She chose to stay. |
+| Why is the Matriarch cold? | Act 1, opening: the ground shivers. | Ilka's ledger: her blood has been cooling for exactly eleven years, but slowly, as if something were holding it back. | Act 1, the Heart: the hollow, and who has been warming it. Act 3: who left it empty. |
 | What is the Limner? | Act 1: Corin, who sees the sketch under everyone, looks at you and goes quiet. | Act 1: the two studies and the blank. Act 2: the Thinner shows charcoal under your skin. Prime calls you a discard. | Act 3: the mirror in the Studio shows your back. |
 | Why did the Hand leave? | The opening line of the game, told as fact. | Marginalia in the Hand's writing, kinder than the legend. | Act 3: it did not leave. It came in. |
 | What are the colossi? | Act 1: she turns to help you. | Act 2: the Wader is not attacking anyone. It itches. | Act 3 marginalia: the underpainting. They were the Hand's first company. |
 | What does finishing really do? | Act 1: Corin, set, is happier and can no longer see the sketch. | Act 2: Verdigris's "saved" town, perfect and unable to learn. | Finale: you need someone who can still choose. |
+
+**Personal before cosmic.** Every act's main reveal is about a person first and the world second. Act 1 is Hesper's grief: the player should walk home thinking about a lampwright and her wife, not about gods. The cosmic layer (the studies, the blank, the hollow that fits you) is present in the same room but never pointed at; it is there to be remembered later. Act 2's reveal is the Limner's own body. Act 3's is the Limner's guilt. The cosmology is always the second thing you understand about a scene.
 
 **How it is told.** No lore dumps. The truth arrives through four channels that the player learns to read: what open people notice, what set people can no longer notice, the Hand's marginalia in sketch zones, and Odile's field notes, which are always one step ahead of you until they stop.
 
@@ -67,7 +70,7 @@ You are a **Limner**, one of the few trusted to decide what gets finished. You w
 
 **What you want.** A back. Everyone in Varnish can say who they come from. You cannot. You took the lantern because it was the only thing you were ever certain you were for.
 
-**What you fear.** In Act 1, that you are nothing in particular. In Act 2, that you are a reject, a study the Hand threw away. In Act 3, the opposite and worse: that you are the one who walked out on all of them, and that every person who ever cursed the Lifting was cursing you.
+**What you fear.** In Act 1, that you are nothing in particular. In Act 2, that you are a reject, a study the Hand threw away. In Act 3, the opposite and worse: that you are the one who walked out on all of them, that every person who ever cursed the Lifting was cursing you, and that Odile Vane spent eleven years lying in the place you got up and left.
 
 **Where you end.** The Hand wanted company and could not bear to be finished by its own hand. The Limner's arc is learning to be one of the people in the picture rather than its author: to be finished by somebody else, in a colour you did not choose, or to accept not being finished at all.
 
@@ -78,13 +81,14 @@ You are a **Limner**, one of the few trusted to decide what gets finished. You w
 ### Hesper Vane, lampwright of Varnish
 Sixty-one, dry, exact. Measures oil in fingers and time in wicks. She keeps the village Lampstand, as her mother did.
 - **Wants:** the Lampstand lit for as long as she lives. To know what happened to Odile. For you not to go down there, which she will never say.
-- **The wound:** her wife went into the ribs the night before you arrived. She has never decided whether you were sent to console her or to replace Odile, and she is ashamed that she wonders.
+- **The wound:** her wife went into the ribs the night before you arrived, in the madder-red coat Hesper had dyed for her ("I told her it would show every mark"). She has never decided whether you were sent to console her or to replace Odile, and she is ashamed that she wonders.
+- **What she believes:** that Odile was careless, and died of it. Being angry at carelessness is easier than the alternative. The truth, that Odile chose to stay and has been keeping the whole village's ground from waking, is harder and better.
 - **Open or set:** open, and stubborn about it. "A lamp that can't gutter can't be trimmed either."
-- **Secret:** the coat. Also Odile's lantern, which she re-glazed and is about to hand you as if it were nothing.
+- **Secret:** the coat she made you, and why. Also the lantern she is about to hand you as if it were nothing: Odile's first one, the apprentice lantern, cracked and re-glazed. Odile took her good one down with her.
 - **In the endings:** if she is alive and still open at the end, she is the one who can paint your back. She has, in a sense, done it once already.
 
 ### Odile Vane, the last Limner (dead; present through her notes)
-Curious past the point of safety, funny in the margins. She worked out that the shivering came from under the ribs, went to look, and found the two studies and the blank. Her last note is the first place the game says what you are, for a player paying attention. Old Palimpsest took her. In its second phase, when it scrapes itself down to red, one of the layers it sheds is hers.
+Curious past the point of safety, funny in the margins. She worked out that the shivering came from under the ribs and went to look. She found a hollow beside the heart, warm in its shape and cold to the touch, and a colossus beginning to freeze. She had spent her pigment getting there. So she lay down in the hollow with her lantern and kept it warm, meaning to stay until morning, and then until someone came. Nobody came for eleven years. The cold settled on her warmth in layers and became Old Palimpsest. She is not its prisoner and it is not her murderer: it is what gathers on a lamp left burning in a cold room. Her flame never went out. The slice's ending is the player carrying that flame up the Stair of Spines.
 
 ### Bartram Sedge, colourman
 Grinds and trades pigment at the Grinding Slab. Generous, loud, slightly crooked on the scales and always in your favour. His sister's family lives in the Hem.
@@ -107,7 +111,7 @@ Counts Madderbacks and reads the blood wells. Unsentimental about parasites, sen
 The first colossus the Hand drew, and the mother of the others. Her inside was only ever drawn: a sketched heart cannot keep itself warm. For two centuries she lay still around the sleeper under her heart. Eleven years ago it got up and left, and she has been cold since. She cannot speak. She answers through her body: the shiver, the eye, the Turning. What you paint on her Heart wall is the only sentence anyone has ever said to her, and she takes it literally.
 
 ### Old Palimpsest
-An Erasure old enough to keep what it rubs out. It wears every layer it has ever taken, like a manuscript scraped and written over until the old lines show through. It crept into the warm, person-shaped hollow you left and has lain there since, drinking the heat. It is not malicious. It is the cold finding the one place it fit.
+Eleven years of cold laid down over one warm thing. Erasures come to warmth the way frost comes to a window, and under the Matriarch's heart there has been exactly one warm thing: a woman with a lantern. Layer on layer it has built up around her, pale and thick as a scraped manuscript, with her outline showing faintly through. It does not know she is there. It is not malicious. In the fight's second phase it scrapes its own surface away and turns red, and the red is not blood. It is a madder-dyed coat.
 
 ### The Wader (Act 2)
 The Matriarch's child, which its people call **Ford**. It woke cold, found its back crawling with paint, and is walking into the Thinner to be clean. It moves a stride a day. It is not cruel and does not know anyone is there.
@@ -130,10 +134,11 @@ The first of the three studies: the stiffest, the most correct. It peeled off th
 2. **The shiver.** The ground moves under the square. Ilka's count is climbing. Hesper finally says it: something under the ribs is drinking the Matriarch's warmth, Odile went to find it, and now it is your turn. She is angry while she says it.
 3. **The Furrow.** The half-painted forest. Corin looks at you and goes quiet. Ilka's wells. Odile's notes begin: confident, joking, one step ahead.
 4. **The Vault.** Grey paper and graphite. The Hand's marginalia start here, and so do the Pentiments, which are shaped a little like you. Odile's notes get shorter.
-5. **The Heart.** Two studies on the wall and a blank. A hollow, person-shaped, and Old Palimpsest in it. In the fight it scrapes itself red and sheds a layer that was a woman with a lantern. Afterward: Odile's lantern glass, her last note, and the blank.
-6. **The answer.** Sanguine, Terre Verte, or bare. This is the first sentence you say to the Matriarch.
-7. **The Turning.** Her eye half-opens and finds you. Not the room. You. She arches her spine and the Stair of Spines rises to carry you home. Warming her heart has moved the light: the Hem is now in shadow. From the Nape Overlook you see the Wader on the horizon, walking west.
-8. **Home.** Hesper asks one question: "Did you find her?" What you can answer depends on what you picked up.
+5. **The Heart.** A hollow beside the heart, person-shaped, and Old Palimpsest curled in it around something that glows faintly through its layers. Two studies on the wall and a blank, unremarked. The fight. At half health it scrapes itself down and the white turns madder red.
+6. **Odile.** When the last layer goes, she is there: half outline, half paint, curled round a lantern whose pilot flame is still burning. She does not speak. There is nothing to rescue; what is left of her is mostly warmth. Her last note is in her hand. The player takes the lantern, and the hollow begins to cool at once: someone has to answer the wall, now.
+7. **The answer.** Sanguine, Terre Verte, or bare. This is the first sentence you say to the Matriarch, and it is the thing that lets Odile stop. Whatever you choose, her outline stays in the hollow as a pentimento. Painted over, it shows through the colour. Left bare, it is all there is.
+8. **The Turning.** Her eye half-opens and finds you. Not the room. You. She arches her spine and the Stair of Spines rises to carry you home. Warming her heart has moved the light: the Hem is now in shadow. From the Nape Overlook you see the Wader on the horizon, walking west.
+9. **Home.** Hesper asks one question: "Did you find her?" You are holding the answer, and it is alight. The player chooses: give Hesper the flame to keep, or pour it into the village Lampstand so that all of Varnish is lit by it from now on. Hesper's line either way is about the wick. If the player found all seven of Odile's notes, Hesper reads the last one, folds it, and says nothing for a long time; then: "On the left. I know it's on the left."
 
 ### Act 2. Afterglow: the Wader
 *Light ceiling 0.7. Third palette well. Theme: what finishing costs the finished.*
@@ -169,8 +174,9 @@ The Lamp goes out without drama, like a wick. The walk home is the ending. Each 
 
 1. **The coat.** Examine your own equipment early and the coat's description is oddly specific about its back. Pays off in Act 3.
 2. **Odile's route.** Her seven field notes run from the village to the Heart. Find all seven and Hesper's final scene changes.
+   **The red coat.** Hesper mentions it once, early, as a complaint. Corin mentions "a red lady going down". Bartram still has the receipt for the madder. Three small mentions so that the colour lands when it appears.
 3. **The second study.** The middle figure on the Heart wall is not quite still. Flare it and its head has turned toward the blank. It does nothing else in Act 1.
-4. **The hollow.** After the boss, stand in the hollow where Old Palimpsest lay. It fits you exactly, and the game does not comment.
+4. **The hollow.** After everything, stand in the hollow where Odile lay. It was too big for her: her outline sits in the middle of it. It fits you exactly, and the game does not comment.
 5. **Corin's cache.** Only an open Corin can show you the sketch-door to the Slumber Blue cache. Inside is the Hand's first marginal note about people.
 6. **The Nape Overlook.** Unreachable until the Turning. From it you see the Wader, and, with a Flare, a pentimento of something enormous that used to stand between the two colossi and has been rubbed out: a third, older child.
 7. **The Hem's foundations.** Under the lowest houses, a line of the Hand's measuring ticks runs along her collarbone, numbered. The numbers count down toward the village.
@@ -190,7 +196,11 @@ The Lamp goes out without drama, like a wick. The walk home is the ending. Each 
 
 **At the Heart wall, the confirmation text:** "This cannot be painted over. She will carry it for as long as she lives. Paint it?"
 
+**Hesper, early, about nothing in particular:** "Madder. She would have madder. I told her it would show every mark. She said that was the point of a coat."
+
 **Hesper, on your return:** "Did you find her?"
+
+**Hesper, holding the flame:** "Eleven years and she never once trimmed it properly. Look at that. Burning all down one side." *(she trims it)* "There. There you are."
 
 ## 8. Endings
 
@@ -236,8 +246,8 @@ Four kinds, each with its own voice and its own place.
 3. *Sunward Clearing.* "Met the half-seen lad. He looked at my lantern and said 'that one's going down and not coming up', then apologised for twenty minutes."
 4. *Rib Gate.* "It's cold coming out of her. Not air. Cold the way a room is after someone's left it."
 5. *Cartoon Gallery.* "The Hand left notes. THE HAND LEFT NOTES. It worried about noses."
-6. *Before the Heart.* "Three figures on the wall with a lantern and a knife. Limners, then. We're older than I thought. Two figures. I counted again. Two, and a clean place."
-7. *The Heart.* "The third isn't rubbed out. Rubbing leaves a smear. This is clean, and there are footprints in the charcoal dust, bare, walking *out*. Something is asleep in the hollow. I'm going to hold the lamp up and look. H., if this is the one you find: the wick wants trimming on the left. It always did."
+6. *Before the Heart.* "Figures on the wall with a lantern and a knife. Limners, then. We're older than I thought. Two of them, and a clean place where a third was. Not rubbed. Rubbing leaves a smear. There are footprints in the charcoal dust, bare, walking *out*."
+7. *The Heart, in her hand.* "There's a hollow by her heart the shape of someone sleeping, and nobody in it, and she is so cold, H. It's like a bed gone cold on one side. I've no pigment left to paint her anything. I've oil for the night. I'm going to lie down in it and keep the lamp by her till morning and then come home and you can shout at me. If I'm late: the wick wants trimming on the left. It always did. It's not a fault. It's how I knew it was mine."
 
 ### Ledgers and logs
 
@@ -246,6 +256,15 @@ Four kinds, each with its own voice and its own place.
 - **Bartram's receipts.** What Varnish used to trade for Ceruse before anyone knew.
 
 ## 10. Voice guide
+
+**The tonal anchor is wabi-sabi:** beauty in what is incomplete, impermanent and imperfect. This world is unfinished and running down, and the game finds that beautiful, not merely sad.
+
+- **Flaws are how things are known.** The wick that burns down one side, the re-glazed lantern, the coat that shows every mark, the rib count that is one short. Characters love things for their faults and say so sideways. Nobody in this game praises anything for being perfect, and the one perfect place (Verdigris's terrace) is the unsettling one.
+- **Mending shows.** Repairs are visible and valued: new glass in an old frame, a patch in a different cloth, a wall re-plastered in a paler tone. Nothing is restored to "as new". Finishing a thing is one more mark on it, not an erasure of its history.
+- **Impermanence is not a tragedy.** People speak of fading the way farmers speak of autumn. Grief is real and specific (Hesper), but there is no lamenting of the general condition.
+- **Spare.** Short lines. Plain nouns: oil, flax, wick, glass. Long silences that the game lets stand. If a line can lose a clause, it loses it.
+- **The bare canvas is beautiful too.** The unpainted is rest, not only threat. Erasures are frost, not monsters.
+- **For art:** asymmetry, worn edges, the hand visible in every stroke, light ground showing through thin colour, things leaning a little. This is already the Glaze look the owner chose.
 
 - **Nobody explains the world.** People talk about lamp oil, flax and ticks. The cosmology is in their idioms: "still wet" (naive), "set in his ways" (meant literally), "bare to the weave" (ashamed), "the Hand's own truth" (an oath).
 - **Hesper** speaks in short measures and practical orders. Affection is always disguised as a complaint about equipment.
@@ -259,7 +278,10 @@ Four kinds, each with its own voice and its own place.
 
 **Applied (small, consistent with what was there):**
 - The Heart wall shows **two** studies of a figure and a blank where a third was, and Old Palimpsest lies in a person-shaped hollow. The GDD's "a figure drawn three times" in the Vault's working marks stays true of the drawings elsewhere in the Vault.
-- The Pilot Lantern Hesper gives you was Odile's, re-glazed.
+- The Pilot Lantern Hesper gives you was Odile's first lantern, cracked and re-glazed. Odile took her good one down with her, and its flame is what you bring home.
+- Old Palimpsest is the cold that settled over Odile Vane, who has lain in the hollow by the Matriarch's heart for eleven years keeping it warm. Its second phase turns red because it has scraped down to her coat (the GDD's "turns from white to blood red" still holds on screen).
+- The slice now ends with a small choice on returning to Hesper: she keeps Odile's flame, or it goes into the village Lampstand.
+- Wabi-sabi is the tonal anchor for writing and art (section 10).
 - The lore-discoverable kinds in section 9 are named in the GDD's exploration section.
 
 **Suggested (bigger; for the owner, logged in `docs/QUESTIONS.md`):**

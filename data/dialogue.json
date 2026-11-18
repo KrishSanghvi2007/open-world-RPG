@@ -1,0 +1,249 @@
+[
+  {
+    "Name": "Hesper_Intro",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Two hundred and twelve years since the Hand lifted, and I am still the one trimming the wick. Wick! Up. The lamp's sulking again.",
+    "Next": "Hesper_Intro2",
+    "Entry": 50,
+    "RequireFlags": [
+      "Q.MQ_DuskOnTheShoulder.Step1"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Intro2",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Paint's flaking down in the Hem. She wants oil, and she wants it before full dark. You know the trade. Harvest, grind, light.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "What do you need?",
+        "Next": "Hesper_Task",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "(Say nothing. Hold out your hands.)",
+        "Next": "Hesper_TaskSilent",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Hesper_Task",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Four flakes of Hide Ochre off the Sunward Terraces, up the ramp. A measure of linseed from the flax press. Bartram's slab does the rest. Then pour it in before she gutters.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_TaskSilent",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Eleven years and you still do that. Ochre from the Sunward Terraces, four flakes. Linseed from the press. Bartram's slab. Then the lamp. Go on.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [
+      "Hesper.SawSilence"
+    ],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Waiting",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Ochre, linseed, slab, lamp. In that order. I'm counting fingers of oil here.",
+    "Next": "",
+    "Entry": 40,
+    "RequireFlags": [
+      "Q.MQ_DuskOnTheShoulder.Active"
+    ],
+    "ForbidFlags": [
+      "Q.MQ_DuskOnTheShoulder.Step1",
+      "Q.MQ_DuskOnTheShoulder.Step6",
+      "Q.MQ_DuskOnTheShoulder.Step7"
+    ],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_RestFirst",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "She's burning clean. Sit by her a while. Let the Ochre dry on you and take some of it in. A Limner who won't rest is just a walking spill.",
+    "Next": "",
+    "Entry": 45,
+    "RequireFlags": [
+      "Q.MQ_DuskOnTheShoulder.Step6"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Lantern",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "There. Steady as she's been all year. Here. Take it.",
+    "Next": "Hesper_Lantern2",
+    "Entry": 60,
+    "RequireFlags": [
+      "Q.MQ_DuskOnTheShoulder.Step7"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Lantern2",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "It's not new. Don't look at it like that. The glass is new.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "Whose was it?",
+        "Next": "Hesper_Lantern_Whose",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "Thank you.",
+        "Next": "Hesper_Lantern_Thanks",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "(Say nothing. Trim the wick.)",
+        "Next": "Hesper_Lantern_Silent",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Hesper_Lantern_Whose",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "A Limner's first one. Cracked it the week she got it. I put new glass in. You can see where. Good. You're meant to.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [
+      "Hesper.AskedWhose"
+    ],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Lantern_Thanks",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Don't thank me. Keep it lit. It burns down one side. Leave it be, it always has.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Lantern_Silent",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "...On the left. Yes. Who taught you that? Never mind. I know who didn't.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [
+      "Hesper.SawSilence"
+    ],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_After",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "The ground moved again last night. Don't tell me you didn't feel it. Eleven years it's done that, and every year I tell myself it's the weather.",
+    "Next": "",
+    "Entry": 10,
+    "RequireFlags": [
+      "Q.MQ_DuskOnTheShoulder.Done"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Bartram_Hello",
+    "Npc": "BartramSedge",
+    "Speaker": "Bartram Sedge",
+    "Text": "Limner! The slab's free, the muller's clean, and for you the scales are always generous. Don't tell Hesper.",
+    "Next": "",
+    "Entry": 10,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "How's the Hem?",
+        "Next": "Bartram_Hem",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "I'll use the slab.",
+        "Next": "",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Bartram_Hem",
+    "Npc": "BartramSedge",
+    "Speaker": "Bartram Sedge",
+    "Text": "Flaking. My sister's wall came away in my hand like wet bread. More light, that's all it wants. Brighter walls. I've a notion about that, when you've a minute.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  }
+]

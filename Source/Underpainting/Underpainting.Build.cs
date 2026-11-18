@@ -27,6 +27,7 @@ public class Underpainting : ModuleRules
 			"Underpainting",
 			"Underpainting/Data",
 			"Underpainting/Combat",
+			"Underpainting/Game",
 			"Underpainting/Variant_Combat",
 			"Underpainting/Variant_Combat/AI",
 			"Underpainting/Variant_Combat/Animation",

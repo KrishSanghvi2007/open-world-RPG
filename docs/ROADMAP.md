@@ -33,12 +33,12 @@ Project, MCP connection, data structs and loader, grey-box of the three zones, l
 
 **Done when:** open `/Game/Maps/Dev/L_Combat_Greybox`, press Play, walk to the white figure, dodge its warm-lit attack with Left Ctrl and kill it with the mouse buttons.
 
-### M1. Story
+### M1. Story (done)
 `docs/STORY.md`: the main arc across all acts, the Limner's personal story, the major characters and what they want, the Sleeping Matriarch's story and secrets, the central mysteries and how they are revealed, endings driven by what the player finished, and the lore discoverables. Consistent with `docs/GDD.md`; GDD changes suggested, minor ones applied.
 
 **Done when:** the one-page summary at the top of `docs/STORY.md` can be read in 5 minutes and tells the whole story, ending included.
 
-### M2. Walking skeleton (in the village)
+### M2. Walking skeleton (in the village) (done; not yet played by hand)
 One thin, connected, playable loop with placeholders. Crude is fine; connected is the point.
 
 1. Move (done) and fight one Blotter (done; bring it into the village level).

@@ -2,6 +2,7 @@
 
 #include "Underpainting.h"
 #include "UnderpaintingDataSubsystem.h"
+#include "UnderpaintingProgressSubsystem.h"
 #include "UnderpaintingVitalsComponent.h"
 #include "AIController.h"
 #include "Components/CapsuleComponent.h"
@@ -330,13 +331,18 @@ void AUnderpaintingEnemy::HandleDeath(AActor* Killer)
 		KillerVitals->AddGlim(Row.GlimOnKill);
 	}
 
-	// Drops are rolled and logged here; they go into the inventory when it exists (build step 3).
-	for (const FDropEntry& Drop : Row.Drops)
+	if (UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this))
 	{
-		if (FMath::FRand() <= Drop.Chance)
+		// Drops go to the pack as wet pigment or items.
+		for (const FDropEntry& Drop : Row.Drops)
 		{
-			UE_LOG(LogUnderpainting, Log, TEXT("%s dropped %d x %s"), *GetName(), Drop.Count, *Drop.Id.ToString());
+			if (FMath::FRand() <= Drop.Chance)
+			{
+				if (Progress->IsPigment(Drop.Id)) { Progress->AddPigment(Drop.Id, Drop.Count, true); }
+				else { Progress->AddItem(Drop.Id, Drop.Count); }
+			}
 		}
+		Progress->NotifyEvent(TEXT("Kill"), EnemyId, 1);
 	}
 
 	UE_LOG(LogUnderpainting, Log, TEXT("%s died"), *GetName());

@@ -136,12 +136,15 @@ Weakness rule for the boss: in phase 1 only the weakness and resistance that mat
 | `Giver` | FName | NPC ID. |
 | `Zone` | FName | Zone row in `regions.json` where most of the quest happens. |
 | `Summary` | string | Journal text. |
-| `Steps` | string[] | Objectives, in order. |
+| `Steps` | string[] | Objectives, in order, as the journal shows them. |
+| `Objectives` | FQuestObjective[] | What the game checks for each step. See below. |
 | `Prerequisites` | FName[] | Quests in this file that must be complete first. |
 | `Choices` | FQuestChoice[] | The ways the quest can end. Empty = no choice. |
 | `RewardItems` | FIdCount[] | Rows in `items.json`, granted whatever the choice. |
 | `RewardPigments` | FIdCount[] | Rows in `pigments.json`, granted whatever the choice. |
 | `RewardNotes` | string | Recipe unlocks and choice-specific rewards, in words. |
+
+`FQuestObjective` (one per entry in `Steps`, same order): `Event` (FName: `Talk`, `Have`, `Craft`, `Relight`, `Attune`, `Kill`, `Reach`, `Inspect`, `Choose`), `Target` (FName: what the event is about, e.g. an NPC, an item or pigment, a Lampstand, an attunement node, an enemy, a place, or the quest itself for `Choose`), `Count` (int). `Have` is met by what the player is carrying; every other event is counted from the moment its step becomes current.
 
 `FQuestChoice`: `ChoiceId` (FName, unique within the quest), `Label` (string, shown to the player), `CostPigment` (FName, row in `pigments.json`, or empty), `CostAmount` (int), `Consequence` (string: what changes in the world), `WorldFlags` (FName[]: flags set in the save game; level scripts and spawn tables read them).
 
@@ -170,6 +173,28 @@ One `Region` row for the colossus and one `Zone` row per sub-zone.
 | `ShiftTrigger` | string | What causes the shift. |
 | `ShiftBefore` / `ShiftAfter` | string | Layout and state on each side of the shift. |
 | `Notes` | string | Designer notes and zone-specific rules. |
+
+## dialogue.json (`FDialogueRow`)
+
+One row per line of dialogue. A conversation is a chain of rows.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `Name` | row key | Node ID, `<Npc>_<Topic>`. |
+| `Npc` | FName | Who the conversation belongs to (an NPC ID). |
+| `Speaker` | string | Name shown above the line. |
+| `Text` | string | The line. |
+| `Next` | FName | Row shown after this one when there are no choices. Empty ends the conversation. |
+| `Entry` | int | 0 = not a starting point. Above 0, this row can start a conversation with `Npc`; when several qualify, the highest number wins. |
+| `RequireFlags` / `ForbidFlags` | FName[] | For entry rows: flags that must (or must not) be set for the row to start a conversation. |
+| `SetFlags` | FName[] | Flags set when the row is shown. |
+| `Choices` | FDialogueChoice[] | Up to 4 replies. Empty = no choice. |
+
+`FDialogueChoice`: `Label` (string), `Next` (FName; empty ends the conversation), `RequireFlags` / `ForbidFlags` (FName[]: the reply is only offered when these hold), `SetFlags` (FName[]), `StartQuest` (FName: a quest to start, or empty).
+
+**Flags.** Any name can be set as a flag. The game also provides these automatically from quest progress: `Q.<Quest>.Active`, `Q.<Quest>.Done`, and `Q.<Quest>.Step<N>` (true while step N, counting from 1, is the current one).
+
+A finished conversation counts as the event `Talk` with the NPC as target.
 
 ## Cross-reference checklist
 

@@ -1,6 +1,6 @@
 import json,sys,re
 D={}
-for f in "pigments recipes items attunements enemies quests regions".split():
+for f in "pigments recipes items attunements enemies quests regions dialogue".split():
     D[f]=json.load(open(f"data/{f}.json"))
     names=[r["Name"] for r in D[f]]
     assert len(names)==len(set(names)),f
@@ -55,6 +55,30 @@ for q in D["quests"]:
     [chk(x["Id"],P,"rp") for x in q["RewardPigments"]]
     for c in q["Choices"]:
         if c["CostPigment"]: chk(c["CostPigment"],P,"cc")
+EVENTS={"Talk","Have","Craft","Relight","Attune","Kill","Reach","Inspect","Choose"}
+NPCS={"HesperVane","BartramSedge","CorinHalfSeen","IlkaThrum"}
+for q in D["quests"]:
+    if len(q["Objectives"])!=len(q["Steps"]): err.append(("objectives",q["Name"]))
+    for o in q["Objectives"]:
+        if o["Event"] not in EVENTS or o["Count"]<1: err.append(("objective-event",q["Name"],o["Event"]))
+        if o["Event"]=="Talk" and o["Target"] not in NPCS: err.append(("objective-npc",q["Name"],o["Target"]))
+        if o["Event"]=="Have": chk(o["Target"],P+I,"have")
+        if o["Event"]=="Craft": chk(o["Target"],I,"craft")
+        if o["Event"]=="Attune": chk(o["Target"],["attunements"],"attune")
+        if o["Event"]=="Kill": chk(o["Target"],["enemies"],"kill")
+        if o["Event"]=="Choose": chk(o["Target"],["quests"],"choose")
+entries={}
+for d in D["dialogue"]:
+    if d["Npc"] not in NPCS: err.append(("dialogue-npc",d["Name"]))
+    if d["Entry"]>0: entries.setdefault(d["Npc"],0); entries[d["Npc"]]+=1
+    if d["Next"] and d["Choices"]: err.append(("dialogue-next-and-choices",d["Name"]))
+    for nxt in [d["Next"]]+[c["Next"] for c in d["Choices"]]:
+        if nxt: chk(nxt,["dialogue"],"dialogue-next")
+    for c in d["Choices"]:
+        if c["StartQuest"]: chk(c["StartQuest"],["quests"],"dialogue-quest")
+    if len(d["Choices"])>4: err.append(("dialogue-too-many-choices",d["Name"]))
+for npc in {d["Npc"] for d in D["dialogue"]}:
+    if not entries.get(npc): err.append(("dialogue-no-entry",npc))
 for r in D["regions"]:
     if r["ParentRegion"]: chk(r["ParentRegion"],["regions"],"par")
     [chk(x,["enemies"],"re") for x in r["Enemies"]+r["EnemiesAfterShift"]]

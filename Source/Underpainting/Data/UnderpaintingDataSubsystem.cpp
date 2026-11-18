@@ -67,6 +67,7 @@ int32 UUnderpaintingDataSubsystem::ReloadAll()
 	Enemies = LoadTableFromJson(this, TEXT("enemies"), FEnemyRow::StaticStruct(), Problems);
 	Quests = LoadTableFromJson(this, TEXT("quests"), FQuestRow::StaticStruct(), Problems);
 	Regions = LoadTableFromJson(this, TEXT("regions"), FRegionRow::StaticStruct(), Problems);
+	Dialogue = LoadTableFromJson(this, TEXT("dialogue"), FDialogueRow::StaticStruct(), Problems);
 
 	for (const FString& Problem : Problems)
 	{

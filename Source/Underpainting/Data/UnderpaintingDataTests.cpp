@@ -27,6 +27,7 @@ bool FUnderpaintingDataLoadTest::RunTest(const FString& Parameters)
 		{ TEXT("enemies"), FEnemyRow::StaticStruct() },
 		{ TEXT("quests"), FQuestRow::StaticStruct() },
 		{ TEXT("regions"), FRegionRow::StaticStruct() },
+		{ TEXT("dialogue"), FDialogueRow::StaticStruct() },
 	};
 
 	TMap<FString, UDataTable*> Tables;

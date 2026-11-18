@@ -146,7 +146,7 @@ Killing Erasures returns light and Ceruse; nothing else does. The player is pull
 | **Pentiment** (a discarded draft of a person) | Vault | 75 / 35 | Blue → Ochre | Using light: a Flare cancels its teleport and staggers it. | Graphite Shard, Slumber Blue |
 | **Old Palimpsest** (boss) | Vault, the Heart | 600 / 120 | Phase 1 White → Bone Black. Phase 2 Red → Terre Verte | Everything above | Ceruse 4, Slumber Blue 2 |
 
-**The boss** is an Erasure wearing layers of everything it has rubbed out, curled against the Matriarch's heart. At 50% HP it scrapes its own surface away and turns from white to blood red, which reverses its weakness. It is the exam for the Contrast rule: a player who has only invested in one axis must fall back on the basics for half the fight. The heart beats every 20 seconds, lighting the arena to 0.5 for 4 seconds, so Strokes are half price on the beat. Full attack timings are in `data/enemies.json`.
+**The boss** is an Erasure built up in layers, curled in a hollow against the Matriarch's heart. What it is curled around is the slice's main reveal (`docs/STORY.md`, Act 1): the red of its second phase is a coat. At 50% HP it scrapes its own surface away and turns from white to blood red, which reverses its weakness. It is the exam for the Contrast rule: a player who has only invested in one axis must fall back on the basics for half the fight. The heart beats every 20 seconds, lighting the arena to 0.5 for 4 seconds, so Strokes are half price on the beat. Full attack timings are in `data/enemies.json`.
 
 ## 6. Exploration
 
@@ -207,6 +207,8 @@ Choices set named flags in the save. Finished things persist into later acts.
 ## 9. Art direction
 
 **The look:** hand-painted, visible brushwork, strong coloured light. Closer to a gouache illustration than to a film.
+
+**The tonal anchor is wabi-sabi:** beauty in the incomplete, the impermanent and the imperfect. Asymmetry, worn edges, visible mending, light ground showing through thin colour, things that lean a little. The unfinished world is beautiful, not only endangered. The chosen look is style B, Glaze (`docs/looktest/`). The same anchor governs the writing: see `docs/STORY.md` section 10.
 
 **Rules**
 

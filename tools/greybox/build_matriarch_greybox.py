@@ -214,17 +214,71 @@ PIGMENT_COLOURS = {
 }
 
 
+# Markers that have a working C++ actor are placed as that actor; the rest stay labelled placeholder shapes.
+STATIONS = {"GrindingSlab": "GRINDING_SLAB", "ArmatureBench": "ARMATURE_BENCH"}
+LIT_FROM_THE_START = {"SunwardClearing", "RibStairHeart"}      # wild pilot flames; the others must be relit
+PICKUPS = {"FlaxPress": ("LinseedOil", 2, "the flax press")}
+
+
+def _spawn_working_actor(kind, data_id, text, ground, yaw):
+    """Returns the real actor for this marker, or None if the game has no class for it yet."""
+    def spawn(cls_name, height):
+        cls = getattr(unreal, cls_name, None)
+        if cls is None:
+            return None
+        return actors.spawn_actor_from_class(cls, v((ground[0], ground[1], ground[2] + height)), unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw))
+
+    actor = None
+    if kind == "Node":
+        actor = spawn("UnderpaintingHarvestNode", 0.4)
+        if actor:
+            actor.set_editor_property("pigment_id", unreal.Name(data_id))
+    elif kind == "Lampstand":
+        actor = spawn("UnderpaintingLampstand", 1.5)
+        if actor:
+            actor.set_editor_property("lampstand_id", unreal.Name(data_id))
+            actor.set_editor_property("starts_lit", data_id in LIT_FROM_THE_START)
+    elif kind == "NPC":
+        actor = spawn("UnderpaintingNPC", 0.9)
+        if actor:
+            actor.set_editor_property("npc_id", unreal.Name(data_id))
+            actor.set_editor_property("display_name", text)
+    elif kind == "Station" and data_id in STATIONS:
+        actor = spawn("UnderpaintingCraftingStation", 0.45)
+        if actor:
+            actor.set_editor_property("station", getattr(unreal.CraftingStation, STATIONS[data_id]))
+    elif kind == "Note" and data_id in PICKUPS:
+        actor = spawn("UnderpaintingPickup", 0.5)
+        if actor:
+            item, count, source = PICKUPS[data_id]
+            actor.set_editor_property("item_id", unreal.Name(item))
+            actor.set_editor_property("count", count)
+            actor.set_editor_property("source_name", source)
+    elif kind == "Enemy" and data_id == "Blotter":
+        actor = spawn("BlotterEnemy", 1.3)
+    return actor
+
+
 def marker(kind, data_id, text, ground, colour=None, yaw=0.0):
-    """A labelled placeholder standing on the ground point given (metres)."""
+    """A labelled gameplay object standing on the ground point given (metres): the working actor where the
+    game has one, otherwise a placeholder shape. Either way it carries the tags Marker, its kind and its ID."""
     mesh, size, default_colour = MARKER_STYLES[kind]
-    centre = (ground[0], ground[1], ground[2] + size[2] / 2.0)
     index = _counts.get((kind, data_id), 0) + 1
     _counts[(kind, data_id)] = index
-    was_unlit, Zone.unlit = Zone.unlit, True  # markers stay readable in any light
-    actor = _mesh_actor("%s_%s_%02d" % (kind, data_id, index), mesh, centre, size, colour or default_colour,
-                        "Markers/" + kind, unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw),
-                        collide=False, tags=("Marker", kind, data_id))
-    Zone.unlit = was_unlit
+    name = "%s_%s_%02d" % (kind, data_id, index)
+
+    actor = _spawn_working_actor(kind, data_id, text, ground, yaw)
+    if actor:
+        actor.set_actor_label(name)
+        actor.set_folder_path("Gameplay/" + kind)
+        actor.tags = [unreal.Name(t) for t in ("Marker", kind, data_id)]
+    else:
+        centre = (ground[0], ground[1], ground[2] + size[2] / 2.0)
+        was_unlit, Zone.unlit = Zone.unlit, True  # markers stay readable in any light
+        actor = _mesh_actor(name, mesh, centre, size, colour or default_colour,
+                            "Markers/" + kind, unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw),
+                            collide=False, tags=("Marker", kind, data_id))
+        Zone.unlit = was_unlit
     label(text, (ground[0], ground[1], ground[2] + size[2] + 0.5), "Markers/" + kind + "/Labels")
     return actor
 
@@ -314,7 +368,7 @@ def end_level(zone_id):
     if lampstands != row["Lampstands"]:
         problems.append("%s: %d Lampstands placed, data says %d" % (zone_id, lampstands, row["Lampstands"]))
     for (kind, data_id) in _counts:
-        if kind == "Enemy" and data_id not in row["Enemies"]:
+        if kind == "Enemy" and data_id not in row["Enemies"] + row["EnemiesAfterShift"]:
             problems.append("%s: enemy %s is not listed for this zone" % (zone_id, data_id))
 
     world_settings = editor.get_editor_world().get_world_settings()
@@ -376,8 +430,8 @@ def build_village():
 
     # Lampstand square
     marker("Lampstand", "Varnish", "Lampstand", (0, 0, 4))
-    marker("NPC", "HesperVane", "Hesper Vane", (3, 2, 4))
-    marker("NPC", "BartramSedge", "Bartram Sedge", (-10, -5, 4))
+    marker("NPC", "HesperVane", "Hesper Vane", (3.5, 2.5, 4))        # beside the Lampstand, out of its reach
+    marker("NPC", "BartramSedge", "Bartram Sedge", (-8, -7.8, 4))      # behind his slab, clear of it
     marker("Station", "GrindingSlab", "Grinding Slab", (-8, -5, 4))
     marker("Station", "ArmatureBench", "Armature Bench", (9, -5, 4))
     marker("Note", "FlaxPress", "Flax press", (15, 3, 4))
@@ -390,6 +444,10 @@ def build_village():
     # The Hem
     marker("Note", "LowerGate", "Lower gate (appears after the shift)", (0, -37, 0))
     marker("Note", "HemFlaking", "The Hem: paint starting to flake", (-17, -22, 0))
+
+    # Walking-skeleton only: one Blotter by the lower gate, so the whole loop can be tried in one level.
+    # The design has no combat in the village before the shift; this one leaves when the forest is playable.
+    enemy("Blotter", (-2, -33, 0))
 
     player_start((-4, 4, 4), yaw=0.0)
     return end_level("VarnishVillage")

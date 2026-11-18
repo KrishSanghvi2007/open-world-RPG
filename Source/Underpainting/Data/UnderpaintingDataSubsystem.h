@@ -56,6 +56,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Underpainting|Data")
 	UDataTable* GetRegions() const { return Regions; }
 
+	UFUNCTION(BlueprintPure, Category = "Underpainting|Data")
+	UDataTable* GetDialogue() const { return Dialogue; }
+
 	/** Typed row lookups for C++. Return null if the row does not exist. */
 	const FPigmentRow* FindPigment(FName RowName) const;
 	const FItemRow* FindItem(FName RowName) const;
@@ -91,4 +94,7 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UDataTable> Regions;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UDataTable> Dialogue;
 };

@@ -2,6 +2,11 @@
 
 #include "Underpainting.h"
 #include "UnderpaintingDataSubsystem.h"
+#include "UnderpaintingHUD.h"
+#include "UnderpaintingProgressSubsystem.h"
+#include "UnderpaintingWorldActors.h"
+#include "EngineUtils.h"
+#include "GameFramework/PlayerController.h"
 #include "UnderpaintingVitalsComponent.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
@@ -30,6 +35,165 @@ void AUnderpaintingPlayerCharacter::BeginPlay()
 
 	EquipWeapon(WeaponId);
 	EquipArmour(ArmourId);
+
+	BaseDodgeDistance = DodgeDistance;
+	BaseDodgeInvulnerableTime = DodgeInvulnerableTime;
+	if (UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this))
+	{
+		ProgressChangedHandle = Progress->OnChanged.AddUObject(this, &AUnderpaintingPlayerCharacter::ApplyAttunements);
+	}
+	ApplyAttunements();
+	RestoreFromSave();
+}
+
+void AUnderpaintingPlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this))
+	{
+		Progress->OnChanged.Remove(ProgressChangedHandle);
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
+void AUnderpaintingPlayerCharacter::ApplyAttunements()
+{
+	// Attunement nodes change the Limner through a handful of named effects (data/attunements.json, EffectType).
+	const UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
+	if (!Progress)
+	{
+		return;
+	}
+	Vitals->SetMaxGlim(100.0f + Progress->GetAttunementValue(TEXT("MaxGlim")));
+	Vitals->StaminaRegenMultiplier = 1.0f + Progress->GetAttunementValue(TEXT("StaminaRegenPercent")) / 100.0f;
+	DodgeDistance = BaseDodgeDistance * (1.0f + Progress->GetAttunementValue(TEXT("DodgeDistancePercent")) / 100.0f);
+	const float Invulnerable = Progress->GetAttunementValue(TEXT("DodgeInvulnerableSeconds"));
+	DodgeInvulnerableTime = Invulnerable > 0.0f ? Invulnerable : BaseDodgeInvulnerableTime;
+}
+
+void AUnderpaintingPlayerCharacter::RestoreFromSave()
+{
+	const UGameInstance* GameInstance = GetGameInstance();
+	const UUnderpaintingProgressSubsystem* Subsystem = GameInstance ? GameInstance->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr;
+	const UUnderpaintingSaveGame* Save = Subsystem ? Subsystem->GetLoadedSave() : nullptr;
+	if (Save && Save->LevelName == FName(*UGameplayStatics::GetCurrentLevelName(this, true)))
+	{
+		SetActorTransform(Save->PlayerTransform, false, nullptr, ETeleportType::TeleportPhysics);
+		if (AController* PlayerController = GetController())
+		{
+			PlayerController->SetControlRotation(Save->PlayerTransform.Rotator());
+		}
+		Vitals->SetHealthAndGlim(Save->Health, Save->Glim);
+	}
+}
+
+AUnderpaintingHUD* AUnderpaintingPlayerCharacter::GetUnderpaintingHUD() const
+{
+	const APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	return PlayerController ? Cast<AUnderpaintingHUD>(PlayerController->GetHUD()) : nullptr;
+}
+
+bool AUnderpaintingPlayerCharacter::IsMenuOpen() const
+{
+	const AUnderpaintingHUD* HUD = GetUnderpaintingHUD();
+	return HUD && HUD->IsMenuOpen();
+}
+
+void AUnderpaintingPlayerCharacter::DoMove(float Right, float Forward)
+{
+	// A conversation or a menu holds you where you stand.
+	if (!IsMenuOpen())
+	{
+		Super::DoMove(Right, Forward);
+	}
+}
+
+void AUnderpaintingPlayerCharacter::UpdateFocus()
+{
+	AUnderpaintingInteractable* Best = nullptr;
+	float BestDistance = 280.0f;
+	if (Action == EPlayerAction::None && !IsMenuOpen())
+	{
+		for (TActorIterator<AUnderpaintingInteractable> It(GetWorld()); It; ++It)
+		{
+			const float Distance = FVector::Dist2D(It->GetActorLocation(), GetActorLocation());
+			if (Distance < BestDistance && FMath::Abs(It->GetActorLocation().Z - GetActorLocation().Z) < 300.0f && !It->GetPrompt().IsEmpty())
+			{
+				Best = *It;
+				BestDistance = Distance;
+			}
+		}
+	}
+	Focus = Best;
+}
+
+void AUnderpaintingPlayerCharacter::Interact()
+{
+	UpdateFocus();
+	AUnderpaintingHUD* HUD = GetUnderpaintingHUD();
+	if (HUD && HUD->IsMenuOpen())
+	{
+		HUD->Advance();
+	}
+	else if (Focus.IsValid() && Action == EPlayerAction::None)
+	{
+		Focus->Interact(this);
+	}
+}
+
+void AUnderpaintingPlayerCharacter::MenuClose()
+{
+	if (AUnderpaintingHUD* HUD = GetUnderpaintingHUD())
+	{
+		HUD->CloseMenu();
+	}
+}
+
+void AUnderpaintingPlayerCharacter::InventoryPressed()
+{
+	if (AUnderpaintingHUD* HUD = GetUnderpaintingHUD())
+	{
+		HUD->ToggleInventory();
+	}
+}
+
+void AUnderpaintingPlayerCharacter::MenuNumber(int32 Number)
+{
+	if (AUnderpaintingHUD* HUD = GetUnderpaintingHUD())
+	{
+		HUD->ChooseNumber(Number);
+	}
+}
+
+void AUnderpaintingPlayerCharacter::OnRested()
+{
+	Vitals->Refill();
+	SaveNow();
+}
+
+void AUnderpaintingPlayerCharacter::SaveNow()
+{
+	if (UUnderpaintingProgressSubsystem* Subsystem = GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>())
+	{
+		Subsystem->SaveGame(this);
+	}
+}
+
+void AUnderpaintingPlayerCharacter::LoadNow()
+{
+	UUnderpaintingProgressSubsystem* Subsystem = GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>();
+	if (Subsystem && Subsystem->LoadGame())
+	{
+		RestoreFromSave();
+	}
+}
+
+void AUnderpaintingPlayerCharacter::StartNewGame()
+{
+	if (UUnderpaintingProgressSubsystem* Subsystem = GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>())
+	{
+		Subsystem->NewGame();
+		RestartLevel();
+	}
 }
 
 void AUnderpaintingPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -42,6 +206,23 @@ void AUnderpaintingPlayerCharacter::SetupPlayerInputComponent(UInputComponent* P
 	PlayerInputComponent->BindKey(EKeys::LeftControl, IE_Pressed, this, &AUnderpaintingPlayerCharacter::StartDodge);
 	PlayerInputComponent->BindKey(EKeys::LeftShift, IE_Pressed, this, &AUnderpaintingPlayerCharacter::SprintPressed);
 	PlayerInputComponent->BindKey(EKeys::LeftShift, IE_Released, this, &AUnderpaintingPlayerCharacter::SprintReleased);
+
+	PlayerInputComponent->BindKey(EKeys::E, IE_Pressed, this, &AUnderpaintingPlayerCharacter::InteractPressed);
+	PlayerInputComponent->BindKey(EKeys::Q, IE_Pressed, this, &AUnderpaintingPlayerCharacter::MenuClosePressed);
+	PlayerInputComponent->BindKey(EKeys::Tab, IE_Pressed, this, &AUnderpaintingPlayerCharacter::InventoryPressed);
+	PlayerInputComponent->BindKey(EKeys::F5, IE_Pressed, this, &AUnderpaintingPlayerCharacter::SavePressed);
+	PlayerInputComponent->BindKey(EKeys::F9, IE_Pressed, this, &AUnderpaintingPlayerCharacter::LoadPressed);
+	PlayerInputComponent->BindKey(EKeys::F8, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NewGamePressed);
+	PlayerInputComponent->BindKey(EKeys::One, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<1>);
+	PlayerInputComponent->BindKey(EKeys::Two, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<2>);
+	PlayerInputComponent->BindKey(EKeys::Three, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<3>);
+	PlayerInputComponent->BindKey(EKeys::Four, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<4>);
+	PlayerInputComponent->BindKey(EKeys::Five, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<5>);
+	PlayerInputComponent->BindKey(EKeys::Six, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<6>);
+	PlayerInputComponent->BindKey(EKeys::Seven, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<7>);
+	PlayerInputComponent->BindKey(EKeys::Eight, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<8>);
+	PlayerInputComponent->BindKey(EKeys::Nine, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<9>);
+	PlayerInputComponent->BindKey(EKeys::Gamepad_DPad_Up, IE_Pressed, this, &AUnderpaintingPlayerCharacter::InteractPressed);
 
 	PlayerInputComponent->BindKey(EKeys::Gamepad_FaceButton_Left, IE_Pressed, this, &AUnderpaintingPlayerCharacter::StartLightAttack);
 	PlayerInputComponent->BindKey(EKeys::Gamepad_FaceButton_Top, IE_Pressed, this, &AUnderpaintingPlayerCharacter::StartHeavyAttack);
@@ -88,7 +269,7 @@ void AUnderpaintingPlayerCharacter::EquipArmour(FName ItemId)
 
 bool AUnderpaintingPlayerCharacter::CanStartAction() const
 {
-	return Action == EPlayerAction::None && !GetCharacterMovement()->IsFalling();
+	return Action == EPlayerAction::None && !GetCharacterMovement()->IsFalling() && !IsMenuOpen();
 }
 
 void AUnderpaintingPlayerCharacter::StartLightAttack()
@@ -159,6 +340,7 @@ void AUnderpaintingPlayerCharacter::SetSprinting(bool bInWantsSprint)
 void AUnderpaintingPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	UpdateFocus();
 
 	switch (Action)
 	{
@@ -273,6 +455,10 @@ void AUnderpaintingPlayerCharacter::HandleDeath(AActor* Killer)
 	}
 
 	UE_LOG(LogUnderpainting, Log, TEXT("Player died to %s"), *GetNameSafe(Killer));
+	if (UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this))
+	{
+		Progress->ApplyDeathPenalty();
+	}
 
 	// Until Lampstands exist (build step 3), death restarts the level.
 	GetWorldTimerManager().SetTimer(RestartTimer, this, &AUnderpaintingPlayerCharacter::RestartLevel, 2.5f, false);
@@ -281,4 +467,28 @@ void AUnderpaintingPlayerCharacter::HandleDeath(AActor* Killer)
 void AUnderpaintingPlayerCharacter::RestartLevel()
 {
 	UGameplayStatics::OpenLevel(this, FName(*UGameplayStatics::GetCurrentLevelName(this, true)));
+}
+
+FString AUnderpaintingPlayerCharacter::DescribeState()
+{
+	UpdateFocus();
+	const UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
+	const AUnderpaintingHUD* HUD = GetUnderpaintingHUD();
+	FString Text = FString::Printf(TEXT("prompt=[%s] menu=%d row=%s hp=%.0f glim=%.0f/%.0f"),
+		Focus.IsValid() ? *Focus->GetPrompt() : TEXT(""), HUD ? int32(HUD->GetMenu()) : -1, HUD ? *HUD->GetDialogueRow().ToString() : TEXT(""),
+		Vitals->GetHealth(), Vitals->GetGlim(), Vitals->MaxGlim);
+	if (Progress)
+	{
+		for (const FName& Quest : Progress->GetActiveQuests())
+		{
+			Text += FString::Printf(TEXT(" | %s step %d: %s"), *Quest.ToString(), Progress->GetQuestProgress(Quest)->Step + 1, *Progress->GetCurrentStepText(Quest));
+		}
+		const FUnderpaintingProgressData& Data = Progress->GetData();
+		for (const TPair<FName, int32>& Pair : Data.WetPigment) { if (Pair.Value > 0) { Text += FString::Printf(TEXT(" | wet %s %d"), *Pair.Key.ToString(), Pair.Value); } }
+		for (const TPair<FName, int32>& Pair : Data.DryPigment) { if (Pair.Value > 0) { Text += FString::Printf(TEXT(" | dry %s %d"), *Pair.Key.ToString(), Pair.Value); } }
+		for (const TPair<FName, int32>& Pair : Data.Items) { if (Pair.Value > 0) { Text += FString::Printf(TEXT(" | %s x%d"), *Pair.Key.ToString(), Pair.Value); } }
+		for (const FName& Node : Data.Attunements) { Text += FString::Printf(TEXT(" | attuned %s"), *Node.ToString()); }
+		for (const TPair<FName, FQuestProgress>& Pair : Data.Quests) { if (Pair.Value.bComplete) { Text += FString::Printf(TEXT(" | DONE %s"), *Pair.Key.ToString()); } }
+	}
+	return Text;
 }

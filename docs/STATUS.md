@@ -24,22 +24,22 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - **Look test** (`/Game/LookTest/Maps/`, pictures in `docs/looktest/`): one corner of the village square in three painterly styles, built by `tools/looktest/`. Working choice: B, Glaze.
 - **First combat** (`Source/Underpainting/Combat/`): stamina, sprint, dodge, light and heavy attacks, and a data-driven Blotter, in `/Game/Maps/Dev/L_Combat_Greybox`. Tests: `Underpainting.Combat.*`.
 - **Story** written: `docs/STORY.md`.
+- **Walking skeleton (M2)** in `L_Matriarch_Village_A`: dialogue from `data/dialogue.json`, harvesting, crafting, the Lampstand (relight, rest, save), attunement, the first quest, a Blotter, save and load. Code in `Source/Underpainting/Game/`. Tests: `Underpainting.Game.*`. Scripted play: `tools/dev/play.py`. Devlog: `docs/devlog/002-walking-skeleton.md`.
 - **Roadmap** set by the owner: `docs/ROADMAP.md`. Choices made while the owner is away are in `docs/QUESTIONS.md`.
 - **Grey-box of the Sleeping Matriarch, "A" versions** (`/Game/Maps/Matriarch/`): `L_Matriarch_Village_A`, `L_Matriarch_Scumblewood_A`, `L_Matriarch_Vault_A`. Built by `tools/greybox/build_matriarch_greybox.py`. Each has its layout, a player start, lighting by the GDD rule, and labelled markers for every Lampstand, node, enemy, NPC, station and exit, with counts checked against `data/regions.json`. The Vault has 0.6x gravity. Opened and play-tested in the editor.
 
 ## Known gaps
 - The grey-box routes have not been walked end to end.
-- Markers are placeholders: no harvesting, Lampstands or zone exits yet.
+- Zone exits do not work yet, and only the village's markers have been tried in play.
 - Enemies have no models, animations or path-finding.
 - Dying restarts the level.
 - The three zones are separate levels; the "B" versions come with the shift (M8).
 
 ## Next (Claude does these; see `docs/ROADMAP.md`)
-Milestone **M2, the walking skeleton**, in the village level:
-1. Inventory and harvesting an Ochre node.
-2. Crafting one item at the Grinding Slab.
-3. A skill-tree screen and buying one attunement node.
-4. Data-driven dialogue with Hesper Vane.
-5. One short quest, start to finish.
-6. Save and load.
-7. Bring a Blotter into the village loop, then the M2 devlog.
+Milestone **M3, exploration**:
+1. Zone exits that connect the village, the forest and the vault.
+2. The sketch-zone rules: the Flare, platforms solid only while lit, the Fixative Flask.
+3. The one-sided forest: passable backs that work from behind only.
+4. Lore discoverables from `docs/STORY.md` (marginalia, Odile's notes, pentimenti) and a journal for them.
+5. Signposts or a compass, secrets and caches, navigation for enemies.
+6. One style probe (an interior or an NPC), then the M3 devlog.

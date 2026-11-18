@@ -34,7 +34,7 @@ void UUnderpaintingVitalsComponent::AdvanceRegeneration(float DeltaTime)
 	const float RegenTime = FMath::Min(DeltaTime, TimeSinceStaminaSpend - StaminaRegenDelay);
 	if (RegenTime > 0.0f)
 	{
-		Stamina = FMath::Min(MaxStamina, Stamina + StaminaRegenPerSecond * RegenTime);
+		Stamina = FMath::Min(MaxStamina, Stamina + StaminaRegenPerSecond * StaminaRegenMultiplier * RegenTime);
 	}
 }
 
@@ -93,4 +93,25 @@ bool UUnderpaintingVitalsComponent::DrainStamina(float Amount)
 void UUnderpaintingVitalsComponent::AddGlim(float Amount)
 {
 	Glim = FMath::Clamp(Glim + Amount, 0.0f, MaxGlim);
+}
+
+void UUnderpaintingVitalsComponent::SetMaxGlim(float NewMax)
+{
+	MaxGlim = FMath::Max(0.0f, NewMax);
+	Glim = FMath::Min(Glim, MaxGlim);
+}
+
+void UUnderpaintingVitalsComponent::SetHealthAndGlim(float NewHealth, float NewGlim)
+{
+	Health = FMath::Clamp(NewHealth, 1.0f, MaxHealth);
+	Glim = FMath::Clamp(NewGlim, 0.0f, MaxGlim);
+}
+
+void UUnderpaintingVitalsComponent::Refill()
+{
+	if (!bDead)
+	{
+		Health = MaxHealth;
+		Stamina = MaxStamina;
+	}
 }

@@ -47,6 +47,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Vitals")
 	void AddGlim(float Amount);
 
+	/** Changes the Glim capacity (attunement), keeping what is in the lantern. */
+	void SetMaxGlim(float NewMax);
+
+	/** Restores saved values after a load. */
+	void SetHealthAndGlim(float NewHealth, float NewGlim);
+
+	/** Full Health and Stamina (resting at a Lampstand). */
+	void Refill();
+
 	UFUNCTION(BlueprintPure, Category = "Vitals")
 	bool IsDead() const { return bDead; }
 
@@ -83,6 +92,10 @@ public:
 	/** Stamina per second once regeneration has started. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vitals")
 	float StaminaRegenPerSecond = 30.0f;
+
+	/** Multiplier on Stamina regeneration from attunement (1.2 = +20%). */
+	UPROPERTY(BlueprintReadWrite, Category = "Vitals")
+	float StaminaRegenMultiplier = 1.0f;
 
 	/** Seconds after the last spend before Stamina starts to return. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vitals")

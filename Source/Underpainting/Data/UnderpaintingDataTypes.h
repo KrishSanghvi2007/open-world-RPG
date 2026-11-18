@@ -524,6 +524,24 @@ struct FQuestChoice
 	TArray<FName> WorldFlags;
 };
 
+/** What the game checks for one quest step. */
+USTRUCT(BlueprintType)
+struct FQuestObjective
+{
+	GENERATED_BODY()
+
+	/** Talk, Have, Craft, Relight, Attune, Kill, Reach, Inspect or Choose. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
+	FName Event;
+
+	/** What the event is about: an NPC, an item or pigment, a Lampstand, a node, an enemy, a place, or the quest itself. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
+	FName Target;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
+	int32 Count = 1;
+};
+
 USTRUCT(BlueprintType)
 struct FQuestRow : public FTableRowBase
 {
@@ -554,6 +572,10 @@ struct FQuestRow : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Quest")
 	TArray<FString> Steps;
+
+	/** One per step, in the same order: what the game checks. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Quest")
+	TArray<FQuestObjective> Objectives;
 
 	/** Quests that must be complete first. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Quest")
@@ -648,4 +670,73 @@ struct FRegionRow : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Region")
 	FString Notes;
+};
+
+// ---------------------------------------------------------------------------
+// dialogue.json
+// ---------------------------------------------------------------------------
+
+USTRUCT(BlueprintType)
+struct FDialogueChoice
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Choice")
+	FString Label;
+
+	/** Row shown next. Empty ends the conversation. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Choice")
+	FName Next;
+
+	/** The reply is only offered when these flags are set. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Choice")
+	TArray<FName> RequireFlags;
+
+	/** The reply is hidden when any of these flags is set. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Choice")
+	TArray<FName> ForbidFlags;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Choice")
+	TArray<FName> SetFlags;
+
+	/** A quest to start, or empty. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Choice")
+	FName StartQuest;
+};
+
+USTRUCT(BlueprintType)
+struct FDialogueRow : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	/** The NPC the conversation belongs to. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dialogue")
+	FName Npc;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dialogue")
+	FString Speaker;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dialogue")
+	FString Text;
+
+	/** Row shown after this one when there are no choices. Empty ends the conversation. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dialogue")
+	FName Next;
+
+	/** 0 = not a starting point. Above 0 the row can open a conversation; the highest qualifying number wins. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dialogue")
+	int32 Entry = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dialogue")
+	TArray<FName> RequireFlags;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dialogue")
+	TArray<FName> ForbidFlags;
+
+	/** Flags set when the row is shown. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dialogue")
+	TArray<FName> SetFlags;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dialogue")
+	TArray<FDialogueChoice> Choices;
 };

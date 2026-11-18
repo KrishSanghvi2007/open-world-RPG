@@ -31,6 +31,7 @@ public:
 	AUnderpaintingPlayerCharacter();
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
@@ -63,6 +64,38 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Combat")
 	FName GetWeaponId() const { return WeaponId; }
+
+	/** The thing the player would use by pressing Interact, or null. */
+	class AUnderpaintingInteractable* GetFocus() const { return Focus.Get(); }
+
+	/** Called by a Lampstand after resting: refills Health and Stamina and saves. */
+	void OnRested();
+
+	virtual void DoMove(float Right, float Forward) override;
+
+	/** Uses whatever is in reach, or advances the open menu. The Interact key calls this; so can scripts and tests. */
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	void Interact();
+
+	/** A number key, 1 to 9, for the open menu. */
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	void MenuNumber(int32 Number);
+
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	void MenuClose();
+
+	UFUNCTION(BlueprintCallable, Category = "Save")
+	void SaveNow();
+
+	UFUNCTION(BlueprintCallable, Category = "Save")
+	void LoadNow();
+
+	UFUNCTION(BlueprintCallable, Category = "Save")
+	void StartNewGame();
+
+	/** One line describing what the player would see: prompt, open menu, quest step, pack. For scripts and tests. */
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	FString DescribeState();
 
 protected:
 
@@ -135,6 +168,25 @@ private:
 	void HandleDeath(AActor* Killer);
 
 	void RestartLevel();
+	void InteractPressed() { Interact(); }
+	void MenuClosePressed() { MenuClose(); }
+	void InventoryPressed();
+	void SavePressed() { SaveNow(); }
+	void LoadPressed() { LoadNow(); }
+	void NewGamePressed() { StartNewGame(); }
+	template <int32 Number> void NumberPressed() { OnNumber(Number); }
+	void OnNumber(int32 Number) { MenuNumber(Number); }
+	void UpdateFocus();
+	void ApplyAttunements();
+	void RestoreFromSave();
+	class AUnderpaintingHUD* GetUnderpaintingHUD() const;
+	bool IsMenuOpen() const;
+
+	TWeakObjectPtr<class AUnderpaintingInteractable> Focus;
+	FDelegateHandle ProgressChangedHandle;
+	float BaseDodgeDistance = 450.0f;
+	float BaseDodgeInvulnerableTime = 0.30f;
+
 	void SprintPressed() { SetSprinting(true); }
 	void SprintReleased() { SetSprinting(false); }
 
