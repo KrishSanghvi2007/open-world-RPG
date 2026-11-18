@@ -6,6 +6,7 @@ Last updated: 2026-11-18, night. Claude keeps this page current while you are aw
 
 - **The walking skeleton (M2):** one connected loop in the village. Talk to Hesper, harvest, craft, relight the Lampstand, rest, attune, finish the quest, fight a Blotter, save and load.
 - **Combat depth (M4):** two palette wells, six Strokes that cost light, the Contrast rule (+30% in the complementary colour), lock-on, poultice and lamp oil, the perfect dodge.
+- **Enemies and the boss (M5):** Madderback, Pentiment and Old Palimpsest, each with a test room under Maps → Dev. A first enemy style probe (the Blotter) is in `docs/devlog/006-enemies-and-boss.md`.
 - **Exploration, first pass (M3):** the three zones connect through blue doorways; the Flare; sketched platforms; one-sided walls with caches behind them; 18 notes to find; a compass.
 - **The style kit:** every grey-box level is now painted in the Glaze look (sky, haze, violet shadows, brush strokes) with no models.
 - **A fight room** with one Blotter, and a **look test** in the chosen art style (Glaze).
@@ -42,6 +43,10 @@ These are the things only hands can judge. For each, the question to answer is i
 9b. *Lock-on* (Q). Does the camera help or fight you?
 9c. *Two at once.* The forest has pairs of Blotters. Too much for a first fight outside the village?
 
+9d. *The Madderback's charge* (`L_Combat_Madderback`). Can you bait it into a pillar on purpose? That is the whole enemy.
+9e. *The Pentiment's Redraw* (`L_Combat_Pentiment`). Is the fade long enough to think "Flare!" and press F?
+9f. *The boss* (`L_Combat_Boss`). Does the moment it turns red read as "the rule just changed"?
+
 **Exploration**
 9. *"Use" follows your eyes.* Stand between Hesper and the Lampstand and turn: does the prompt switch when you expect it to?
 10. *The lesson wall* in the forest (`L_Matriarch_Scumblewood_A`, past the second lamp post). Coming down the gorge you meet a dark wall with a pale cross-hatched patch. Would you think to walk into it? This is the game's signature idea and the design says to drop it if testers miss it.
@@ -56,7 +61,8 @@ These are the things only hands can judge. For each, the question to answer is i
 - A "Message Log" window may sit on top of the Unreal viewport after Claude runs tests. Close it with its ✕.
 - Menus are plain text with number keys.
 - Nobody has walked the forest or the vault: the script teleports. Ramps, jumps and the lesson wall are untested by hand.
-- Enemies walk straight at you and their health bars show through walls.
+- Enemies walk straight at you (no path-finding). The Madderback and the Pentiment have never been fought, by script or by hand.
+- Unreal runs very slowly when its window is not in front. Click on it before judging speed.
 - Enemies have no models or animations and no path-finding.
 - Dying restarts the level.
 - The **Diagnostics** button in Unreal's bottom bar is no longer red. It was Unreal's own start-up report; the one real error it listed is fixed.

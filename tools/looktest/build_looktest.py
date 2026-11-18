@@ -30,7 +30,7 @@ eal = unreal.EditorAssetLibrary
 
 MASKS = ["T_Stroke_Plaster", "T_Stroke_Roof", "T_Stroke_Wood", "T_Stroke_Stone", "T_Stroke_Ground", "T_Stroke_Dab"]
 SKIES = ["T_Sky_Gouache", "T_Sky_Glaze", "T_Sky_Wash"]
-PROPS = ["SM_House_A", "SM_House_B", "SM_Lampstand", "SM_GrindingSlab", "SM_Tree"]
+PROPS = ["SM_House_A", "SM_House_B", "SM_Lampstand", "SM_GrindingSlab", "SM_Tree", "SM_Blotter"]
 
 
 def lin(hex_colour, scale=1.0):
@@ -282,6 +282,8 @@ STYLES = {
             "PigmentGreen": ("T_Stroke_Dab", 60, "#3E5E46", "#6B8F71", "#93B592", "#2E5E6E", 0.4),
             "PigmentRed": ("T_Stroke_Dab", 60, "#6E1A1A", "#9E2B25", "#C4574B", "#4A3558", 0.4),
             "Foliage": ("T_Stroke_Dab", 200, "#2E5E6E", "#6B8F71", "#C9B45A", "#D9A441", 0.45),
+            "Erasure": ("T_Stroke_Dab", 220, "#BFC3D6", "#F4F4F6", "#FFFFFF", "#FFFFFF", 0.0),
+            "Canvas": ("T_Stroke_Plaster", 300, "#B8AA90", "#D8CBB0", "#E8DEC8", "#D8CBB0", 0.0),
         },
         sun=dict(colour="#FFE0BC", lux=9.0, pitch=-17.0), sky_light=dict(tint="#7480E0", intensity=2.8),
         fog=dict(colour="#E9A070", density=0.0030, falloff=0.25), glow=5.0,
@@ -303,6 +305,8 @@ STYLES = {
             "PigmentGreen": ("T_Stroke_Dab", 60, "#4A6A52", "#78987C", "#A4C29E", "#4A7684", 0.4),
             "PigmentRed": ("T_Stroke_Dab", 60, "#7A2420", "#AE3A30", "#D46A56", "#6A4458", 0.4),
             "Foliage": ("T_Stroke_Dab", 200, "#4A6E6A", "#84A47C", "#DCCB7C", "#E4B050", 0.4),
+            "Erasure": ("T_Stroke_Dab", 220, "#BFC3D6", "#F4F4F6", "#FFFFFF", "#FFFFFF", 0.0),
+            "Canvas": ("T_Stroke_Plaster", 300, "#B8AA90", "#D8CBB0", "#E8DEC8", "#D8CBB0", 0.0),
         },
         sun=dict(colour="#FFDCAE", lux=8.0, pitch=-20.0), sky_light=dict(tint="#8E86E0", intensity=2.4),
         fog=dict(colour="#F2B880", density=0.0050, falloff=0.18), glow=6.5,
@@ -324,6 +328,8 @@ STYLES = {
             "PigmentGreen": ("T_Stroke_Dab", 60, "#3E5E46", "#6B8F71", "#93B592", "#2E5E6E", 0.4),
             "PigmentRed": ("T_Stroke_Dab", 60, "#6E1A1A", "#9E2B25", "#C4574B", "#4A3558", 0.4),
             "Foliage": ("T_Stroke_Dab", 200, "#4E6260", "#84948A", "#C2C09A", "#B0A060", 0.3),
+            "Erasure": ("T_Stroke_Dab", 220, "#BFC3D6", "#F4F4F6", "#FFFFFF", "#FFFFFF", 0.0),
+            "Canvas": ("T_Stroke_Plaster", 300, "#B8AA90", "#D8CBB0", "#E8DEC8", "#D8CBB0", 0.0),
         },
         sun=dict(colour="#FFE2C0", lux=7.5, pitch=-22.0), sky_light=dict(tint="#9AA8D8", intensity=2.3),
         fog=dict(colour="#DCC4A8", density=0.0055, falloff=0.2), glow=5.0,
@@ -337,6 +343,7 @@ SUN_YAW = 37.0
 SKY_YAW_OFFSET = 0.0     # calibrated so the painted sun sits where the light comes from
 
 CAMERAS = {
+    "Blotter": ((7.4, -6.6, 1.5), (9.0, 42.0)),
     "Hero": ((7.6, -8.6, 1.7), (7.0, 124.0)),        # (position m), (pitch, yaw)
     "Sunward": ((6.0, 8.0, 2.0), (6.0, -128.0)),
 }
@@ -430,6 +437,11 @@ def build_level(style_name):
     prop("Tree", "SM_Tree", (9.6, 10.6, 0.0), yaw=40.0, scale=1.25)
     prop("Tree_Terrace", "SM_Tree", (-2.5, 27.0, 4.0), yaw=160.0, scale=1.0)
     prop("GrindingSlab", "SM_GrindingSlab", (0.4, -3.6, 0.0), yaw=150.0)
+
+    # Style probe, first enemy: a Blotter at the edge of the square, and the bare canvas it has dabbed the ground back to.
+    prop("Blotter_StyleProbe", "SM_Blotter", (11.5, -2.5, 0.0), yaw=215.0, scale=1.1)
+    for i, (dx, dy, sx, sy, yaw) in enumerate(((0, 0, 3.4, 2.6, 20), (1.1, -0.9, 1.8, 1.4, -35), (-1.3, 0.8, 1.5, 1.1, 60))):
+        block("BareCanvas_%d" % i, (11.5 + dx, -3.3 + dy, -0.003), (sx, sy, 0.05), "Canvas", yaw=yaw, folder="Set/Paving", shadow=False)
 
     # Worn paving: a ring round the Lampstand and a path to the door.
     for i in range(9):
@@ -567,6 +579,8 @@ def main(args):
     if command in ("assets", "all"):
         import_assets()
         create_materials()
+    if command == "import":          # meshes and textures only; leaves the materials (the style kit shares two of them)
+        import_assets()
     if command == "materials":
         create_materials()
     if command == "gameview":

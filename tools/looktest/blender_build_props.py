@@ -25,7 +25,7 @@ PREVIEW = {
     "Plaster": (0.90, 0.80, 0.56), "Roof": (0.55, 0.12, 0.09), "Wood": (0.15, 0.09, 0.05),
     "Stone": (0.42, 0.36, 0.30), "Metal": (0.03, 0.04, 0.05), "Glow": (1.0, 0.45, 0.10),
     "Dark": (0.04, 0.03, 0.05), "PigmentOchre": (0.70, 0.36, 0.05), "PigmentGreen": (0.14, 0.27, 0.16),
-    "PigmentRed": (0.34, 0.03, 0.02), "Foliage": (0.14, 0.27, 0.16),
+    "PigmentRed": (0.34, 0.03, 0.02), "Foliage": (0.14, 0.27, 0.16), "Erasure": (1.0, 1.0, 1.0),
 }
 
 
@@ -257,6 +257,33 @@ def build_tree(name="SM_Tree", seed=31):
     return b.build()
 
 
+def build_blotter(name="SM_Blotter", seed=44):
+    """Style probe, first enemy: the Blotter. A tall figure of wound rag with no face, bowed over its work, with
+    cloth arms long enough to dab the ground. The only pure-white thing on screen. Faces -Y."""
+    b = Builder(name, seed)
+    r = b.rng
+    # The body: rag wound in uneven turns, wider at the hem, each turn a little off the last.
+    turns = [(0.00, 0.50, 0.92, 0.80), (0.42, 0.46, 0.78, 0.66), (0.80, 0.44, 0.64, 0.56), (1.16, 0.42, 0.54, 0.46), (1.50, 0.40, 0.48, 0.40)]
+    for i, (z, h, wx, wy) in enumerate(turns):
+        b.block((r.uniform(-0.04, 0.04), -0.03 * i, z + h / 2.0), (wx, wy, h), "Erasure", rot=(0, 0, 0.35 * (i % 2) - 0.17 + r.uniform(-0.1, 0.1)),
+                taper=0.14, wobble=0.025, lean=(r.uniform(-0.04, 0.04), -0.03))
+    # Shoulders and a bowed, hooded head with nothing in it.
+    b.block((0.0, -0.20, 2.02), (0.74, 0.40, 0.34), "Erasure", rot=(-0.35, 0, 0.05), taper=0.2, wobble=0.02)
+    b.cylinder((0.0, -0.36, 2.10), 0.21, 0.42, "Erasure", segments=6, top_radius=0.13, wobble=0.015, lean=(0.02, -0.22))
+    b.block((0.0, -0.50, 2.22), (0.24, 0.10, 0.26), "Dark", rot=(-0.5, 0, 0), wobble=0.0)          # the dark inside the hood
+    # Arms: three lengths of cloth each, hanging forward to the ground, ending in a wad.
+    for side in (-1, 1):
+        x = side * 0.40
+        b.block((x, -0.34, 1.72), (0.17, 0.20, 0.62), "Erasure", rot=(-0.5, 0, side * 0.10), taper=0.1, wobble=0.015)
+        b.block((x * 1.12, -0.62, 1.12), (0.15, 0.17, 0.74), "Erasure", rot=(-0.28, 0, side * 0.06), taper=0.1, wobble=0.015)
+        b.block((x * 1.18, -0.78, 0.48), (0.13, 0.15, 0.72), "Erasure", rot=(-0.10, 0, side * 0.04), taper=0.0, wobble=0.015)
+        b.block((x * 1.2, -0.84, 0.10), (0.30, 0.34, 0.20), "Erasure", rot=(0, 0, r.uniform(-0.6, 0.6)), wobble=0.03)   # the wad it dabs with
+    # Loose ends trailing behind.
+    for (x, y, length, yaw) in ((-0.22, 0.42, 1.0, 0.3), (0.15, 0.48, 1.3, -0.2), (0.34, 0.36, 0.8, 0.5)):
+        b.block((x, y, length / 2.0 + 0.02), (0.16, 0.035, length), "Erasure", rot=(0.22, 0, yaw), wobble=0.02)
+    return b.build()
+
+
 def export(obj):
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
@@ -269,7 +296,7 @@ def export(obj):
 
 
 def main():
-    for name in ("SM_House_A", "SM_House_B", "SM_Lampstand", "SM_GrindingSlab", "SM_Tree"):
+    for name in ("SM_House_A", "SM_House_B", "SM_Lampstand", "SM_GrindingSlab", "SM_Tree", "SM_Blotter"):
         old = bpy.data.objects.get(name)
         if old:
             bpy.data.objects.remove(old, do_unlink=True)
@@ -279,6 +306,7 @@ def main():
         build_lampstand(),
         build_grinding_slab(),
         build_tree(),
+        build_blotter(),
     ]
     for i, obj in enumerate(built):
         path = export(obj)

@@ -15,7 +15,7 @@ Every milestone ends with a "done when" test the owner can do in under 5 minutes
   | Prop | Done: Lampstand, Grinding Slab (in the look test) |
   | Player character | To do |
   | NPC | To do |
-  | Enemy | To do |
+  | Enemy | Done: the Blotter (devlog 006) |
   | Boss | To do |
   | Interior | To do |
   | UI screen | To do |
@@ -72,7 +72,7 @@ Glim and light as a resource, Strokes for each pigment, the Contrast rule, lock-
 
 **Done when:** in the fight room, kill a Blotter with Bone Black Strokes and see the +30% damage number; die once and wake at the Lampstand.
 
-### M5. Enemies and the boss
+### M5. Enemies and the boss (done; Madderback and Pentiment not yet fought)
 Madderback, Pentiment, the three-attackers limit, and Old Palimpsest with its two phases and the heartbeat.
 
 **Done when:** each enemy can be fought in its own test room, and the boss can be beaten or lost to in the Heart.
