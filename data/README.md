@@ -146,7 +146,7 @@ Weakness rule for the boss: in phase 1 only the weakness and resistance that mat
 
 `FQuestObjective` (one per entry in `Steps`, same order): `Event` (FName: `Talk`, `Have`, `Craft`, `Relight`, `Attune`, `Kill`, `Reach`, `Inspect`, `Choose`), `Target` (FName: what the event is about, e.g. an NPC, an item or pigment, a Lampstand, an attunement node, an enemy, a place, or the quest itself for `Choose`), `Count` (int). `Have` is met by what the player is carrying; every other event is counted from the moment its step becomes current.
 
-`FQuestChoice`: `ChoiceId` (FName, unique within the quest), `Label` (string, shown to the player), `CostPigment` (FName, row in `pigments.json`, or empty), `CostAmount` (int), `Consequence` (string: what changes in the world), `WorldFlags` (FName[]: flags set in the save game; level scripts and spawn tables read them).
+`FQuestChoice`: `ChoiceId` (FName, unique within the quest), `Label` (string, shown to the player), `CostPigment` (FName, row in `pigments.json`, or empty), `CostAmount` (int), `Consequence` (string: what changes in the world), `WorldFlags` (FName[]: flags set in the save game; level scripts and spawn tables read them), `RewardItems` / `RewardPigments` (FIdCount[]: granted only if this choice is made).
 
 ## regions.json (`FRegionRow`)
 
@@ -188,11 +188,11 @@ One row per line of dialogue. A conversation is a chain of rows.
 | `Entry` | int | 0 = not a starting point. Above 0, this row can start a conversation with `Npc`; when several qualify, the highest number wins. |
 | `RequireFlags` / `ForbidFlags` | FName[] | For entry rows: flags that must (or must not) be set for the row to start a conversation. |
 | `SetFlags` | FName[] | Flags set when the row is shown. |
-| `Choices` | FDialogueChoice[] | Up to 4 replies. Empty = no choice. |
+| `Choices` | FDialogueChoice[] | Up to 6 replies (only those whose flags hold are offered). Empty = no choice. |
 
 `FDialogueChoice`: `Label` (string), `Next` (FName; empty ends the conversation), `RequireFlags` / `ForbidFlags` (FName[]: the reply is only offered when these hold), `SetFlags` (FName[]), `StartQuest` (FName: a quest to start, or empty).
 
-**Flags.** Any name can be set as a flag. The game also provides these automatically from quest progress: `Q.<Quest>.Active`, `Q.<Quest>.Done`, and `Q.<Quest>.Step<N>` (true while step N, counting from 1, is the current one).
+**Flags.** Any name can be set as a flag. Quest choices set their `WorldFlags`. The game also provides `Has.<Item or Pigment>` (the player carries at least one) and `Killed.<Enemy>` (one has been killed). The game also provides these automatically from quest progress: `Q.<Quest>.Active`, `Q.<Quest>.Done`, and `Q.<Quest>.Step<N>` (true while step N, counting from 1, is the current one).
 
 A finished conversation counts as the event `Talk` with the NPC as target.
 

@@ -172,3 +172,61 @@ private:
 
 	FName GetCacheKey() const;
 };
+
+/** Something to look at closely: a blood well with Ilka's chalk beside it, a mark on a wall. Counts as Inspect for quests. */
+UCLASS()
+class AUnderpaintingInspectable : public AUnderpaintingInteractable
+{
+	GENERATED_BODY()
+
+public:
+
+	AUnderpaintingInspectable();
+
+	virtual FString GetPrompt() const override { return FString::Printf(TEXT("Look at %s"), *Title); }
+	virtual void Interact(AUnderpaintingPlayerCharacter* Player) override;
+
+	/** What quests call it (the Target of an Inspect objective). */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inspect")
+	FName InspectId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inspect")
+	FString Title;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inspect")
+	FString Text;
+
+protected:
+
+	virtual void Refresh() override;
+
+private:
+
+	FName SeenFlag() const;
+};
+
+/** Where a quest is ended: the blank on the Heart wall, Corin's unpainted back, the brood nest. */
+UCLASS()
+class AUnderpaintingChoicePoint : public AUnderpaintingInteractable
+{
+	GENERATED_BODY()
+
+public:
+
+	AUnderpaintingChoicePoint();
+
+	virtual FString GetPrompt() const override;
+	virtual void Interact(AUnderpaintingPlayerCharacter* Player) override;
+
+	/** Row in data/quests.json whose Choices are offered here. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Choice")
+	FName QuestId;
+
+	/** What the player sees it as ("the blank on the Heart wall"). */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Choice")
+	FString DisplayName;
+
+protected:
+
+	virtual void Refresh() override;
+};

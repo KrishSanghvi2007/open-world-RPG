@@ -385,11 +385,26 @@ bool UUnderpaintingProgress::IsObjectiveMet(const FQuestObjective& Objective, co
 		const int32 Have = IsPigment(Objective.Target) ? GetPigment(Objective.Target) : GetItemCount(Objective.Target);
 		return Have >= Objective.Count;
 	}
+	// Somewhere already found, or something already dead, need not be found or killed again.
+	if (Objective.Event == TEXT("Reach") && Data.DiscoveredPlaces.Contains(Objective.Target))
+	{
+		return true;
+	}
+	if (Objective.Event == TEXT("Kill") && Objective.Count <= 1 && Data.Flags.Contains(FName(*FString::Printf(TEXT("Killed.%s"), *Objective.Target.ToString()))))
+	{
+		return true;
+	}
 	return Progress.StepCount >= Objective.Count;
 }
 
 void UUnderpaintingProgress::NotifyEvent(FName Event, FName Target, int32 Count)
 {
+	// The world remembers what has been killed (Killed.<Enemy>): things can appear or change because of it.
+	if (Event == TEXT("Kill"))
+	{
+		Data.Flags.AddUnique(FName(*FString::Printf(TEXT("Killed.%s"), *Target.ToString())));
+	}
+
 	for (TPair<FName, FQuestProgress>& Pair : Data.Quests)
 	{
 		const FQuestRow* Row = Find<FQuestRow>(QuestsTable, Pair.Key);
@@ -476,6 +491,14 @@ bool UUnderpaintingProgress::HasFlag(FName Flag) const
 	if (Data.Flags.Contains(Flag))
 	{
 		return true;
+	}
+
+	// Automatic flags from what the player carries: Has.<Item or Pigment>.
+	const FString Whole = Flag.ToString();
+	if (Whole.StartsWith(TEXT("Has.")))
+	{
+		const FName Id(*Whole.RightChop(4));
+		return (IsPigment(Id) ? GetPigment(Id) : GetItemCount(Id)) > 0;
 	}
 
 	// Automatic quest flags: Q.<Quest>.Active, Q.<Quest>.Done, Q.<Quest>.Step<N> (N counts from 1).
@@ -818,4 +841,76 @@ void UUnderpaintingProgress::SwapActiveWell()
 		Notice(FString::Printf(TEXT("Well: %s"), *GetDisplayName(GetWell(Other))));
 		Changed();
 	}
+}
+
+// --- Quest endings ---
+
+const FQuestRow* UUnderpaintingProgress::GetQuestRow(FName QuestId) const
+{
+	return Find<FQuestRow>(QuestsTable, QuestId);
+}
+
+bool UUnderpaintingProgress::IsAwaitingChoice(FName QuestId) const
+{
+	const FQuestRow* Row = GetQuestRow(QuestId);
+	const FQuestProgress* Progress = Data.Quests.Find(QuestId);
+	return Row && Progress && !Progress->bComplete && Row->Objectives.IsValidIndex(Progress->Step)
+		&& Row->Objectives[Progress->Step].Event == TEXT("Choose") && Row->Objectives[Progress->Step].Target == QuestId;
+}
+
+bool UUnderpaintingProgress::CanChoose(FName QuestId, FName ChoiceId, FString* OutWhyNot) const
+{
+	const FQuestRow* Row = GetQuestRow(QuestId);
+	const FQuestChoice* Choice = Row ? Row->Choices.FindByPredicate([ChoiceId](const FQuestChoice& Entry) { return Entry.ChoiceId == ChoiceId; }) : nullptr;
+	if (!Choice || !IsAwaitingChoice(QuestId))
+	{
+		if (OutWhyNot) { *OutWhyNot = TEXT("Not yet."); }
+		return false;
+	}
+	if (!Choice->CostPigment.IsNone() && GetPigment(Choice->CostPigment) < Choice->CostAmount)
+	{
+		if (OutWhyNot) { *OutWhyNot = FString::Printf(TEXT("Needs %d %s (you have %d)."), Choice->CostAmount, *GetDisplayName(Choice->CostPigment), GetPigment(Choice->CostPigment)); }
+		return false;
+	}
+	return true;
+}
+
+bool UUnderpaintingProgress::MakeChoice(FName QuestId, FName ChoiceId)
+{
+	if (!CanChoose(QuestId, ChoiceId))
+	{
+		return false;
+	}
+
+	const FQuestRow* Row = GetQuestRow(QuestId);
+	const FQuestChoice* Choice = Row->Choices.FindByPredicate([ChoiceId](const FQuestChoice& Entry) { return Entry.ChoiceId == ChoiceId; });
+	if (!Choice->CostPigment.IsNone())
+	{
+		SpendPigment(Choice->CostPigment, Choice->CostAmount);
+	}
+	for (const FName& Flag : Choice->WorldFlags)
+	{
+		Data.Flags.AddUnique(Flag);
+	}
+	Data.Quests[QuestId].Choice = ChoiceId;
+	Notice(FString::Printf(TEXT("%s: %s"), *Row->DisplayName, *Choice->Label));
+	for (const FIdCount& Reward : Choice->RewardItems)
+	{
+		AddItem(Reward.Id, Reward.Count);
+	}
+	for (const FIdCount& Reward : Choice->RewardPigments)
+	{
+		AddPigment(Reward.Id, Reward.Count, true);
+	}
+	NotifyEvent(TEXT("Choose"), QuestId, 1);
+	return true;
+}
+
+int32 UUnderpaintingProgress::GetNodeYield(FName ZoneId, FName PigmentId, int32 BaseYield) const
+{
+	const FString Stem = FString::Printf(TEXT("%s_%sYield"), *ZoneId.ToString(), *PigmentId.ToString());
+	int32 Yield = BaseYield;
+	Yield += Data.Flags.Contains(FName(*(Stem + TEXT("Plus1")))) ? 1 : 0;
+	Yield -= Data.Flags.Contains(FName(*(Stem + TEXT("Minus1")))) ? 1 : 0;
+	return FMath::Max(0, Yield);
 }

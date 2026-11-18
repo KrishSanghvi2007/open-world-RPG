@@ -30,6 +30,20 @@ public:
 	/** Text for the prompt ("Harvest Hide Ochre"). Empty means it cannot be used right now. */
 	virtual FString GetPrompt() const { return FString(); }
 
+	/** The prompt, or nothing if this thing is not in the world right now (see RequiresFlag and HiddenByFlag). */
+	FString GetUsablePrompt() const { return IsAvailable() ? GetPrompt() : FString(); }
+
+	/** In the world at all? Things can wait for a flag (a boss's death, a quest's ending) or be removed by one. */
+	bool IsAvailable() const;
+
+	/** If set, this thing does not exist until the flag is set. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "World state")
+	FName RequiresFlag;
+
+	/** If set, this thing is gone once the flag is set. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "World state")
+	FName HiddenByFlag;
+
 	virtual void Interact(AUnderpaintingPlayerCharacter* Player) {}
 
 protected:
@@ -48,6 +62,8 @@ protected:
 	TObjectPtr<UMaterialInstanceDynamic> BodyMaterial;
 
 private:
+
+	void HandleProgressChanged();
 
 	FDelegateHandle ChangedHandle;
 };

@@ -104,6 +104,22 @@ void AUnderpaintingHUD::OpenReading(FName LoreId)
 	ReadingLore = LoreId;
 }
 
+void AUnderpaintingHUD::OpenText(const FString& Title, const FString& Text)
+{
+	Menu = EUnderpaintingMenu::Reading;
+	ReadingLore = NAME_None;
+	FreeTitle = Title;
+	FreeText = Text;
+}
+
+void AUnderpaintingHUD::OpenChoice(FName QuestId, const FString& Subject)
+{
+	Menu = EUnderpaintingMenu::Choice;
+	ChoiceQuest = QuestId;
+	ChoiceSubject = Subject;
+	ChoicePending = INDEX_NONE;
+}
+
 void AUnderpaintingHUD::ToggleInventory()
 {
 	if (Menu == EUnderpaintingMenu::Inventory)
@@ -207,6 +223,40 @@ void AUnderpaintingHUD::ChooseNumber(int32 Number)
 			{
 				Progress->Craft(Recipes[Index]);
 			}
+		}
+	}
+	else if (Menu == EUnderpaintingMenu::Choice)
+	{
+		const FQuestRow* Row = Progress->GetQuestRow(ChoiceQuest);
+		if (!Row)
+		{
+			return;
+		}
+		if (ChoicePending == INDEX_NONE)
+		{
+			// First press: pick an ending. Nothing happens yet.
+			if (Row->Choices.IsValidIndex(Index))
+			{
+				FString Why;
+				if (Progress->CanChoose(ChoiceQuest, Row->Choices[Index].ChoiceId, &Why))
+				{
+					ChoicePending = Index;
+				}
+				else
+				{
+					AddNotice(Why);
+				}
+			}
+		}
+		else if (Number == 1)
+		{
+			// Second press, on "yes": it is done, and cannot be undone.
+			Progress->MakeChoice(ChoiceQuest, Row->Choices[ChoicePending].ChoiceId);
+			CloseMenu();
+		}
+		else if (Number == 2)
+		{
+			ChoicePending = INDEX_NONE;
 		}
 	}
 	else if (Menu == EUnderpaintingMenu::Attunement)
@@ -316,6 +366,7 @@ void AUnderpaintingHUD::DrawHUD()
 		case EUnderpaintingMenu::Attunement: DrawAttunement(Progress); break;
 		case EUnderpaintingMenu::Inventory: DrawInventory(Progress); break;
 		case EUnderpaintingMenu::Reading: DrawReading(Progress); break;
+		case EUnderpaintingMenu::Choice: DrawChoice(Progress); break;
 		default: break;
 		}
 	}
@@ -324,7 +375,7 @@ void AUnderpaintingHUD::DrawHUD()
 	// The interaction prompt.
 	if (Player && Menu == EUnderpaintingMenu::None && Player->GetFocus())
 	{
-		const FString Prompt = FString::Printf(TEXT("[E]  %s"), *Player->GetFocus()->GetPrompt());
+		const FString Prompt = FString::Printf(TEXT("[E]  %s"), *Player->GetFocus()->GetUsablePrompt());
 		float Width = 0.0f, Height = 0.0f;
 		GetTextSize(Prompt, Width, Height, nullptr, 1.2f);
 		const float X = (Canvas->ClipX - Width) * 0.5f;
@@ -616,21 +667,23 @@ void AUnderpaintingHUD::DrawInventory(const UUnderpaintingProgress* Progress)
 void AUnderpaintingHUD::DrawReading(const UUnderpaintingProgress* Progress)
 {
 	const FLoreRow* Row = Progress->GetLore(ReadingLore);
-	if (!Row)
+	if (!Row && FreeText.IsEmpty())
 	{
 		return;
 	}
+	const FString Title = Row ? Row->Title : FreeTitle;
+	const FString Body = Row ? Row->Text : FreeText;
 
 	// A sheet of paper: cream for Odile and the ledgers, the Vault's blue-grey for the Hand.
-	const bool bHand = Row->Kind == ELoreKind::Marginalia;
+	const bool bHand = Row && Row->Kind == ELoreKind::Marginalia;
 	const float Width = FMath::Min(760.0f, Canvas->ClipX - 80.0f);
 	const float X = (Canvas->ClipX - Width) * 0.5f;
 	const float Y = Canvas->ClipY * 0.22f;
 	const FLinearColor Paper = bHand ? FLinearColor(0.62f, 0.64f, 0.70f, 0.96f) : FLinearColor(0.87f, 0.76f, 0.52f, 0.96f);
 	const FLinearColor Ink = bHand ? FLinearColor(0.03f, 0.07f, 0.38f) : FLinearColor(0.08f, 0.05f, 0.04f);
 	DrawRect(Paper, X, Y, Width, 300.0f);
-	DrawText(Row->Title, Ink * 0.8f + FLinearColor(0.1f, 0.1f, 0.1f), X + 30.0f, Y + 22.0f, nullptr, 0.95f);
-	DrawWrapped(Row->Text, X + 30.0f, Y + 62.0f, Width - 60.0f, Ink, 1.15f);
+	DrawText(Title, Ink * 0.8f + FLinearColor(0.1f, 0.1f, 0.1f), X + 30.0f, Y + 22.0f, nullptr, 0.95f);
+	DrawWrapped(Body, X + 30.0f, Y + 62.0f, Width - 60.0f, Ink, 1.15f);
 	DrawText(TEXT("[E] put it away"), Ink * 0.7f + FLinearColor(0.15f, 0.15f, 0.15f), X + 30.0f, Y + 268.0f, nullptr, 0.85f);
 }
 
@@ -678,7 +731,7 @@ void AUnderpaintingHUD::DrawCompass(const AUnderpaintingPlayerCharacter* Player,
 		for (const AActor* Actor : Tagged)
 		{
 			const AUnderpaintingInteractable* Usable = Cast<AUnderpaintingInteractable>(Actor);
-			if (Usable && Usable->GetPrompt().IsEmpty())
+			if (Usable && Usable->GetUsablePrompt().IsEmpty())
 			{
 				continue;   // an emptied node is not where the objective is
 			}
@@ -695,4 +748,50 @@ void AUnderpaintingHUD::DrawCompass(const AUnderpaintingPlayerCharacter* Player,
 			Mark(To.Rotation().Yaw, FString::Printf(TEXT("v %dm"), FMath::RoundToInt(NearestDistance / 100.0f)), GoodColour, 0.9f);
 		}
 	}
+}
+
+void AUnderpaintingHUD::DrawChoice(const UUnderpaintingProgress* Progress)
+{
+	const FQuestRow* Row = Progress->GetQuestRow(ChoiceQuest);
+	if (!Row)
+	{
+		return;
+	}
+
+	const float Width = FMath::Min(980.0f, Canvas->ClipX - 80.0f);
+	const float X = (Canvas->ClipX - Width) * 0.5f;
+	const float Y = 120.0f;
+
+	if (ChoicePending != INDEX_NONE && Row->Choices.IsValidIndex(ChoicePending))
+	{
+		// The confirmation: cost and immediate consequence in plain words, then the question (GDD section 7).
+		const FQuestChoice& Choice = Row->Choices[ChoicePending];
+		DrawPanel(X, Y, Width, 300.0f);
+		DrawText(Choice.Label, GlimColour, X + 24.0f, Y + 16.0f, nullptr, 1.25f);
+		const FString Cost = Choice.CostPigment.IsNone() ? FString(TEXT("It costs nothing.")) :
+			FString::Printf(TEXT("It costs %d %s. You have %d."), Choice.CostAmount, *Progress->GetDisplayName(Choice.CostPigment), Progress->GetPigment(Choice.CostPigment));
+		DrawText(Cost, TextColour, X + 24.0f, Y + 54.0f, nullptr, 1.0f);
+		float Cursor = DrawWrapped(Choice.Consequence, X + 24.0f, Y + 84.0f, Width - 48.0f, TextColour, 1.0f) + 16.0f;
+		Cursor = DrawWrapped(TEXT("This cannot be painted over. It will be carried for as long as the world lasts."), X + 24.0f, Cursor, Width - 48.0f, HealthColour * 2.2f, 1.0f) + 12.0f;
+		DrawText(TEXT("1.  Do it."), GoodColour, X + 40.0f, Cursor, nullptr, 1.1f);
+		DrawText(TEXT("2.  Not yet."), TextColour, X + 40.0f, Cursor + 28.0f, nullptr, 1.1f);
+		return;
+	}
+
+	DrawPanel(X, Y, Width, 110.0f + Row->Choices.Num() * 96.0f);
+	DrawText(ChoiceSubject, GlimColour, X + 24.0f, Y + 16.0f, nullptr, 1.25f);
+	DrawText(TEXT("What you decide here is permanent."), DimColour, X + 24.0f, Y + 46.0f, nullptr, 0.9f);
+	float Cursor = Y + 80.0f;
+	for (int32 Index = 0; Index < Row->Choices.Num(); ++Index)
+	{
+		const FQuestChoice& Choice = Row->Choices[Index];
+		FString Why;
+		const bool bCan = Progress->CanChoose(ChoiceQuest, Choice.ChoiceId, &Why);
+		const FString Cost = Choice.CostPigment.IsNone() ? FString(TEXT("free")) : FString::Printf(TEXT("%d %s"), Choice.CostAmount, *Progress->GetDisplayName(Choice.CostPigment));
+		DrawText(FString::Printf(TEXT("%d.  %s   (%s)%s%s"), Index + 1, *Choice.Label, *Cost, bCan ? TEXT("") : TEXT("   -   "), bCan ? TEXT("") : *Why),
+			bCan ? GoodColour : DimColour, X + 24.0f, Cursor, nullptr, 1.05f);
+		DrawWrapped(Choice.Consequence.Left(210), X + 54.0f, Cursor + 24.0f, Width - 80.0f, DimColour, 0.85f);
+		Cursor += 96.0f;
+	}
+	DrawText(TEXT("Number to choose (you will be asked again)   [E] or [Q] walk away"), DimColour, X + 24.0f, Cursor, nullptr, 0.9f);
 }

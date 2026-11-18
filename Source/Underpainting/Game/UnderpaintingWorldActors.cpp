@@ -11,6 +11,7 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -71,8 +72,26 @@ void AUnderpaintingInteractable::BeginPlay()
 	Super::BeginPlay();
 	if (UUnderpaintingProgress* Progress = GetProgress())
 	{
-		ChangedHandle = Progress->OnChanged.AddUObject(this, &AUnderpaintingInteractable::Refresh);
+		ChangedHandle = Progress->OnChanged.AddUObject(this, &AUnderpaintingInteractable::HandleProgressChanged);
 	}
+	HandleProgressChanged();
+}
+
+bool AUnderpaintingInteractable::IsAvailable() const
+{
+	const UUnderpaintingProgress* Progress = GetProgress();
+	if (!Progress)
+	{
+		return true;
+	}
+	return (RequiresFlag.IsNone() || Progress->HasFlag(RequiresFlag)) && (HiddenByFlag.IsNone() || !Progress->HasFlag(HiddenByFlag));
+}
+
+void AUnderpaintingInteractable::HandleProgressChanged()
+{
+	const bool bAvailable = IsAvailable();
+	SetActorHiddenInGame(!bAvailable);
+	SetActorEnableCollision(bAvailable);
 	Refresh();
 }
 
@@ -112,7 +131,9 @@ void AUnderpaintingHarvestNode::Interact(AUnderpaintingPlayerCharacter* Player)
 {
 	if (UUnderpaintingProgress* Progress = GetProgress())
 	{
-		Progress->HarvestNode(GetNodeKey(), PigmentId, Yield);
+		const UUnderpaintingDataSubsystem* Data = GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>();
+		const FName Zone = Data ? Data->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(this, true)) : NAME_None;
+		Progress->HarvestNode(GetNodeKey(), PigmentId, Progress->GetNodeYield(Zone, PigmentId, Yield));
 	}
 }
 

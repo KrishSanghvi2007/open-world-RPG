@@ -370,6 +370,39 @@ def place(place_id, name, centre, half=(5.0, 5.0, 3.0)):
     return actor
 
 
+def inspectable(inspect_id, title, text, ground):
+    """Something to look at closely. Counts as the Inspect event for quests."""
+    actor = actors.spawn_actor_from_class(unreal.UnderpaintingInspectable, v((ground[0], ground[1], ground[2] + 0.13)), unreal.Rotator(0, 0, 0))
+    actor.set_editor_property("inspect_id", unreal.Name(inspect_id))
+    actor.set_editor_property("title", title)
+    actor.set_editor_property("text", text)
+    index = _counts.get(("Inspect", inspect_id), 0) + 1
+    _counts[("Inspect", inspect_id)] = index
+    actor.set_actor_label("Inspect_%s_%02d" % (inspect_id, index))
+    actor.set_folder_path("Gameplay/Inspect")
+    actor.tags = [unreal.Name(t) for t in ("Marker", "Inspect", inspect_id)]
+    return actor
+
+
+def choice_point(quest_id, display_name, centre, yaw=0.0, size=(0.2, 2.2, 2.6)):
+    """Where a quest is ended (its Choices in data/quests.json are offered here)."""
+    actor = actors.spawn_actor_from_class(unreal.UnderpaintingChoicePoint, v(centre), unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw))
+    actor.set_editor_property("quest_id", unreal.Name(quest_id))
+    actor.set_editor_property("display_name", display_name)
+    actor.set_actor_scale3d(unreal.Vector(*size))
+    actor.set_actor_label("Choice_" + quest_id)
+    actor.set_folder_path("Gameplay/Choices")
+    actor.tags = [unreal.Name(t) for t in ("Marker", "Choice", quest_id)]
+    _counts[("Choice", quest_id)] = 1
+    return actor
+
+
+def needs_flag(actor, flag):
+    """The actor does not exist in the world until this flag is set."""
+    actor.set_editor_property("requires_flag", unreal.Name(flag))
+    return actor
+
+
 def sketch_platform(name, x0, x1, y0, y1, top, thickness=0.4, tags=()):
     """A sketched platform: solid only while a Flare lights it, or once fixed with a Fixative Flask."""
     if not hasattr(unreal, "UnderpaintingSketchPlatform"):
@@ -672,10 +705,26 @@ def build_scumblewood():
     place("BroodNest", "The Hollow Vertebra", at["HollowVertebra"], half=(13, 13, 4))
     place("RibGate", "The Rib Gate", at["RibGate"], half=(10, 10, 4))
 
-    # Enemies: 6 Madderbacks and 6 Blotters
-    for p in (off("Bend", 3, -3), off("HollowVertebra", -5, -3), off("HollowVertebra", 4, 4),
-              off("HollowVertebra", 6, -6), off("Approach", -2, -3), off("Approach", 4, 2)):
-        enemy("Madderback", p)
+    # The Tick-Warden's Ledger: three blood wells with Ilka's chalk beside them, and the nest to decide about.
+    wells = [
+        (off("HollowVertebra", -10, 8.5), "Bitten this season: 14. Flow: free and bright. I. T."),
+        (off("HollowVertebra", 10, 3.5), "Bitten this season: 9. Flow: free. The scab at the rim is last year's, where they stopped coming. I. T."),
+        (off("Approach", 6, 4.5), "Bitten this season: 0. Scabbed shut since spring. Note the moss has gone grey round it. I. T."),
+    ]
+    for position, chalk in wells:
+        inspectable("BloodWell", "a blood well, and the chalk beside it", chalk, position)
+    choice_point("SQ_TickWardensLedger", "the brood nest in the Hollow Vertebra", off("HollowVertebra", 0, 12.4) [:2] + (at["HollowVertebra"][2] + 1.3,), yaw=90.0)
+
+    # The Unseen Side: Corin's bare back, and the cache only an unfinished Corin can point to.
+    choice_point("SQ_TheUnseenSide", "Corin's unpainted back", off("SunwardClearing", -2, 5.0)[:2] + (at["SunwardClearing"][2] + 1.0,), yaw=90.0, size=(0.1, 0.7, 1.6))
+    needs_flag(cache("CorinsCache", "Cache", off("SunwardClearing", -12, 12), [("SlumberBlue", 2)]), "Scumblewood_PentimentoCacheRevealed")
+
+    # Enemies: 6 Madderbacks and 6 Blotters. Burning the nest halves the Madderbacks.
+    for i, p in enumerate((off("Bend", 3, -3), off("HollowVertebra", -5, -3), off("HollowVertebra", 4, 4),
+                           off("HollowVertebra", 6, -6), off("Approach", -2, -3), off("Approach", 4, 2))):
+        tick = enemy("Madderback", p)
+        if i % 2 == 1 and isinstance(tick, unreal.UnderpaintingEnemy):
+            tick.set_editor_property("removed_by_flag", unreal.Name("Scumblewood_MadderbackHalved"))
     for p in (off("FirstWell", 6, 2), off("FirstWell", 9, -3), off("Descent", -3, -2), off("Descent", 4, 3),
               off("Approach", 6, -5), off("RibGate", -8, 2)):
         enemy("Blotter", p)
@@ -764,7 +813,24 @@ def build_vault():
     lore("Margin_06", (121, 3, FLOOR), yaw=0.0)
     lore("Margin_07", (150, 6, FLOOR), yaw=180.0)
     lore("Margin_08", (150, -6, FLOOR), yaw=180.0)
-    lore("Odile_07", (153, 2.6, FLOOR), yaw=180.0)
+    # What Old Palimpsest was curled around is only there once it is gone (docs/STORY.md, Act 1).
+    needs_flag(lore("Odile_07", (150.5, 2.0, FLOOR), yaw=180.0), "Killed.ThePalimpsest")
+    lantern = needs_flag(marker("Note", "OdilesLantern", "", (150.2, 0.6, FLOOR)), "Killed.ThePalimpsest") if False else None
+    lantern = actors.spawn_actor_from_class(unreal.UnderpaintingPickup, v((150.2, 0.6, FLOOR + 0.25)), unreal.Rotator(0, 0, 0))
+    lantern.set_editor_property("item_id", unreal.Name("OdilesLantern"))
+    lantern.set_editor_property("count", 1)
+    lantern.set_editor_property("source_name", "the hollow")
+    lantern.set_actor_scale3d(unreal.Vector(0.3, 0.3, 0.5))
+    lantern.set_actor_label("Pickup_OdilesLantern")
+    lantern.set_folder_path("Gameplay/Heart")
+    lantern.tags = [unreal.Name(t) for t in ("Marker", "Pickup", "OdilesLantern")]
+    needs_flag(lantern, "Killed.ThePalimpsest")
+
+    # The Heart wall: two studies of a figure with a lantern and a knife, and a blank where a third was.
+    for i, y in enumerate((-4.4, -1.6)):
+        box("Study_%d" % (i + 1), (157.6, y, FLOOR + 1.4), (0.06, 0.9, 2.4), GRAPHITE, "Geometry/Heart", collide=False)
+    choice_point("MQ_ColdUnderTheRibs", "the blank on the Heart wall", (157.5, 1.4, FLOOR + 1.4), yaw=0.0, size=(0.1, 1.2, 2.5))
+    slab("Hollow", 149.2, 152.2, -0.6, 2.4, FLOOR + 0.02, GREY, "Geometry/Heart", bottom=FLOOR - 0.02)
     place("RibStair", "The Rib Stair", (16, 0, -5), half=(15, 5, 6))
     place("CartoonGallery", "The Cartoon Gallery", (40, 0, FLOOR), half=(5, 11, 3))
     place("GalleryFarLedge", "", (112, 0, FLOOR), half=(5, 11, 3))

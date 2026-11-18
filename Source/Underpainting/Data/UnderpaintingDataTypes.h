@@ -533,6 +533,13 @@ struct FQuestChoice
 	/** Flags set in the save game; level scripts and spawn tables read them. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Choice")
 	TArray<FName> WorldFlags;
+
+	/** Granted only if this choice is made. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Choice")
+	TArray<FIdCount> RewardItems;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Choice")
+	TArray<FIdCount> RewardPigments;
 };
 
 /** What the game checks for one quest step. */

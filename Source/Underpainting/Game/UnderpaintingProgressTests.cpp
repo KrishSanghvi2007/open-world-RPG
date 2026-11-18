@@ -221,4 +221,110 @@ bool FUnderpaintingExplorationTest::RunTest(const FString& Parameters)
 	return !HasAnyErrors();
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FUnderpaintingChoiceTest, "Underpainting.Game.QuestChoices", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FUnderpaintingChoiceTest::RunTest(const FString& Parameters)
+{
+	// "The Tick-Warden's Ledger", played twice with different endings: the world must come out different.
+	const FName Quest(TEXT("SQ_TickWardensLedger")), Forest(TEXT("Scumblewood")), Sanguine(TEXT("Sanguine"));
+	const auto FinishFirstQuest = [](UUnderpaintingProgress* Progress)
+	{
+		// Side quests open once "Dusk on the Shoulder" is done.
+		FUnderpaintingProgressData Data = Progress->GetData();
+		FQuestProgress Done;
+		Done.bComplete = true;
+		Data.Quests.Add(UUnderpaintingProgress::FirstQuest, Done);
+		Progress->SetData(Data);
+	};
+	const auto PlayToChoice = [&](UUnderpaintingProgress* Progress)
+	{
+		TestFalse(TEXT("A side quest cannot start before the first quest is done"), Progress->StartQuest(Quest));
+		FinishFirstQuest(Progress);
+		if (!TestTrue(TEXT("Then it starts"), Progress->StartQuest(Quest)))
+		{
+			return;
+		}
+		Progress->EndDialogue(TEXT("IlkaThrum"));
+		TestFalse(TEXT("No deciding before the wells are read"), Progress->IsAwaitingChoice(Quest));
+		Progress->NotifyEvent(TEXT("Inspect"), TEXT("BloodWell"), 1);
+		Progress->NotifyEvent(TEXT("Inspect"), TEXT("BloodWell"), 1);
+		TestEqual(TEXT("Two wells are not three"), Progress->GetQuestProgress(Quest) ? Progress->GetQuestProgress(Quest)->Step : -1, 1);
+		Progress->NotifyEvent(TEXT("Inspect"), TEXT("BloodWell"), 1);
+		Progress->ReachPlace(TEXT("BroodNest"), TEXT("The Hollow Vertebra"));
+		TestTrue(TEXT("At the nest, the quest waits for a decision"), Progress->IsAwaitingChoice(Quest));
+	};
+
+	UUnderpaintingProgress* Burn = MakeProgress(*this);
+	PlayToChoice(Burn);
+	TestEqual(TEXT("Wells give 2 before anything is decided"), Burn->GetNodeYield(Forest, Sanguine, 2), 2);
+	TestTrue(TEXT("Burning costs nothing"), Burn->MakeChoice(Quest, TEXT("BurnNest")));
+	TestTrue(TEXT("The quest is over"), Burn->IsQuestComplete(Quest));
+	TestTrue(TEXT("Flag: the ticks are culled"), Burn->HasFlag(TEXT("Scumblewood_MadderbackHalved")));
+	TestEqual(TEXT("Burned: the wells scab and give 1"), Burn->GetNodeYield(Forest, Sanguine, 2), 1);
+	TestFalse(TEXT("A decision cannot be made twice"), Burn->MakeChoice(Quest, TEXT("TendWells")));
+	TestTrue(TEXT("Either ending teaches the Chitin Jerkin"), Burn->IsRecipeUnlocked(TEXT("Recipe_ChitinJerkin")));
+
+	UUnderpaintingProgress* Tend = MakeProgress(*this);
+	PlayToChoice(Tend);
+	FString Why;
+	TestFalse(TEXT("Dressing the wells needs 3 Terre Verte"), Tend->CanChoose(Quest, TEXT("TendWells"), &Why));
+	Tend->AddPigment(TEXT("TerreVerte"), 3, true);
+	TestTrue(TEXT("With the pigment, it can be done"), Tend->MakeChoice(Quest, TEXT("TendWells")));
+	TestEqual(TEXT("The pigment is spent"), Tend->GetPigment(TEXT("TerreVerte")), 0);
+	TestEqual(TEXT("Tended: the wells run clean and give 3"), Tend->GetNodeYield(Forest, Sanguine, 2), 3);
+	TestFalse(TEXT("Tended: the ticks are left alone"), Tend->HasFlag(TEXT("Scumblewood_MadderbackHalved")));
+	TestTrue(TEXT("Tended: Ilka trades"), Tend->HasFlag(TEXT("Ilka_Trades")));
+
+	// Leaving the Heart wall bare is a real option with its own reward.
+	UUnderpaintingProgress* Heart = MakeProgress(*this);
+	FUnderpaintingProgressData Data = Heart->GetData();
+	FQuestProgress Done; Done.bComplete = true;
+	Data.Quests.Add(UUnderpaintingProgress::FirstQuest, Done);
+	FQuestProgress AtWall; AtWall.Step = 5;
+	Data.Quests.Add(TEXT("MQ_ColdUnderTheRibs"), AtWall);
+	Heart->SetData(Data);
+	TestTrue(TEXT("At the Heart wall"), Heart->IsAwaitingChoice(TEXT("MQ_ColdUnderTheRibs")));
+	TestFalse(TEXT("Sanguine needs 5"), Heart->CanChoose(TEXT("MQ_ColdUnderTheRibs"), TEXT("FillSanguine"), &Why));
+	TestTrue(TEXT("Leave it bare"), Heart->MakeChoice(TEXT("MQ_ColdUnderTheRibs"), TEXT("LeaveBlank")));
+	TestEqual(TEXT("Bare: 4 Ceruse scraped from the scar"), Heart->GetPigment(TEXT("Ceruse")), 4);
+	TestTrue(TEXT("Bare: the wall is recorded as blank"), Heart->HasFlag(TEXT("Heart_Blank")));
+
+	// A place already found does not have to be found again for a quest.
+	UUnderpaintingProgress* Corin = MakeProgress(*this);
+	FinishFirstQuest(Corin);
+	Corin->ReachPlace(TEXT("CorinsBack"), FString());
+	Corin->StartQuest(TEXT("SQ_TheUnseenSide"));
+	Corin->EndDialogue(TEXT("CorinHalfSeen"));
+	TestEqual(TEXT("His back was already seen, so the quest moves straight to the second talk"), Corin->GetQuestProgress(TEXT("SQ_TheUnseenSide")) ? Corin->GetQuestProgress(TEXT("SQ_TheUnseenSide"))->Step : -1, 2);
+	Corin->EndDialogue(TEXT("CorinHalfSeen"));
+	TestTrue(TEXT("Leaving him unfinished is free"), Corin->MakeChoice(TEXT("SQ_TheUnseenSide"), TEXT("LeaveUnfinished")));
+	TestTrue(TEXT("Unfinished: he reveals the cache"), Corin->HasFlag(TEXT("Scumblewood_PentimentoCacheRevealed")));
+	TestEqual(TEXT("Unfinished: he greets you as himself"), Corin->FindDialogueEntry(TEXT("CorinHalfSeen")), FName(TEXT("Corin_Unfinished")));
+
+	// Hesper's return: with the lantern she is offered it; without, she is not.
+	UUnderpaintingProgress* Return = MakeProgress(*this);
+	FUnderpaintingProgressData ReturnData = Return->GetData();
+	ReturnData.Quests.Add(UUnderpaintingProgress::FirstQuest, Done);
+	FQuestProgress LastStep; LastStep.Step = 7;
+	ReturnData.Quests.Add(TEXT("MQ_ColdUnderTheRibs"), LastStep);
+	Return->SetData(ReturnData);
+	TestEqual(TEXT("Hesper asks if you found her"), Return->FindDialogueEntry(TEXT("HesperVane")), FName(TEXT("Hesper_Return")));
+	if (const FDialogueRow* Ask = Return->GetDialogueRow(TEXT("Hesper_Return")))
+	{
+		const TArray<int32> Without = Return->GetOfferedChoices(*Ask);
+		TestTrue(TEXT("Without the lantern, only the plain answer"), Without.Num() == 1 && Without[0] == 1);
+		Return->AddItem(TEXT("OdilesLantern"), 1);
+		const TArray<int32> With = Return->GetOfferedChoices(*Ask);
+		TestTrue(TEXT("With the lantern, only holding it out"), With.Num() == 1 && With[0] == 0);
+	}
+
+	// Flags the game provides by itself.
+	TestTrue(TEXT("Has.<pigment>"), Heart->HasFlag(TEXT("Has.Ceruse")));
+	TestFalse(TEXT("Has.<item> not carried"), Heart->HasFlag(TEXT("Has.OdilesLantern")));
+	Heart->NotifyEvent(TEXT("Kill"), TEXT("ThePalimpsest"), 1);
+	TestTrue(TEXT("Killed.<enemy>"), Heart->HasFlag(TEXT("Killed.ThePalimpsest")));
+
+	return !HasAnyErrors();
+}
+
 #endif // WITH_DEV_AUTOMATION_TESTS

@@ -201,9 +201,22 @@
     "RequireFlags": [
       "Q.MQ_DuskOnTheShoulder.Done"
     ],
-    "ForbidFlags": [],
+    "ForbidFlags": [
+      "Q.MQ_ColdUnderTheRibs.Step8"
+    ],
     "SetFlags": [],
     "Choices": [
+      {
+        "Label": "The ground. What is it?",
+        "Next": "Hesper_Cold1",
+        "RequireFlags": [],
+        "ForbidFlags": [
+          "Q.MQ_ColdUnderTheRibs.Active",
+          "Q.MQ_ColdUnderTheRibs.Done"
+        ],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
       {
         "Label": "The Lampstand. Who built it?",
         "Next": "Hesper_Topic_Lamp",
@@ -491,7 +504,9 @@
     "Entry": 10,
     "RequireFlags": [],
     "ForbidFlags": [],
-    "SetFlags": [],
+    "SetFlags": [
+      "Ilka.Met"
+    ],
     "Choices": [
       {
         "Label": "What does the chalk say?",
@@ -551,6 +566,400 @@
     "Next": "",
     "Entry": 0,
     "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Cold1",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "She's shivering. The Matriarch. Something under her ribs is drinking the warmth out of her, and if she wakes cold she'll turn over, and we are on the side she'll turn onto.",
+    "Next": "Hesper_Cold2",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Cold2",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Odile went to find out what. Eleven years ago, the night before you walked up out of the Furrow. In a red coat. So. Now it's you.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "I'll go.",
+        "Next": "Hesper_Cold3",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": "MQ_ColdUnderTheRibs"
+      },
+      {
+        "Label": "(Say nothing. Pick up the lantern.)",
+        "Next": "Hesper_Cold3",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [
+          "Hesper.SawSilence"
+        ],
+        "StartQuest": "MQ_ColdUnderTheRibs"
+      },
+      {
+        "Label": "Not yet.",
+        "Next": "",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Hesper_Cold3",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Down the Furrow to the Rib Gate. Light the lamp there, it'll be out. Then in. Don't be clever. She was clever.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_ColdWaiting",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "You're still here. The lamp at the Rib Gate won't light itself.",
+    "Next": "",
+    "Entry": 30,
+    "RequireFlags": [
+      "Q.MQ_ColdUnderTheRibs.Active"
+    ],
+    "ForbidFlags": [
+      "Q.MQ_ColdUnderTheRibs.Step8"
+    ],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Return",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Did you find her?",
+    "Next": "",
+    "Entry": 70,
+    "RequireFlags": [
+      "Q.MQ_ColdUnderTheRibs.Step8"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "(Hold out the lantern.)",
+        "Next": "Hesper_Return_Flame",
+        "RequireFlags": [
+          "Has.OdilesLantern"
+        ],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "I found where she was.",
+        "Next": "Hesper_Return_NoFlame",
+        "RequireFlags": [],
+        "ForbidFlags": [
+          "Has.OdilesLantern"
+        ],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Hesper_Return_Flame",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Eleven years and she never once trimmed it properly. Look at that. Burning all down one side.",
+    "Next": "Hesper_Return_Flame2",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Return_Flame2",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "There. There you are.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "Keep it. It's yours.",
+        "Next": "Hesper_Return_Keep",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [
+          "Varnish_FlameKept"
+        ],
+        "StartQuest": ""
+      },
+      {
+        "Label": "Pour it into the Lampstand. Let the whole village have her.",
+        "Next": "Hesper_Return_Pour",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [
+          "Varnish_FlameInLamp"
+        ],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Hesper_Return_Keep",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "I'll want a hook for it. By the door, on the left. Go and sit down, Wick. You look like a wall with the paint off.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Return_Pour",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "...Yes. She'd have liked being useful. She'd have said so at length. Stand back, it'll catch.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Hesper_Return_NoFlame",
+    "Npc": "HesperVane",
+    "Speaker": "Hesper Vane",
+    "Text": "Was. Yes. All right. Go and sit down, Wick.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Corin_Quest_Ask",
+    "Npc": "CorinHalfSeen",
+    "Speaker": "Corin Half-Seen",
+    "Text": "Since you've seen it. Would you finish me? It's three measures of anything. I'd be whatever you chose. I've thought about it and I find I don't mind which, which worries me.",
+    "Next": "",
+    "Entry": 20,
+    "RequireFlags": [
+      "Corin.SawBack"
+    ],
+    "ForbidFlags": [
+      "Q.SQ_TheUnseenSide.Active",
+      "Q.SQ_TheUnseenSide.Done"
+    ],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "I'll think about what you should be.",
+        "Next": "Corin_Quest_Yes",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": "SQ_TheUnseenSide"
+      },
+      {
+        "Label": "What would you lose?",
+        "Next": "Corin_Quest_Lose",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Corin_Quest_Yes",
+    "Npc": "CorinHalfSeen",
+    "Speaker": "Corin Half-Seen",
+    "Text": "Take your time. I've only got the one direction to wait in.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Corin_Quest_Lose",
+    "Npc": "CorinHalfSeen",
+    "Speaker": "Corin Half-Seen",
+    "Text": "The seeing-under, I expect. You can't see the drawing through paint that's dry. There's a place I'd show you first, if I'm to stay as I am. I can't show you after.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "I'll think about it.",
+        "Next": "Corin_Quest_Yes",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": "SQ_TheUnseenSide"
+      }
+    ]
+  },
+  {
+    "Name": "Corin_Quest_Waiting",
+    "Npc": "CorinHalfSeen",
+    "Speaker": "Corin Half-Seen",
+    "Text": "Walk round, have a proper look, and tell me. Terre Verte, Bone Black, or as I am. My back's just behind me. It always is.",
+    "Next": "",
+    "Entry": 30,
+    "RequireFlags": [
+      "Q.SQ_TheUnseenSide.Active"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Corin_Warden",
+    "Npc": "CorinHalfSeen",
+    "Speaker": "Corin Half-Seen",
+    "Text": "Good evening! The moss is doing well. I used to sing something. It doesn't matter. The moss is doing well.",
+    "Next": "",
+    "Entry": 60,
+    "RequireFlags": [
+      "Corin_Warden"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Corin_Gatekeeper",
+    "Npc": "CorinHalfSeen",
+    "Speaker": "Corin Half-Seen",
+    "Text": "State your business. ...Limner. Pass. I used to know the end of a song. I have the gate now.",
+    "Next": "",
+    "Entry": 60,
+    "RequireFlags": [
+      "Corin_Gatekeeper"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Corin_Unfinished",
+    "Npc": "CorinHalfSeen",
+    "Speaker": "Corin Half-Seen",
+    "Text": "Still half a man, and glad of it this week. Follow the charcoal dashes behind the big vertebra. Only I can see them, but you'll see where I'm pointing.",
+    "Next": "",
+    "Entry": 60,
+    "RequireFlags": [
+      "Corin_Unfinished"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Ilka_Quest",
+    "Npc": "IlkaThrum",
+    "Speaker": "Ilka Thrum",
+    "Text": "Three wells in this wood. Go and look at each, read what I've chalked, then find the nest in the Hollow Vertebra and decide. Burn it, and the village sleeps easy and the wells scab. Or dress the wells with Terre Verte and leave the ticks their work.",
+    "Next": "",
+    "Entry": 20,
+    "RequireFlags": [
+      "Ilka.Met"
+    ],
+    "ForbidFlags": [
+      "Q.SQ_TickWardensLedger.Active",
+      "Q.SQ_TickWardensLedger.Done"
+    ],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "I'll read the chalk.",
+        "Next": "",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": "SQ_TickWardensLedger"
+      },
+      {
+        "Label": "Not my trade.",
+        "Next": "",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Ilka_Waiting",
+    "Npc": "IlkaThrum",
+    "Speaker": "Ilka Thrum",
+    "Text": "Wells first. Then the nest. Numbers before fire.",
+    "Next": "",
+    "Entry": 30,
+    "RequireFlags": [
+      "Q.SQ_TickWardensLedger.Active"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Ilka_Burned",
+    "Npc": "IlkaThrum",
+    "Speaker": "Ilka Thrum",
+    "Text": "Quieter, isn't it. I've written the day in the ledger. I've left the rest of the page for what it costs.",
+    "Next": "",
+    "Entry": 60,
+    "RequireFlags": [
+      "Ticks_Culled"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Ilka_Tended",
+    "Npc": "IlkaThrum",
+    "Speaker": "Ilka Thrum",
+    "Text": "Clean wells. I'll trade you, now there's something to trade. Don't thank me. Thank the ticks.",
+    "Next": "",
+    "Entry": 60,
+    "RequireFlags": [
+      "Ticks_Tended"
+    ],
     "ForbidFlags": [],
     "SetFlags": [],
     "Choices": []

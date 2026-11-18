@@ -253,7 +253,7 @@ void AUnderpaintingPlayerCharacter::UpdateFocus()
 			const FVector To = Origin - Here;
 			const float Distance = To.Size2D();
 			const float HalfWidth = FMath::Max(Extent.X, Extent.Y);
-			if (Distance - HalfWidth > UseReach || FMath::Abs(To.Z) > 320.0f + Extent.Z || It->GetPrompt().IsEmpty())
+			if (Distance - HalfWidth > UseReach || FMath::Abs(To.Z) > 320.0f + Extent.Z || It->GetUsablePrompt().IsEmpty())
 			{
 				continue;
 			}
@@ -960,7 +960,7 @@ FString AUnderpaintingPlayerCharacter::DescribeState()
 	const AUnderpaintingHUD* HUD = GetUnderpaintingHUD();
 	FString Text = FString::Printf(TEXT("level=%s flare=%.1f prompt=[%s] menu=%d row=%s hp=%.0f glim=%.0f/%.0f"),
 		*UGameplayStatics::GetCurrentLevelName(this, true), FlareRemaining,
-		Focus.IsValid() ? *Focus->GetPrompt() : TEXT(""), HUD ? int32(HUD->GetMenu()) : -1, HUD ? *HUD->GetDialogueRow().ToString() : TEXT(""),
+		Focus.IsValid() ? *Focus->GetUsablePrompt() : TEXT(""), HUD ? int32(HUD->GetMenu()) : -1, HUD ? *HUD->GetDialogueRow().ToString() : TEXT(""),
 		Vitals->GetHealth(), Vitals->GetGlim(), Vitals->MaxGlim);
 	if (Progress)
 	{

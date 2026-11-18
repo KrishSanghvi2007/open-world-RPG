@@ -55,6 +55,11 @@ for q in D["quests"]:
     [chk(x["Id"],P,"rp") for x in q["RewardPigments"]]
     for c in q["Choices"]:
         if c["CostPigment"]: chk(c["CostPigment"],P,"cc")
+        [chk(x["Id"],I,"cri") for x in c["RewardItems"]]
+        [chk(x["Id"],P,"crp") for x in c["RewardPigments"]]
+    ids=[c["ChoiceId"] for c in q["Choices"]]
+    if len(ids)!=len(set(ids)): err.append(("choice-ids",q["Name"]))
+    if q["Choices"] and not any(o["Event"]=="Choose" for o in q["Objectives"]): err.append(("choices-without-choose-step",q["Name"]))
 EVENTS={"Talk","Have","Craft","Relight","Attune","Kill","Reach","Inspect","Choose"}
 NPCS={"HesperVane","BartramSedge","CorinHalfSeen","IlkaThrum"}
 for q in D["quests"]:
@@ -76,7 +81,7 @@ for d in D["dialogue"]:
         if nxt: chk(nxt,["dialogue"],"dialogue-next")
     for c in d["Choices"]:
         if c["StartQuest"]: chk(c["StartQuest"],["quests"],"dialogue-quest")
-    if len(d["Choices"])>4: err.append(("dialogue-too-many-choices",d["Name"]))
+    if len(d["Choices"])>6: err.append(("dialogue-too-many-choices",d["Name"]))
 for npc in {d["Npc"] for d in D["dialogue"]}:
     if not entries.get(npc): err.append(("dialogue-no-entry",npc))
 for l in D["lore"]:

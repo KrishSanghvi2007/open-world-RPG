@@ -81,6 +81,23 @@ def quest1(world, pawn):
     goto(world, pawn, "NPC", "HesperVane"); talk(pawn); say(pawn, "talked to Hesper again")
 
 
+def ledger(world, pawn, ending):
+    """Plays "The Tick-Warden's Ledger" in the forest up to and including its ending (1 = burn, 2 = dress the wells)."""
+    goto(world, pawn, "NPC", "IlkaThrum"); talk(pawn); say(pawn, "met Ilka")
+    goto(world, pawn, "NPC", "IlkaThrum"); talk(pawn); say(pawn, "took the quest")
+    for i in (1, 2, 3):
+        goto(world, pawn, "Inspect", "BloodWell", i); pawn.interact(); pawn.interact()
+    say(pawn, "read three wells")
+    pawn.set_actor_location(find(world, "Place", "BroodNest").get_actor_location(), False, True)
+    say(pawn, "stood in the nest")
+    goto(world, pawn, "Choice", "SQ_TickWardensLedger"); say(pawn, "at the nest")
+    pawn.interact(); say(pawn, "choice menu open")
+    pawn.menu_number(ending); say(pawn, "asked to confirm")
+    pawn.menu_number(1); say(pawn, "decided")
+    ticks = [a for a in unreal.GameplayStatics.get_all_actors_of_class(world, unreal.MadderbackEnemy)]
+    print("Madderbacks in the level right now:", len(ticks))
+
+
 def main(args):
     world, pawn = game()
     command = args[0] if args else "state"
@@ -88,6 +105,23 @@ def main(args):
         pawn.start_new_game(); print("new game; level restarting"); return
     if command == "quest1":
         quest1(world, pawn)
+    elif command == "ledger":
+        ledger(world, pawn, int(args[1]) if len(args) > 1 else 1)
+    elif command == "talk":
+        # talk <NpcId> [reply]: walk up to someone and talk, taking that reply whenever one is offered.
+        goto(world, pawn, "NPC", args[1]); talk(pawn, int(args[2]) if len(args) > 2 else 1)
+    elif command == "use":
+        # use <Kind> <Id> [n]: walk up to a marker and press Use.
+        goto(world, pawn, args[1], args[2], int(args[3]) if len(args) > 3 else 1); pawn.interact()
+    elif command == "menu":
+        pawn.menu_number(int(args[1]))
+    elif command == "close":
+        pawn.menu_close()
+    elif command == "place":
+        pawn.set_actor_location(find(world, "Place", args[1]).get_actor_location(), False, True)
+    elif command == "count":
+        cls = getattr(unreal, args[1])
+        print(args[1], len(unreal.GameplayStatics.get_all_actors_of_class(world, cls)))
     elif command == "goto":
         goto(world, pawn, args[1], args[2], int(args[3]) if len(args) > 3 else 1, 260.0 if args[1] == "Enemy" else 130.0)
     elif command == "strike":

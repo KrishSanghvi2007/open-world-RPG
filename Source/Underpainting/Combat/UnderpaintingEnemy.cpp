@@ -57,6 +57,13 @@ void AUnderpaintingEnemy::BeginPlay()
 
 	HomeLocation = GetActorLocation();
 
+	const UUnderpaintingProgress* WorldState = UUnderpaintingProgressSubsystem::Get(this);
+	if (WorldState && !RemovedByFlag.IsNone() && WorldState->HasFlag(RemovedByFlag))
+	{
+		Destroy();
+		return;
+	}
+
 	const UGameInstance* GameInstance = GetGameInstance();
 	const UUnderpaintingDataSubsystem* Data = GameInstance ? GameInstance->GetSubsystem<UUnderpaintingDataSubsystem>() : nullptr;
 	if (const FEnemyRow* Found = Data ? Data->FindEnemy(EnemyId) : nullptr)

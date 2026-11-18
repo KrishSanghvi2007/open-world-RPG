@@ -19,7 +19,8 @@ enum class EUnderpaintingMenu : uint8
 	Crafting,
 	Attunement,
 	Inventory,
-	Reading
+	Reading,
+	Choice
 };
 
 UCLASS()
@@ -44,6 +45,12 @@ public:
 
 	/** Shows a piece of lore from data/lore.json. */
 	void OpenReading(FName LoreId);
+
+	/** Shows a title and a paragraph (a chalk note, a mark on a wall). */
+	void OpenText(const FString& Title, const FString& Text);
+
+	/** Offers a quest's endings, then asks again before making one. */
+	void OpenChoice(FName QuestId, const FString& Subject);
 	void CloseMenu();
 
 	/** The Interact key while a menu is open: next line of dialogue, or close. */
@@ -69,6 +76,7 @@ private:
 	void DrawAttunement(const UUnderpaintingProgress* Progress);
 	void DrawInventory(const UUnderpaintingProgress* Progress);
 	void DrawReading(const UUnderpaintingProgress* Progress);
+	void DrawChoice(const UUnderpaintingProgress* Progress);
 	void DrawCompass(const class AUnderpaintingPlayerCharacter* Player, const UUnderpaintingProgress* Progress);
 	void ShowDialogueRow(FName RowId);
 	void AddNotice(const FString& Text);
@@ -80,6 +88,11 @@ private:
 	FName DialogueRow;
 	ECraftingStation CraftingStation = ECraftingStation::GrindingSlab;
 	FName ReadingLore;
+	FString FreeTitle;
+	FString FreeText;
+	FName ChoiceQuest;
+	FString ChoiceSubject;
+	int32 ChoicePending = INDEX_NONE;
 
 	struct FNotice
 	{

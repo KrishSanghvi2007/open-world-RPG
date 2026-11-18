@@ -144,7 +144,9 @@
           "Heart_Sanguine",
           "Scumblewood_MadderbackPlus2",
           "Scumblewood_SanguineYieldPlus1"
-        ]
+        ],
+        "RewardItems": [],
+        "RewardPigments": []
       },
       {
         "ChoiceId": "FillTerreVerte",
@@ -156,7 +158,9 @@
           "Heart_TerreVerte",
           "Scumblewood_LightPlus015",
           "Scumblewood_BlotterMinus2"
-        ]
+        ],
+        "RewardItems": [],
+        "RewardPigments": []
       },
       {
         "ChoiceId": "LeaveBlank",
@@ -166,6 +170,13 @@
         "Consequence": "You keep your pigment and scrape 4 Ceruse from the scar. The Heart wall stays unfinished: nothing changes now, but an unfinished thing does not survive the dark, and Act 2 will remember.",
         "WorldFlags": [
           "Heart_Blank"
+        ],
+        "RewardItems": [],
+        "RewardPigments": [
+          {
+            "Id": "Ceruse",
+            "Count": 4
+          }
         ]
       }
     ],
@@ -233,7 +244,9 @@
         "WorldFlags": [
           "Corin_Warden",
           "Scumblewood_TerreVerteYieldPlus1"
-        ]
+        ],
+        "RewardItems": [],
+        "RewardPigments": []
       },
       {
         "ChoiceId": "FinishBoneBlack",
@@ -244,7 +257,9 @@
         "WorldFlags": [
           "Corin_Gatekeeper",
           "Village_HemGuarded"
-        ]
+        ],
+        "RewardItems": [],
+        "RewardPigments": []
       },
       {
         "ChoiceId": "LeaveUnfinished",
@@ -255,7 +270,9 @@
         "WorldFlags": [
           "Corin_Unfinished",
           "Scumblewood_PentimentoCacheRevealed"
-        ]
+        ],
+        "RewardItems": [],
+        "RewardPigments": []
       }
     ],
     "RewardItems": [
@@ -318,7 +335,9 @@
           "Ticks_Culled",
           "Scumblewood_MadderbackHalved",
           "Scumblewood_SanguineYieldMinus1"
-        ]
+        ],
+        "RewardItems": [],
+        "RewardPigments": []
       },
       {
         "ChoiceId": "TendWells",
@@ -330,7 +349,9 @@
           "Ticks_Tended",
           "Scumblewood_SanguineYieldPlus1",
           "Ilka_Trades"
-        ]
+        ],
+        "RewardItems": [],
+        "RewardPigments": []
       }
     ],
     "RewardItems": [
@@ -387,7 +408,9 @@
           "Hem_CeruseWash",
           "Village_HemLightPlus025",
           "Village_LeadSickness"
-        ]
+        ],
+        "RewardItems": [],
+        "RewardPigments": []
       },
       {
         "ChoiceId": "TeachOchreWash",
@@ -398,7 +421,14 @@
         "WorldFlags": [
           "Hem_OchreWash",
           "Village_HemLightPlus010"
-        ]
+        ],
+        "RewardItems": [
+          {
+            "Id": "FixativeFlask",
+            "Count": 2
+          }
+        ],
+        "RewardPigments": []
       }
     ],
     "RewardItems": [],

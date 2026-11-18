@@ -150,6 +150,24 @@ public:
 	/** Journal text of the quest's current step, or empty. */
 	FString GetCurrentStepText(FName QuestId) const;
 
+	/** The quest's row, or null. */
+	const FQuestRow* GetQuestRow(FName QuestId) const;
+
+	/** True when the quest is waiting for its ending to be chosen. */
+	bool IsAwaitingChoice(FName QuestId) const;
+
+	/** Whether an ending can be paid for right now. */
+	bool CanChoose(FName QuestId, FName ChoiceId, FString* OutWhyNot = nullptr) const;
+
+	/**
+	 * Makes a quest's ending. Permanent: it spends the pigment, sets the choice's world flags for good, and
+	 * moves the quest on. The caller is expected to have shown the cost and consequence and asked first.
+	 */
+	bool MakeChoice(FName QuestId, FName ChoiceId);
+
+	/** How much a harvest node gives here, after quest consequences ("<Zone>_<Pigment>YieldPlus1" and "...Minus1" flags). */
+	int32 GetNodeYield(FName ZoneId, FName PigmentId, int32 BaseYield) const;
+
 	/** Tells the quests that something happened (see FQuestObjective for the event names). */
 	void NotifyEvent(FName Event, FName Target, int32 Count = 1);
 

@@ -289,3 +289,86 @@ void AUnderpaintingCache::Refresh()
 	SetColour(bOpened ? Hex(TEXT("3A3A3A")) : Hex(TEXT("C4574B")));
 	Body->SetRelativeScale3D(bOpened ? FVector(0.8f, 0.8f, 0.2f) : FVector(0.8f, 0.8f, 0.6f));
 }
+
+// --- Inspectable ---
+
+AUnderpaintingInspectable::AUnderpaintingInspectable()
+{
+	SetShape(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"), FVector(1.1f, 1.1f, 0.25f), FVector::ZeroVector);
+	Body->SetCollisionProfileName(TEXT("NoCollision"));
+}
+
+FName AUnderpaintingInspectable::SeenFlag() const
+{
+	return FName(*FString::Printf(TEXT("Seen.%s"), *KeyFor(this).ToString()));
+}
+
+void AUnderpaintingInspectable::Interact(AUnderpaintingPlayerCharacter* Player)
+{
+	UUnderpaintingProgress* Progress = GetProgress();
+	if (!Progress)
+	{
+		return;
+	}
+	// Each one counts once, however often it is looked at.
+	if (!Progress->HasFlag(SeenFlag()))
+	{
+		Progress->SetFlag(SeenFlag());
+		Progress->NotifyEvent(TEXT("Inspect"), InspectId, 1);
+	}
+	const APlayerController* Controller = Player ? Cast<APlayerController>(Player->GetController()) : nullptr;
+	if (AUnderpaintingHUD* HUD = Controller ? Cast<AUnderpaintingHUD>(Controller->GetHUD()) : nullptr)
+	{
+		HUD->OpenText(Title, Text);
+	}
+}
+
+void AUnderpaintingInspectable::Refresh()
+{
+	const UUnderpaintingProgress* Progress = GetProgress();
+	SetColour(Progress && Progress->HasFlag(SeenFlag()) ? Hex(TEXT("5A1A18")) : Hex(TEXT("9E2B25")));
+}
+
+// --- Choice point ---
+
+AUnderpaintingChoicePoint::AUnderpaintingChoicePoint()
+{
+	SetShape(CubeMesh, FVector(0.2f, 2.2f, 2.6f), FVector::ZeroVector);
+	Body->SetCollisionProfileName(TEXT("NoCollision"));
+}
+
+FString AUnderpaintingChoicePoint::GetPrompt() const
+{
+	const UUnderpaintingProgress* Progress = GetProgress();
+	return Progress && Progress->IsAwaitingChoice(QuestId) ? FString::Printf(TEXT("Decide: %s"), *DisplayName) : FString();
+}
+
+void AUnderpaintingChoicePoint::Interact(AUnderpaintingPlayerCharacter* Player)
+{
+	const APlayerController* Controller = Player ? Cast<APlayerController>(Player->GetController()) : nullptr;
+	if (AUnderpaintingHUD* HUD = Controller ? Cast<AUnderpaintingHUD>(Controller->GetHUD()) : nullptr)
+	{
+		HUD->OpenChoice(QuestId, DisplayName);
+	}
+}
+
+void AUnderpaintingChoicePoint::Refresh()
+{
+	// Bare canvas until it is decided; then the colour it was finished in, for good. Left bare, it stays bare.
+	const UUnderpaintingProgress* Progress = GetProgress();
+	const FQuestProgress* State = Progress ? Progress->GetQuestProgress(QuestId) : nullptr;
+	const FQuestRow* Row = Progress ? Progress->GetQuestRow(QuestId) : nullptr;
+	FLinearColor Colour = Hex(TEXT("D8CBB0"));
+	if (State && Row && !State->Choice.IsNone())
+	{
+		const FName ChoiceId = State->Choice;
+		const FQuestChoice* Choice = Row->Choices.FindByPredicate([ChoiceId](const FQuestChoice& Entry) { return Entry.ChoiceId == ChoiceId; });
+		const UUnderpaintingDataSubsystem* Data = GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>();
+		const FPigmentRow* Pigment = Choice && Data ? Data->FindPigment(Choice->CostPigment) : nullptr;
+		if (Pigment)
+		{
+			Colour = UUnderpaintingDataSubsystem::HexToColour(Pigment->ColourHex);
+		}
+	}
+	SetColour(Colour);
+}
