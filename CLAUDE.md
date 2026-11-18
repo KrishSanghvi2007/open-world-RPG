@@ -29,6 +29,13 @@ The owner gives *intent* (what and why). You decide *how*, then do it end to end
 3. Update `docs/STATUS.md`, and add a line to `docs/DECISIONS.md` for any notable decision you made.
 4. Tell the owner in 1–3 plain sentences what changed, and how to see it if it's visible ("open Unreal and press Play").
 
+## Assets: free only (permanent rule, set by the owner on 2026-11-18)
+- **Never use anything paid.** No paid assets, plugins, packs, fonts, sounds or services, and no free trials of paid things.
+- Prefer **CC0** or a similarly permissive licence (public domain, MIT, CC-BY if attribution is easy to give). Read the licence before downloading. If it is unclear, do not use it.
+- List **every** outside source in `docs/ASSETS.md`: what it is, where it came from, its licence, where it is installed, and what uses it.
+- Keep re-downloadable packs under `Content/ThirdParty/` (ignored by git) with a script or note that restores them.
+- Things Claude makes itself by script (textures, sounds, models) are ours; record the script that makes them.
+
 ## Git rules
 - Large binaries (`.uasset`, `.umap`, textures, `.blend`, audio) go through **Git LFS** (see `.gitattributes`). Check that LFS is installed before the first asset commit.
 - Never commit Fab or Marketplace packs that can be re-downloaded. Keep them under `Content/ThirdParty/` (ignored), and list them in `docs/ASSETS.md` so they can be restored.

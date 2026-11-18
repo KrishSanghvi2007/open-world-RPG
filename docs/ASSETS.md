@@ -1,5 +1,7 @@
 # Third-party assets
 
+**Rule (owner, 2026-11-18, permanent): free assets only, never anything paid.** Prefer CC0 or a similarly permissive licence. Every outside file used by the game is listed here with its source and licence.
+
 Re-downloadable packs (Fab, Marketplace, Poly Haven) live in `Content/ThirdParty/`, which git ignores. List each one here so it can be restored on another machine.
 
 | Pack | Source / URL | Licence | Installed to | Used for |

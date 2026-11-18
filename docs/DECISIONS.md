@@ -6,7 +6,7 @@ This is the owner's control panel. Claude reads it every session.
 - Creative direction: world, story, characters, tone, names
 - Art direction and the overall look
 - Scope: adding or cutting features, regions or systems
-- Anything that costs money (paid assets, plugins, services)
+- Anything that costs money: **settled, the answer is always no.** Free assets only, never anything paid (owner, 2026-11-18; see the log)
 - Deleting or replacing the owner's own work
 - Anything hard to undo (engine upgrades, major restructures)
 
@@ -17,6 +17,8 @@ Code, architecture, tools, file layout, bug fixes, balance within GDD ranges, as
 
 ## Log
 Newest first. Format: `date: decision (who): why`
+
+- 2026-11-18: **Free assets only, never anything paid. Permanent.** Prefer CC0 or similarly permissive licences; list every source and licence in `docs/ASSETS.md`; keep re-downloadable packs in `Content/ThirdParty/` (owner): the project spends no money on assets, and every outside file must be traceable to a licence.
 
 - 2026-11-18: The owner delegated the six open GDD decisions to Claude and Fable. Settled as follows (details in `docs/GDD.md` §13):
   1. Death loses half of each wet pigment, rounded down, with no retrieval run. The first death of a save costs nothing, and Slumber Blue is never lost (it doesn't regrow).
