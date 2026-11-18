@@ -75,7 +75,7 @@ Only hands can judge these. The question to answer is in italics.
 **Unproven (built, tested by script, never by hand)**
 - The whole game with a real keyboard and mouse.
 - Whether a changed key actually works in play. The setting saves; I cannot press keys.
-- Walking any route. The script teleports. The Stair of Spines passed a ground trace (no gaps, 25° at steepest); the forest gorge and the Vault platforms have had no such check.
+- Walking any route. The script teleports. The main routes of all three zones and the Stair of Spines have passed a ground trace (no gaps, nothing too steep). That trace found one real fault, now fixed: the ramp out of the Vault's gallery pit ended against a wall. The jumps across the gallery's sketched platforms cannot be traced and are untested.
 - The Madderback and the Pentiment have never been fought.
 - Only the green ending of the Heart wall was played through the Turning. The red wall, Corin's three endings and "pour the flame into the Lampstand" are built but unseen.
 - A gamepad.

@@ -46,7 +46,7 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 
 ## Next (Claude does these; see `docs/ROADMAP.md`)
 All nine slice milestones are built. No Acts 2-3 and no full art pass until the owner says so. What is left inside the slice, in order:
-1. **Prove what is unproven by script:** fight the Madderback and the Pentiment; play the red Heart wall and Corin's endings through the Turning; trace the forest gorge and the Vault for walkability with `tools/dev/check_route.py`.
+1. **Prove what is unproven by script:** fight the Madderback and the Pentiment; play the red Heart wall and Corin's endings through the Turning. (Done: all main walking routes in the six levels traced with `tools/dev/check_route.py <route>`; it found and fixed a pit ramp in the Vault that ended against a wall.)
 2. **Leftovers:** enemy navigation, signposts (M3); trading with Ilka and Corin; three small attunement effects (devlog 008); "A Fair Grind" (stretch).
 3. **The paper look** on the other menus, if the owner likes the satchel.
 4. **Remaining style probes:** player, NPC, boss, interior, item icon.

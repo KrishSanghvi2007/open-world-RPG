@@ -855,7 +855,7 @@ def build_vault(shifted=False):
 
     # Rib Stair: the entry, descending under rib arches.
     slab("Entry_Landing", -10, 2, -6, 6, 0.0, PAPER)
-    ramp("RibStair", (1, 0, 0), (31, 0, FLOOR), 8.0, PAPER)
+    ramp("RibStair", (2, 0, 0), (30, 0, FLOOR), 8.0, PAPER)      # edge of the landing to edge of the foot: no lip
     for i, x in enumerate(range(4, 30, 6), 1):
         z = -(x - 1) / 3.0
         for side in (-1, 1):
@@ -875,8 +875,8 @@ def build_vault(shifted=False):
         sketch_platform("SketchPlatform_%02d" % i, x - 2, x + 2, y - 2, y + 2, FLOOR + dz)
     sketch_platform("SketchPlatform_Side", 79, 83, -12, -8, FLOOR, tags=("Optional",))
     # A way back up for anyone who falls: there is no fall damage here, so a fall costs time, not health.
-    ramp("Gallery_ReturnRamp", (68, -14, PIT), (46, -14, FLOOR), 3.0, GREY)
-    slab("RibStair_Foot_Ledge", 44, 46, -16, -12, FLOOR, PAPER, bottom=PIT - 1.0)
+    # It lands on the open part of the Rib Stair's foot (y -12..12), not behind the foot's side wall.
+    ramp("Gallery_ReturnRamp", (68, -10.5, PIT), (46, -10.5, FLOOR), 3.0, GREY)
 
     # Far side, then the Heart.
     slab("Gallery_FarLedge", 106, 122, -12, 12, FLOOR, PAPER, bottom=PIT - 1.0)
