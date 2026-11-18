@@ -30,4 +30,9 @@ Choices Claude made while the owner was away. Each has the question, what was ch
 | 24 | You craft a weapon or armour. Does it go on by itself? | Yes, at once, with a notice. Change back from the pack (Tab, then its number). | Leave it in the pack until you choose to put it on. | 2026-11-18 |
 | 25 | Keys for the two new potions. | K Sanguine Draught, L Blue Tincture. | A single "use item" key with a selector (planned for the UI milestone anyway). | 2026-11-18 |
 | 26 | Odile's Lantern copied the Pilot Lantern's Glim numbers. | It is a keepsake with no effect on Glim. | Let carrying it give light, as a reward for taking it. | 2026-11-18 |
+| 27 | What the Turning looks like. | Shake, fade to black, three lines of text, then the changed level with a title. 9 seconds, no control. | A picture of her eye opening (needs art; a style probe later); or a shorter cut. | 2026-11-18 |
+| 28 | Where you are after the Turning. | Exactly where you stood, in the changed Vault. You walk out. | Wake at the Rib Gate, or at the top of the Stair. | 2026-11-18 |
+| 29 | What closing the Furrow costs. | The First Well and its cache (2 Terre Verte) are sealed in for good if you had not opened it. Ilka moves to the Stair. | Move the cache out too, so nothing can be lost. | 2026-11-18 |
+| 30 | The village had one Blotter by the lower gate for early testing. | Removed: the design has no fighting in the village before the Turning. Combat is tried in the test rooms. | Keep it for convenience. | 2026-11-18 |
+| 31 | The Stair of Spines has high walls both sides. | Yes, so nobody can fall off into a pit with no way out. Only the Overlook is open to the view. | Low parapets and a respawn on falling (better views; needs a fall rule). | 2026-11-18 |
 

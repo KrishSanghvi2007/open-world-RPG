@@ -88,7 +88,8 @@ bool UUnderpaintingProgressSubsystem::TravelToZone(const UObject* WorldContext, 
 {
 	const UUnderpaintingDataSubsystem* Data = GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>();
 	const FRegionRow* Target = Data ? Data->FindRegion(TargetZone) : nullptr;
-	if (!Target || Target->LevelBefore.IsNone())
+	const FName Level = GetLevelForZone(TargetZone);
+	if (!Target || Level.IsNone())
 	{
 		UE_LOG(LogUnderpainting, Warning, TEXT("No level for zone '%s'"), *TargetZone.ToString());
 		return false;
@@ -96,7 +97,7 @@ bool UUnderpaintingProgressSubsystem::TravelToZone(const UObject* WorldContext, 
 
 	ArrivingFromZone = Data->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(WorldContext, true));
 	bRestorePending = false;
-	UGameplayStatics::OpenLevel(WorldContext, FName(*FString::Printf(TEXT("/Game/Maps/Matriarch/%s"), *Target->LevelBefore.ToString())));
+	UGameplayStatics::OpenLevel(WorldContext, FName(*FString::Printf(TEXT("/Game/Maps/Matriarch/%s"), *Level.ToString())));
 	return true;
 }
 
@@ -112,4 +113,50 @@ bool UUnderpaintingProgressSubsystem::ConsumeRestore()
 	const bool bResult = bRestorePending;
 	bRestorePending = false;
 	return bResult;
+}
+
+FName UUnderpaintingProgressSubsystem::GetLevelForZone(FName Zone) const
+{
+	const UUnderpaintingDataSubsystem* Data = GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>();
+	const FRegionRow* Row = Data ? Data->FindRegion(Zone) : nullptr;
+	if (!Row)
+	{
+		return NAME_None;
+	}
+	return Progress->HasTurned() && !Row->LevelAfter.IsNone() ? Row->LevelAfter : Row->LevelBefore;
+}
+
+bool UUnderpaintingProgressSubsystem::CompleteTurning(APawn* Player)
+{
+	const UUnderpaintingDataSubsystem* Data = GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>();
+	if (!Player || !Data || Progress->HasTurned())
+	{
+		return false;
+	}
+	const FName Zone = Data->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(Player, true));
+	Progress->SetFlag(UUnderpaintingProgress::TurnedFlag);
+	const FName Level = GetLevelForZone(Zone);
+	if (Level.IsNone())
+	{
+		return false;        // not standing in a zone (a test room): the world is turned, but there is nothing to reload
+	}
+
+	KeptTransform = Player->GetActorTransform();
+	bHasKeptTransform = true;
+	bJustTurned = true;
+	bRestorePending = false;
+	ArrivingFromZone = NAME_None;
+	UGameplayStatics::OpenLevel(Player, FName(*FString::Printf(TEXT("/Game/Maps/Matriarch/%s"), *Level.ToString())));
+	return true;
+}
+
+bool UUnderpaintingProgressSubsystem::ConsumeKeptTransform(FTransform& OutTransform)
+{
+	if (!bHasKeptTransform)
+	{
+		return false;
+	}
+	OutTransform = KeptTransform;
+	bHasKeptTransform = false;
+	return true;
 }

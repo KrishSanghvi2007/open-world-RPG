@@ -6,6 +6,7 @@ Last updated: 2026-11-18, night. Claude keeps this page current while you are aw
 
 - **The walking skeleton (M2):** one connected loop in the village. Talk to Hesper, harvest, craft, relight the Lampstand, rest, attune, finish the quest, fight a Blotter, save and load.
 - **Combat depth (M4):** two palette wells, six Strokes that cost light, the Contrast rule (+30% in the complementary colour), lock-on, poultice and lamp oil, the perfect dodge.
+- **The Turning (M8):** Act 1 can be played from the first line to an end card. All three places change; the Stair of Spines and the Nape Overlook are in. `docs/devlog/009-the-turning.md`.
 - **Crafting, gear and the full palette (M7):** all 10 recipes, wearable gear, two new potions (K and L), all 12 attunement nodes. **F7** fills your pack for testing. `docs/devlog/008-crafting-and-attunement.md`.
 - **Quests and choices (M6):** three more quests, choices that ask twice and change the world, and the Heart scene with Odile's lantern and note. `docs/devlog/007-quests-and-choices.md`.
 - **Enemies and the boss (M5):** Madderback, Pentiment and Old Palimpsest, each with a test room under Maps → Dev. A first enemy style probe (the Blotter) is in `docs/devlog/006-enemies-and-boss.md`.
@@ -55,6 +56,10 @@ These are the things only hands can judge. For each, the question to answer is i
 9i. *Two builds.* Press F7 in the village, attune two colours at the Lampstand, fight in `L_Combat_Greybox`. Then try two others. Do they feel like different ways to play, or the same fight in a different colour?
 9j. *Heavy against light.* Make the Bone Scraper (slow, hits hard) and compare it with the knife. Is slow fun, or just slow?
 
+9k. *The Turning.* Nine seconds of shake, dark and three lines. Too long, too short, too quiet? Does it feel like something enormous moved?
+9l. *The walk home.* Up the Stair of Spines with the village above you. Is the changed forest readable as "the same place, moved", or just a new corridor?
+9m. *The Nape Overlook.* You could see it all game. Is getting there a reward?
+
 **Exploration**
 9. *"Use" follows your eyes.* Stand between Hesper and the Lampstand and turn: does the prompt switch when you expect it to?
 10. *The lesson wall* in the forest (`L_Matriarch_Scumblewood_A`, past the second lamp post). Coming down the gorge you meet a dark wall with a pale cross-hatched patch. Would you think to walk into it? This is the game's signature idea and the design says to drop it if testers miss it.
@@ -64,7 +69,8 @@ These are the things only hands can judge. For each, the question to answer is i
 
 ## What is broken or rough
 
-- **The main quest stops after the Heart wall.** The Turning and the walk home to Hesper come with M8.
+- Only one ending of the Heart wall (green) has been played through the Turning. Nobody has walked the Stair of Spines with a keyboard.
+- Glim drops back to 100 whenever a level loads.
 - Corin's quest and Hesper's return are checked by automated test only, not in play.
 
 - **The Mac is short of memory with Unreal open.** Unreal showed a memory warning during a test (about 4.5 GB had spilled to disk). The game still ran. Closing Blender and the Epic Games Launcher while playtesting should help; tell Claude if the game stutters.

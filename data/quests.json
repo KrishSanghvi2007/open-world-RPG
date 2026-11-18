@@ -243,7 +243,8 @@
         "Consequence": "Corin becomes the wood's warden. Terre Verte nodes in the Scumblewood yield +1. After the shift he waits at the foot of the Stair of Spines and points the way to the Nape Overlook.",
         "WorldFlags": [
           "Corin_Warden",
-          "Scumblewood_TerreVerteYieldPlus1"
+          "Scumblewood_TerreVerteYieldPlus1",
+          "Corin_Moved"
         ],
         "RewardItems": [],
         "RewardPigments": []
@@ -256,7 +257,8 @@
         "Consequence": "Corin becomes grave and unmovable. He walks to Varnish and stands guard at the Hem. After the shift, no Blotters spawn in the village, and he trades 1 Rib Splinter for 1 Bone Black.",
         "WorldFlags": [
           "Corin_Gatekeeper",
-          "Village_HemGuarded"
+          "Village_HemGuarded",
+          "Corin_Moved"
         ],
         "RewardItems": [],
         "RewardPigments": []

@@ -77,6 +77,12 @@ private:
 	void DrawInventory(const UUnderpaintingProgress* Progress);
 	void DrawReading(const UUnderpaintingProgress* Progress);
 	void DrawChoice(const UUnderpaintingProgress* Progress);
+	void DrawTurning(const AUnderpaintingPlayerCharacter* Player, UUnderpaintingProgress* Progress);
+
+	/** Seconds left of the "she has turned" title card after the changed level opens. */
+	float TurnedCardRemaining = 0.0f;
+	/** Seconds the end card has been up, or -1. */
+	float EndCardTime = -1.0f;
 	void DrawCompass(const class AUnderpaintingPlayerCharacter* Player, const UUnderpaintingProgress* Progress);
 	void ShowDialogueRow(FName RowId);
 	void AddNotice(const FString& Text);

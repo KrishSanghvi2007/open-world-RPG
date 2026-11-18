@@ -396,4 +396,45 @@ bool FUnderpaintingCraftAllTest::RunTest(const FString& Parameters)
 	return !HasAnyErrors();
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FUnderpaintingTurningTest, "Underpainting.Game.TheTurning", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FUnderpaintingTurningTest::RunTest(const FString& Parameters)
+{
+	const FName Forest(TEXT("Scumblewood")), Quest(TEXT("MQ_ColdUnderTheRibs"));
+	UUnderpaintingProgress* Progress = MakeProgress(*this);
+	FUnderpaintingProgressData Data = Progress->GetData();
+	FQuestProgress Done; Done.bComplete = true;
+	Data.Quests.Add(UUnderpaintingProgress::FirstQuest, Done);
+	FQuestProgress AtWall; AtWall.Step = 5;
+	Data.Quests.Add(Quest, AtWall);
+	Progress->SetData(Data);
+
+	// Before: nothing is due, and the light is the "before" light whatever the flags say.
+	TestFalse(TEXT("She does not turn before the wall is decided"), Progress->IsTurningDue());
+	TestEqual(TEXT("Forest light before"), Progress->GetZoneLight(Forest, 0.5f, 0.4f), 0.5f);
+
+	// Deciding the wall makes the Turning due. The quest waits for the Stair of Spines, which does not exist yet.
+	Progress->AddPigment(TEXT("TerreVerte"), 5, false);
+	TestTrue(TEXT("Paint the wound green"), Progress->MakeChoice(Quest, TEXT("FillTerreVerte")));
+	TestTrue(TEXT("Now she turns"), Progress->IsTurningDue());
+	TestEqual(TEXT("The quest waits on the Turning"), Progress->GetQuestProgress(Quest)->Step, 6);
+	TestEqual(TEXT("Still the old light until she has turned"), Progress->GetZoneLight(Forest, 0.5f, 0.4f), 0.5f);
+
+	// Turned: it is not due again, and the light has moved. The green wall made the wood 0.15 brighter.
+	Progress->SetFlag(UUnderpaintingProgress::TurnedFlag);
+	TestTrue(TEXT("The world is turned"), Progress->HasTurned());
+	TestFalse(TEXT("She turns once"), Progress->IsTurningDue());
+	TestEqual(TEXT("Forest light after, with the green wall"), Progress->GetZoneLight(Forest, 0.5f, 0.4f), 0.55f);
+	TestEqual(TEXT("Village light after"), Progress->GetZoneLight(TEXT("VarnishVillage"), 1.0f, 0.85f), 0.85f);
+	TestEqual(TEXT("Vault light after"), Progress->GetZoneLight(TEXT("GrisailleVault"), 0.0f, 0.25f), 0.25f);
+
+	// The way home: the Stair, then Hesper. With the lantern, the quest ends on her choice of what to do with the flame.
+	Progress->ReachPlace(TEXT("StairOfSpines"), TEXT("The Stair of Spines"));
+	TestEqual(TEXT("On the Stair, the last step is Hesper"), Progress->GetQuestProgress(Quest)->Step, 7);
+	Progress->EndDialogue(TEXT("HesperVane"));
+	TestTrue(TEXT("Cold Under the Ribs is done"), Progress->IsQuestComplete(Quest));
+
+	return !HasAnyErrors();
+}
+
 #endif // WITH_DEV_AUTOMATION_TESTS

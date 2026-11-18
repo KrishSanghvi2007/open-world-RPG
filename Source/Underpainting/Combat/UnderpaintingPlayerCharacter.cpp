@@ -51,7 +51,8 @@ void AUnderpaintingPlayerCharacter::BeginPlay()
 	if (const UUnderpaintingDataSubsystem* ZoneData = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>() : nullptr)
 	{
 		const FRegionRow* Zone = ZoneData->FindRegion(ZoneData->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(this, true)));
-		ZoneAmbientLight = Zone ? Zone->AmbientLight : 1.0f;
+		const UUnderpaintingProgress* World = UUnderpaintingProgressSubsystem::Get(this);
+		ZoneAmbientLight = !Zone ? 1.0f : (World ? World->GetZoneLight(ZoneData->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(this, true)), Zone->AmbientLight, Zone->AmbientLightAfterShift) : Zone->AmbientLight);
 	}
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 
@@ -67,6 +68,37 @@ void AUnderpaintingPlayerCharacter::BeginPlay()
 	ApplyAttunements();
 	ArriveFromZone();
 	RestoreFromSave();
+
+	// After the Turning the level is swapped under you: you are still standing where you stood.
+	FTransform Kept;
+	UUnderpaintingProgressSubsystem* Travel = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr;
+	if (Travel && Travel->ConsumeKeptTransform(Kept))
+	{
+		SetActorTransform(Kept, false, nullptr, ETeleportType::TeleportPhysics);
+		if (AController* PlayerController = GetController())
+		{
+			PlayerController->SetControlRotation(Kept.Rotator());
+		}
+	}
+}
+
+void AUnderpaintingPlayerCharacter::DevStartTurning()
+{
+	if (TurningTime < 0.0f)
+	{
+		TurningTime = 0.0f;
+		TurningBaseRotation = GetControlRotation();
+		if (AUnderpaintingHUD* HUD = GetUnderpaintingHUD())
+		{
+			HUD->CloseMenu();
+		}
+		GetCharacterMovement()->StopMovementImmediately();
+		if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+		{
+			DisableInput(PlayerController);
+		}
+		UE_LOG(LogUnderpainting, Log, TEXT("The Turning begins"));
+	}
 }
 
 void AUnderpaintingPlayerCharacter::ArriveFromZone()
@@ -187,6 +219,12 @@ void AUnderpaintingPlayerCharacter::ApplyAttunements()
 	{
 		return;
 	}
+	// The Heart wall is decided: she turns.
+	if (Progress->IsTurningDue() && TurningTime < 0.0f)
+	{
+		DevStartTurning();
+	}
+
 	// Gear follows the save: what was crafted and put on stays on.
 	if (WeaponId != Progress->GetEquippedWeapon()) { EquipWeapon(Progress->GetEquippedWeapon()); }
 	if (ArmourId != Progress->GetEquippedArmour()) { EquipArmour(Progress->GetEquippedArmour()); }
@@ -435,7 +473,7 @@ void AUnderpaintingPlayerCharacter::EquipArmour(FName ItemId)
 
 bool AUnderpaintingPlayerCharacter::CanStartAction() const
 {
-	return Action == EPlayerAction::None && !GetCharacterMovement()->IsFalling() && !IsMenuOpen();
+	return Action == EPlayerAction::None && !GetCharacterMovement()->IsFalling() && !IsMenuOpen() && TurningTime < 0.0f;
 }
 
 void AUnderpaintingPlayerCharacter::StartLightAttack()
@@ -507,6 +545,30 @@ void AUnderpaintingPlayerCharacter::SetSprinting(bool bInWantsSprint)
 void AUnderpaintingPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (TurningTime >= 0.0f)
+	{
+		// The ground moves under you for the first seconds; then the view is taken away (the HUD draws that).
+		TurningTime += DeltaTime;
+		if (AController* PlayerController = GetController())
+		{
+			const float Shake = FMath::Clamp(TurningTime / 1.5f, 0.0f, 1.0f) * 2.2f;
+			const float T = TurningTime * 23.0f;
+			PlayerController->SetControlRotation(TurningBaseRotation + FRotator(FMath::Sin(T) * Shake, FMath::Sin(T * 0.7f + 1.3f) * Shake, 0.0f));
+		}
+		if (TurningTime >= TurningLength)
+		{
+			TurningTime = -1.0f;
+			if (UUnderpaintingProgressSubsystem* Travel = GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>())
+			{
+				if (!Travel->CompleteTurning(this))
+				{
+					EnableInput(Cast<APlayerController>(GetController()));        // nothing to reload here (a test room)
+				}
+			}
+		}
+		return;
+	}
 
 	DraughtRemaining = FMath::Max(0.0f, DraughtRemaining - DeltaTime);
 	if (TinctureRemaining > 0.0f)

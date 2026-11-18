@@ -158,6 +158,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	bool UseTincture();
 
+	/** Seconds into the Turning sequence, or -1 when it is not playing. */
+	float GetTurningTime() const { return TurningTime; }
+
+	/** How long the Turning takes before the changed level loads. */
+	static constexpr float TurningLength = 9.0f;
+
+	/** Debug: start the Turning now, whatever the quest says. */
+	UFUNCTION(BlueprintCallable, Category = "Underpainting|Dev")
+	void DevStartTurning();
+
 	float GetDraughtRemaining() const { return DraughtRemaining; }
 	float GetTinctureRemaining() const { return TinctureRemaining; }
 
@@ -351,6 +361,10 @@ private:
 	float WeaponStaminaHeavy = 25.0f;
 	float WeaponReach = 160.0f;
 	float WeaponStaggerMultiplier = 1.0f;
+
+	// The Turning.
+	float TurningTime = -1.0f;
+	FRotator TurningBaseRotation = FRotator::ZeroRotator;
 
 	// Timed consumables.
 	float DraughtRemaining = 0.0f;

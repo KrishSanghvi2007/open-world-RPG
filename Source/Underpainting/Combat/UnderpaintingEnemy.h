@@ -104,6 +104,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
 	FName RemovedByFlag;
 
+	/** If set, this enemy is only here once the flag is set (a quest brought more of them). */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
+	FName RequiresFlag;
+
 protected:
 
 	/** How far (cm) an attack reaches. The data has timings and damage; reach is behaviour, so it lives in code. */

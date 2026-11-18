@@ -136,6 +136,33 @@ def main(args):
         print("tincture used:", pawn.use_tincture())
     elif command == "inventory":
         pawn.inventory_pressed() if hasattr(pawn, "inventory_pressed") else None
+    elif command == "act1a":
+        # Village: the first quest, take the second from Hesper, leave for the forest.
+        quest1(world, pawn); goto(world, pawn, "NPC", "HesperVane"); talk(pawn, 1)
+        goto(world, pawn, "Exit", "Scumblewood"); pawn.interact()
+    elif command == "act1b":
+        # Forest: light the Rib Gate lamp and go into the Vault.
+        pawn.dev_set_invulnerable(True); pawn.dev_grant(unreal.Name("LampOil"), 1)
+        goto(world, pawn, "Lampstand", "RibGate"); pawn.interact(); say(pawn, "lit the Rib Gate lamp")
+        goto(world, pawn, "Exit", "GrisailleVault"); pawn.interact()
+    elif command == "act1c":
+        # Vault: cross, kill the boss, take the lantern, decide the wall (act1c <ending 1-3>). The Turning follows.
+        pawn.dev_set_invulnerable(True)
+        pawn.set_actor_location(find(world, "Place", "GalleryFarLedge").get_actor_location(), False, True)
+        pawn.dev_grant(unreal.Name("Sanguine"), 5); pawn.dev_grant(unreal.Name("TerreVerte"), 5)
+        print("dealt", pawn.dev_hurt_enemies(5000.0))
+        goto(world, pawn, "Pickup", "OdilesLantern"); pawn.interact(); say(pawn, "took the lantern")
+        goto(world, pawn, "Choice", "MQ_ColdUnderTheRibs"); pawn.interact()
+        pawn.menu_number(int(args[1]) if len(args) > 1 else 3); pawn.menu_number(1)
+        print("turning time", pawn.get_turning_time() if hasattr(pawn, "get_turning_time") else "?")
+    elif command == "turn":
+        pawn.dev_start_turning()
+    elif command == "at":
+        # at <x> <y> <z> <yaw> [pitch]: stand somewhere (metres) looking a given way.
+        x, y, z, yaw = (float(n) for n in args[1:5])
+        pawn.set_actor_location(unreal.Vector(x * 100.0, y * 100.0, z * 100.0 + 100.0), False, True)
+        pawn.set_actor_rotation(unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw), True)
+        pawn.get_controller().set_control_rotation(unreal.Rotator(roll=0.0, pitch=float(args[5]) if len(args) > 5 else 0.0, yaw=yaw))
     elif command == "count":
         cls = getattr(unreal, args[1])
         print(args[1], len(unreal.GameplayStatics.get_all_actors_of_class(world, cls)))

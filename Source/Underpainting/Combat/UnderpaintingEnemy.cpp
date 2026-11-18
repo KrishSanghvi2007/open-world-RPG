@@ -58,7 +58,7 @@ void AUnderpaintingEnemy::BeginPlay()
 	HomeLocation = GetActorLocation();
 
 	const UUnderpaintingProgress* WorldState = UUnderpaintingProgressSubsystem::Get(this);
-	if (WorldState && !RemovedByFlag.IsNone() && WorldState->HasFlag(RemovedByFlag))
+	if (WorldState && ((!RemovedByFlag.IsNone() && WorldState->HasFlag(RemovedByFlag)) || (!RequiresFlag.IsNone() && !WorldState->HasFlag(RequiresFlag))))
 	{
 		Destroy();
 		return;

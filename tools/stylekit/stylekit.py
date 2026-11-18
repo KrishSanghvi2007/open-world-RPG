@@ -222,6 +222,17 @@ LOOKS = {
     "VaultSketch": dict(sky=None, sky_brightness=0.0, sun=None, sky_light=None, fill=("#E6E1D6", 1.6),
                         fog=("#B4B0A8", 0.0040, 0.05), ev=0.0, saturation=0.9, contrast=1.04, bloom=0.2, vignette=0.5,
                         shadow_tint="#E0E0EA", ao=0.0, ink=("#2E2E30", 1.3, 0.85)),
+    # After the Turning. The same three places with the light moved: 0.85, 0.4 and 0.25 (GDD section 8).
+    "VillageAfter": dict(sky="T_Sky_Glaze", sky_brightness=2.1, sun=("#FFCF9C", 6.2, -14.0), sky_light=("#8478D8", 2.3),
+                         fog=("#D89C84", 0.0060, 0.18), ev=1.05, saturation=1.0, contrast=1.0, bloom=0.6, vignette=0.4,
+                         shadow_tint="#D8C8F0", ao=0.35, ink=None),
+    "ForestAfter": dict(sky="T_Sky_Glaze", sky_brightness=1.25, sun=("#FFC690", 4.2, -22.0), sky_light=("#7480C4", 1.8),
+                        fog=("#9CA890", 0.0095, 0.16), ev=0.42, saturation=0.96, contrast=1.03, bloom=0.5, vignette=0.45,
+                        shadow_tint="#CCD6EA", ao=0.4, ink=None),
+    # The Heart is warm: a first thin amber glaze over the grey paper.
+    "VaultWarm": dict(sky=None, sky_brightness=0.0, sun=None, sky_light=None, fill=("#F4D6A4", 2.0),
+                      fog=("#C8A470", 0.0050, 0.05), ev=0.0, saturation=1.0, contrast=1.04, bloom=0.35, vignette=0.45,
+                      shadow_tint="#F0DCC0", ao=0.0, ink=("#3A2E26", 1.3, 0.85)),
 }
 
 SUN_YAW = 90.0      # the Lamp hangs in the west (-Y), so its light travels toward +Y

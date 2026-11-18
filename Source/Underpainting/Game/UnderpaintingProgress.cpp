@@ -990,3 +990,23 @@ float UUnderpaintingProgress::GetUpgradeGlim() const
 	}
 	return Total;
 }
+
+// --- The Turning ---
+
+const FName UUnderpaintingProgress::TurnedFlag(TEXT("World.Turned"));
+
+bool UUnderpaintingProgress::IsTurningDue() const
+{
+	return !HasTurned() && (Data.Flags.Contains(TEXT("Heart_Sanguine")) || Data.Flags.Contains(TEXT("Heart_TerreVerte")) || Data.Flags.Contains(TEXT("Heart_Blank")));
+}
+
+float UUnderpaintingProgress::GetZoneLight(FName ZoneId, float Before, float After) const
+{
+	if (!HasTurned())
+	{
+		return Before;
+	}
+	// "<Zone>_LightPlus015": a quest ending that brightened this zone by 0.15.
+	const bool bBrighter = Data.Flags.Contains(FName(*FString::Printf(TEXT("%s_LightPlus015"), *ZoneId.ToString())));
+	return FMath::Clamp(After + (bBrighter ? 0.15f : 0.0f), 0.0f, 1.0f);
+}

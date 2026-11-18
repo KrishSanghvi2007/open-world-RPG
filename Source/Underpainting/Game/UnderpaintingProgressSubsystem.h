@@ -61,6 +61,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Underpainting|Travel")
 	bool TravelToZone(const UObject* WorldContext, FName TargetZone);
 
+	/** The level a zone is played in right now: its "A" level, or its "B" level once the Matriarch has turned. */
+	FName GetLevelForZone(FName Zone) const;
+
+	/**
+	 * The Turning: marks the world as turned, saves, and reloads the zone the player is standing in as its "B" level,
+	 * leaving the player where they stood.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Underpainting|Travel")
+	bool CompleteTurning(APawn* Player);
+
+	/** True once after the Turning, for the first level that opens: it shows the title card. */
+	bool ConsumeJustTurned() { const bool bResult = bJustTurned; bJustTurned = false; return bResult; }
+
+	/** Where to put the player when the next level starts, if anywhere. Cleared once read. */
+	bool ConsumeKeptTransform(FTransform& OutTransform);
+
 	/** The zone the player just left through an exit, or None. Cleared once read. */
 	FName ConsumeArrival();
 
@@ -78,4 +94,7 @@ private:
 	UPROPERTY(Transient) TObjectPtr<UUnderpaintingSaveGame> LoadedSave;
 	FName ArrivingFromZone;
 	bool bRestorePending = false;
+	bool bJustTurned = false;
+	bool bHasKeptTransform = false;
+	FTransform KeptTransform;
 };

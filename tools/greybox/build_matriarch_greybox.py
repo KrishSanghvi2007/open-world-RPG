@@ -19,6 +19,7 @@ Conventions:
 
 import json
 import math
+import sys
 import os
 
 import unreal
@@ -516,10 +517,13 @@ def end_level(zone_id):
 # Zone 1: Varnish, the painted village. Three terraces stepping down toward the sun.
 # --------------------------------------------------------------------------------------
 
-def build_village():
-    begin_level("L_Matriarch_Village_A")
-    Zone.unlit, Zone.label_yaw, Zone.shadow_tint, Zone.look = False, -90.0, "#4A3558", "VillageDusk"
+def build_village(shifted=False):
+    """Varnish. shifted=True builds the "B" level: after the Turning her shoulder has dropped, the Hem is in
+    shadow and half-painted, the Furrow is shut and the Stair of Spines arrives at a new lower gate."""
+    begin_level("L_Matriarch_Village_B" if shifted else "L_Matriarch_Village_A")
+    Zone.unlit, Zone.label_yaw, Zone.shadow_tint, Zone.look = False, -90.0, "#4A3558", "VillageAfter" if shifted else "VillageDusk"
     OCHRE, ROSE, CREAM, TEAL, VIOLET = "#D9A441", "#C4574B", "#F2E3C0", "#2E5E6E", "#4A3558"
+    CANVAS = "#D8CBB0"
 
     sun_and_sky(sun_colour="#FFD9A0", sky_tint=TEAL, sun_lux=7.0, sky_intensity=1.2)
 
@@ -529,7 +533,7 @@ def build_village():
     # Terraces. Top (east, y 18..42, height 8), middle (y -10..18, height 4), the Hem (y -38..-10, height 0).
     slab("Terrace_Sunward", -34, 34, 18, 42, 8.0, CREAM, bottom=-1.0)
     slab("Terrace_LampstandSquare", -34, 34, -10, 18, 4.0, CREAM, bottom=-1.0)
-    slab("Terrace_Hem", -34, 34, -38, -10, 0.0, CREAM, bottom=-1.0)
+    slab("Terrace_Hem", -34, 34, -38, -10, 0.0, CANVAS if shifted else CREAM, bottom=-1.0)
 
     ramp("Ramp_Square_to_Sunward", (-22, 6, 4), (-22, 18, 8), 4.0, OCHRE)
     ramp("Ramp_Hem_to_Square", (22, -22, 0), (22, -10, 4), 4.0, OCHRE)
@@ -545,10 +549,15 @@ def build_village():
     # The north edge of the square is open in the middle: the way down to the Furrow.
     slab("Parapet_North_Mid_a", 34, 35, -10, 0, 5.2, TEAL, "Geometry/Parapets", bottom=4.0)
     slab("Parapet_North_Mid_b", 34, 35, 8, 18, 5.2, TEAL, "Geometry/Parapets", bottom=4.0)
+    if shifted:
+        # The Furrow has closed: the gap is a wall of risen bone now.
+        slab("Furrow_Closed", 34, 37, 0, 8, 9.0, VIOLET, "Geometry/Parapets", bottom=4.0)
 
     def house(index, x, y, base):
-        box("House_%02d" % index, (x, y, base + 2.5), (6, 6, 5), CREAM, "Geometry/Houses")
-        box("House_%02d_Roof" % index, (x, y, base + 5.4), (7, 7, 0.8), ROSE, "Geometry/Houses")
+        # After the Turning the Hem is in shadow: its houses are down to bare canvas, the roofs dulled.
+        faded = shifted and base == 0
+        box("House_%02d" % index, (x, y, base + 2.5), (6, 6, 5), CANVAS if faded else CREAM, "Geometry/Houses")
+        box("House_%02d_Roof" % index, (x, y, base + 5.4), (7, 7, 0.8), VIOLET if faded else ROSE, "Geometry/Houses")
 
     houses = [(-20, 37, 8), (0, 37, 8), (20, 37, 8),                       # Sunward Terraces
               (-8, 13, 4), (6, 13, 4), (20, 13, 4), (-28, -4, 4), (28, -5, 4),  # Lampstand square
@@ -563,15 +572,29 @@ def build_village():
     marker("Station", "GrindingSlab", "Grinding Slab", (-8, -5, 4))
     marker("Station", "ArmatureBench", "Armature Bench", (9, -5, 4))
     marker("Note", "FlaxPress", "Flax press", (15, 3, 4))
-    marker("Exit", "Scumblewood", "To the Scumblewood (the Furrow)", (33, 4, 4), yaw=90.0)
+    if not shifted:
+        marker("Exit", "Scumblewood", "To the Scumblewood (the Furrow)", (33, 4, 4), yaw=90.0)
 
     # Sunward Terraces: the four Ochre nodes
     for x in (-27, -10, 10, 27):
         node("Ochre", (x, 24, 8))
 
     # The Hem
-    marker("Note", "LowerGate", "Lower gate (appears after the shift)", (0, -37, 0))
-    marker("Note", "HemFlaking", "The Hem: paint starting to flake", (-17, -22, 0))
+    if shifted:
+        marker("Exit", "Scumblewood", "The lower gate: the Stair of Spines", (0, -37, 0))
+        for side in (-1, 1):
+            box("LowerGate_Post_%s" % ("L" if side < 0 else "R"), (side * 2.6, -37.5, 2.5), (0.8, 0.8, 5.0), VIOLET, "Geometry/Parapets")
+        # Corin, if he was finished in Bone Black, stands guard here and the Blotters stay away.
+        guard = marker("NPC", "CorinHalfSeen", "Corin, at the gate", (6, -34, 0))
+        if guard:
+            guard.set_editor_property("requires_flag", unreal.Name("Corin_Gatekeeper"))
+        for p in ((-17, -22, 0), (13, -19, 0)):
+            blotter = enemy("Blotter", p)
+            if isinstance(blotter, unreal.UnderpaintingEnemy):
+                blotter.set_editor_property("removed_by_flag", unreal.Name("Village_HemGuarded"))
+    else:
+        marker("Note", "LowerGate", "Lower gate (appears after the shift)", (0, -37, 0))
+        marker("Note", "HemFlaking", "The Hem: paint starting to flake", (-17, -22, 0))
 
     # Things to read, and the named places.
     lore("Odile_01", (3.0, -36.5, 0), yaw=90.0)
@@ -581,9 +604,7 @@ def build_village():
     place("SunwardTerraces", "The Sunward Terraces", (0, 30, 8), half=(30, 11, 3))
     place("TheHem", "The Hem", (0, -24, 0), half=(30, 12, 3))
 
-    # Walking-skeleton only: one Blotter by the lower gate, so the whole loop can be tried in one level.
-    # The design has no combat in the village before the shift; this one leaves when the forest is playable.
-    enemy("Blotter", (-2, -33, 0))
+    # No combat in the village before the shift (GDD). Combat can be tried in the rooms under Maps/Dev.
 
     player_start((-4, 4, 4), yaw=0.0)
     return end_level("VarnishVillage")
@@ -593,9 +614,11 @@ def build_village():
 # Zone 2: the Scumblewood. The Furrow, a gorge winding down between two vertebrae.
 # --------------------------------------------------------------------------------------
 
-def build_scumblewood():
-    begin_level("L_Matriarch_Scumblewood_A")
-    Zone.unlit, Zone.label_yaw, Zone.shadow_tint, Zone.look = False, 180.0, "#2E5E6E", "ForestHalfLight"
+def build_scumblewood(shifted=False):
+    """The Scumblewood. shifted=True builds the "B" level: her spine has arched, the top of the Furrow is shut
+    with the First Well inside it, and five vertebrae have risen into the Stair of Spines."""
+    begin_level("L_Matriarch_Scumblewood_B" if shifted else "L_Matriarch_Scumblewood_A")
+    Zone.unlit, Zone.label_yaw, Zone.shadow_tint, Zone.look = False, 180.0, "#2E5E6E", "ForestAfter" if shifted else "ForestHalfLight"
     GREEN, UMBER, CANVAS, CHARCOAL, SANGUINE = "#6B8F71", "#6B4F3A", "#D8CBB0", "#3A3A3A", "#9E2B25"
 
     sun_and_sky(sun_colour="#FFC98A", sky_tint="#4A3558", sun_lux=4.0, sky_intensity=0.8, pitch=-32.0)
@@ -612,9 +635,17 @@ def build_scumblewood():
         ("RibGate", 272, 15, -16, 11),
     ]
     at = {name: (x, y, z) for name, x, y, z, _ in stops}
+    STAIR_TOP = (174.0, 50.0, 14.0)      # the fifth vertebra, where the lower gate to Varnish stands
+    CAMP = (223.0, 50.0, 2.0)            # the third vertebra: Ilka's camp after the First Well was sealed
+    if shifted:
+        # The Entry and the First Well are gone. What stood there has moved onto the Stair.
+        at["Entry"], at["FirstWell"] = STAIR_TOP, CAMP
+        stops = stops[2:]
 
     def off(stop, dx=0.0, dy=0.0):
         x, y, z = at[stop]
+        if shifted and stop == "FirstWell":
+            dx, dy = dx * 0.6, dy * 0.6      # a vertebra is smaller than the old clearing
         return (x + dx, y + dy, z)
 
     slab("Bedrock", -30, 310, -60, 80, -22.0, CHARCOAL, bottom=-24.0)
@@ -625,6 +656,8 @@ def build_scumblewood():
         # Sunlit (west, -Y) wall is painted; the sun-away (east, +Y) wall is bare canvas.
         slab("Vertebra_W_" + name, x - half - 2, x + half + 2, y - half - 6, y - half, z + WALL_H, UMBER,
              "Geometry/Vertebrae", bottom=z - 6)
+        if shifted and name == "RibGate":
+            continue                          # this wall is where the Stair of Spines rose
         slab("Vertebra_E_" + name, x - half - 2, x + half + 2, y + half, y + half + 6, z + WALL_H, CANVAS,
              "Geometry/Vertebrae", bottom=z - 6)
 
@@ -648,6 +681,8 @@ def build_scumblewood():
     trunks = [off("FirstWell", -5, 5), off("FirstWell", 6, -6), off("Bend", 4, 5), off("SunwardClearing", -9, -8),
               off("SunwardClearing", 8, 9), off("SunwardClearing", -4, 10), off("HollowVertebra", -9, 8),
               off("HollowVertebra", 9, -9), off("Approach", 3, -5), off("RibGate", -6, 6)]
+    if shifted:
+        trunks = trunks[2:]
     for i, p in enumerate(trunks, 1):
         cylinder("Trunk_%02d" % i, p, 0.6, 9.0, UMBER, "Geometry/Trunks")
 
@@ -672,23 +707,73 @@ def build_scumblewood():
         (off("HollowVertebra", 8, 9), "Cache04", [("Sanguine", 2), ("RibSplinter", 2)]),
         (off("Approach", -3, 5), "Cache05", [("LampOil", 1), ("ShedHide", 1)]),
     ]
+    margin_anchor = hidden[2][0]
+    if shifted:
+        hidden = hidden[1:]                   # the first cache is sealed in the Furrow with the well
     for i, (p, cache_id, contents) in enumerate(hidden, 2):
         passable_back("PassableBack_%02d" % i, (p[0], p[1] - 2.0, p[2] + 2.5), (0.6, 4.4, 5.0), -90.0, tags=("Optional",))   # front faces the sun (-Y)
         for j, x_offset in enumerate((-2.2, 2.2)):
             box("FalseFront_%02d_Side%d" % (i, j), (p[0] + x_offset, p[1], p[2] + 2.5), (0.5, 4.0, 5.0), UMBER, "Geometry/PassableBacks")
         box("FalseFront_%02d_Top" % i, (p[0], p[1], p[2] + 5.2), (4.9, 4.4, 0.5), UMBER, "Geometry/PassableBacks")
         cache(cache_id, "Cache", p, contents)
-    lore("Margin_05", (hidden[2][0][0] + 1.2, hidden[2][0][1] + 0.5, hidden[2][0][2]), yaw=-90.0)
+    lore("Margin_05", (margin_anchor[0] + 1.2, margin_anchor[1] + 0.5, margin_anchor[2]), yaw=-90.0)
 
     # The Nape Overlook: visible from the route, not reachable before the shift.
     slab("NapeOverlook", 140, 160, 44, 58, 14.0, CANVAS, bottom=-22.0)
-    marker("Note", "NapeOverlook", "Nape Overlook (reached only after the shift)", (150, 46, 14))
+    if not shifted:
+        marker("Note", "NapeOverlook", "Nape Overlook (reached only after the shift)", (150, 46, 14))
+
+    if shifted:
+        BONE = "#E6E1D6"
+        # The Furrow is shut at the Bend. The First Well is inside the rock.
+        box("FurrowSeal", (70, 20, 1.0), (6.0, 30.0, 22.0), UMBER, "Geometry/Shift")
+        marker("Note", "FirstWellPentimento", "A faint outline on the rock: the First Well was here", (74.5, 20, -6))
+
+        # The Stair of Spines: five risen vertebrae from the Rib Gate up to the lower gate of Varnish.
+        slab("Stair_Foot", 259, 285, 26, 31, -16.0, GREEN, "Geometry/Shift", bottom=-22.0)
+        ramp("Stair_Ramp_0", (272, 18, -16), (272, 31, -10), 10.0, BONE, "Geometry/Shift")
+        slab("Vertebra_1", 264, 281, 31, 57, -10.0, BONE, "Geometry/Shift", bottom=-22.0)
+        # Each ramp runs exactly from the edge of one vertebra to the edge of the next, so there is no lip to trip on.
+        rises = [(264.0, 251.0, -10.0, -4.0, 241.0), (241.0, 228.0, -4.0, 2.0, 218.0), (218.0, 205.0, 2.0, 8.0, 195.0),
+                 (195.0, 182.0, 8.0, 14.0, 165.0)]
+        for i, (x0, x1, z0, z1, far_edge) in enumerate(rises, 2):
+            ramp("Stair_Ramp_%d" % (i - 1), (x0, 50, z0), (x1, 50, z1), 14.0, BONE, "Geometry/Shift")
+            slab("Vertebra_%d" % i, far_edge, x1, 43, 57, z1, BONE, "Geometry/Shift", bottom=-22.0)
+        # Her flanks: nobody falls off the Stair.
+        slab("Stair_Flank_S", 160, 264, 42, 43, 17.0, UMBER, "Geometry/Shift", bottom=-22.0)
+        slab("Stair_Flank_N", 160, 282, 57, 58, 17.0, CANVAS, "Geometry/Shift", bottom=-22.0)
+        slab("Stair_Flank_E", 281, 282, 26, 58, 17.0, CANVAS, "Geometry/Shift", bottom=-22.0)
+        slab("Stair_Flank_W", 263, 264, 26, 42, 17.0, UMBER, "Geometry/Shift", bottom=-22.0)
+        place("StairOfSpines", "The Stair of Spines", (272, 40, -10), half=(8, 9, 4))
+
+        # The Nape Overlook, reachable at last: a short bridge from the top vertebra.
+        slab("Nape_Bridge", 160, 165, 46, 54, 14.0, BONE, "Geometry/Shift", bottom=13.0)
+        for name, x0, x1, y0, y1 in (("W", 139, 140, 43, 59), ("S", 139, 160, 43, 44), ("N", 139, 160, 58, 59)):
+            slab("Nape_Parapet_" + name, x0, x1, y0, y1, 15.1, UMBER, "Geometry/Shift", bottom=14.0)
+        place("NapeOverlook", "The Nape Overlook", (150, 51, 14), half=(9, 6, 4))
+        cache("NapeCache", "Cache", (146, 55, 14), [("SlumberBlue", 2), ("ShedHide", 3)])
+        marker("Note", "NextColossus", "On the horizon, something vast is wading", (141.5, 51, 14))
+        # The next colossus: a shape on the horizon and nothing more (Act 2 is not built).
+        for name, pos, size in (("Body", (-1500, 200, 160), (260, 520, 240)), ("Neck", (-1500, -120, 330), (90, 90, 260)),
+                                ("Head", (-1500, -200, 480), (150, 220, 90)), ("Leg_A", (-1500, 60, 0), (70, 70, 260)),
+                                ("Leg_B", (-1500, 360, 0), (70, 70, 260))):
+            box("Wader_" + name, pos, size, "#2E5E6E", "Geometry/Horizon", collide=False)
 
     # Named places
-    marker("Exit", "VarnishVillage", "To Varnish", off("Entry", -8, 0))
-    marker("Note", "FirstWell", "The First Well", off("FirstWell", 0, -6))
+    if shifted:
+        marker("Exit", "VarnishVillage", "The lower gate: up to Varnish", (STAIR_TOP[0], 56.0, STAIR_TOP[2]))
+    else:
+        marker("Exit", "VarnishVillage", "To Varnish", off("Entry", -8, 0))
+        marker("Note", "FirstWell", "The First Well", off("FirstWell", 0, -6))
     marker("Lampstand", "SunwardClearing", "Lampstand", off("SunwardClearing", 11, -3))
-    marker("NPC", "CorinHalfSeen", "Corin Half-Seen", off("SunwardClearing", -2, 4))
+    corin = marker("NPC", "CorinHalfSeen", "Corin Half-Seen", off("SunwardClearing", -2, 4))
+    if shifted:
+        # Finished, he has somewhere to be: the foot of the Stair (Terre Verte) or the village gate (Bone Black).
+        if corin:
+            corin.set_editor_property("hidden_by_flag", unreal.Name("Corin_Moved"))
+        warden = marker("NPC", "CorinHalfSeen", "Corin, warden of the wood", (280, 20, -16))
+        if warden:
+            warden.set_editor_property("requires_flag", unreal.Name("Corin_Warden"))
     marker("Note", "BroodNest", "Hollow Vertebra: Madderback brood nest", off("HollowVertebra", 0, 10))
     marker("Lampstand", "RibGate", "Lampstand", off("RibGate", -6, -6))
     marker("NPC", "IlkaThrum", "Ilka Thrum", off("FirstWell", -3, -4))
@@ -699,7 +784,8 @@ def build_scumblewood():
     lore("Ledger_Ilka", off("FirstWell", -5, -5), yaw=60.0)
     lore("Odile_03", off("SunwardClearing", -8, 2), yaw=0.0)
     lore("Odile_04", off("RibGate", 3, -7), yaw=90.0)
-    place("FirstWell", "The First Well", at["FirstWell"], half=(9, 9, 4))
+    if not shifted:
+        place("FirstWell", "The First Well", at["FirstWell"], half=(9, 9, 4))
     place("SunwardClearing", "The Sunward Clearing", at["SunwardClearing"], half=(14, 14, 4))
     place("CorinsBack", "", off("SunwardClearing", -2, 6.5), half=(1.5, 1.2, 2))
     place("BroodNest", "The Hollow Vertebra", at["HollowVertebra"], half=(13, 13, 4))
@@ -725,9 +811,17 @@ def build_scumblewood():
         tick = enemy("Madderback", p)
         if i % 2 == 1 and isinstance(tick, unreal.UnderpaintingEnemy):
             tick.set_editor_property("removed_by_flag", unreal.Name("Scumblewood_MadderbackHalved"))
-    for p in (off("FirstWell", 6, 2), off("FirstWell", 9, -3), off("Descent", -3, -2), off("Descent", 4, 3),
-              off("Approach", 6, -5), off("RibGate", -8, 2)):
-        enemy("Blotter", p)
+    # After the Turning the enemies have moved, and two quest endings change their numbers.
+    first_two = (off("Bend", -3, 3), off("SunwardClearing", 6, -6)) if shifted else (off("FirstWell", 6, 2), off("FirstWell", 9, -3))
+    for i, p in enumerate(first_two + (off("Descent", -3, -2), off("Descent", 4, 3), off("Approach", 6, -5), off("RibGate", -8, 2))):
+        blotter = enemy("Blotter", p)
+        if shifted and i >= 4 and isinstance(blotter, unreal.UnderpaintingEnemy):
+            blotter.set_editor_property("removed_by_flag", unreal.Name("Scumblewood_BlotterMinus2"))
+    if shifted:
+        for p in (off("Descent", 0, -5), off("Approach", -5, 4)):
+            extra = enemy("Madderback", p)
+            if isinstance(extra, unreal.UnderpaintingEnemy):
+                extra.set_editor_property("requires_flag", unreal.Name("Scumblewood_MadderbackPlus2"))
 
     # Harvest nodes: 5 Terre Verte (sunlit spots), 3 Sanguine, 3 Bone Black
     for p in (off("FirstWell", -6, -7), off("Bend", -5, -6), off("SunwardClearing", -10, -11),
@@ -738,7 +832,7 @@ def build_scumblewood():
     for p in (off("Bend", 6, 6), off("Descent", 6, 6), off("RibGate", 6, 8)):
         node("BoneBlack", p)
 
-    player_start(off("Entry", -3, 0), yaw=0.0)
+    player_start((STAIR_TOP[0], STAIR_TOP[1], STAIR_TOP[2]) if shifted else off("Entry", -3, 0), yaw=0.0)
     return end_level("Scumblewood")
 
 
@@ -746,10 +840,14 @@ def build_scumblewood():
 # Zone 3: the Grisaille Vault. Rib Stair, Cartoon Gallery, the Heart. Low gravity, unlit paper.
 # --------------------------------------------------------------------------------------
 
-def build_vault():
-    begin_level("L_Matriarch_Vault_A")
-    Zone.unlit, Zone.label_yaw, Zone.shadow_tint, Zone.look = True, 180.0, "#4B4A48", "VaultSketch"
+def build_vault(shifted=False):
+    """The Grisaille Vault. shifted=True builds the "B" level: the Heart is warm, a first amber glaze lies over
+    the grey, the drawings nearest the Heart have become solid, and nothing hostile is left."""
+    begin_level("L_Matriarch_Vault_B" if shifted else "L_Matriarch_Vault_A")
+    Zone.unlit, Zone.label_yaw, Zone.shadow_tint, Zone.look = True, 180.0, "#4B4A48", "VaultWarm" if shifted else "VaultSketch"
     PAPER, GREY, DARK, GRAPHITE, BLUE, HEART = "#E6E1D6", "#8C8A85", "#4B4A48", "#2E2E30", "#2F4BA8", "#E8923A"
+    if shifted:
+        PAPER, GREY = "#EDE0C4", "#A89880"      # the amber glaze
     FLOOR = -10.0   # main floor height
     PIT = -18.0     # floor of the gallery pit
 
@@ -770,6 +868,10 @@ def build_vault():
     slab("Gallery_PitFloor", 46, 106, -16, 16, PIT, GREY)
     platforms = [(51, 0, 0.0), (61, 3, 0.5), (71, -2, 0.0), (81, 3, -0.5), (91, -1, 0.5), (101, 0, 0.0)]
     for i, (x, y, dz) in enumerate(platforms, 1):
+        if shifted and i >= 5:
+            # Nearest the Heart, the sketch has taken: these two are simply there now.
+            slab("TakenPlatform_%02d" % i, x - 2, x + 2, y - 2, y + 2, FLOOR + dz, HEART, "Geometry/Shift", bottom=FLOOR + dz - 0.4)
+            continue
         sketch_platform("SketchPlatform_%02d" % i, x - 2, x + 2, y - 2, y + 2, FLOOR + dz)
     sketch_platform("SketchPlatform_Side", 79, 83, -12, -8, FLOOR, tags=("Optional",))
     # A way back up for anyone who falls: there is no fall damage here, so a fall costs time, not health.
@@ -786,7 +888,7 @@ def build_vault():
         x, y = 140 + math.cos(angle) * 18.5, math.sin(angle) * 18.5
         box("Heart_Wall_%02d" % i, (x, y, FLOOR + 5.0), (1.5, 7.6, 12.0), DARK, "Geometry/Heart",
             yaw=math.degrees(angle))
-    cylinder("Heart_Glow", (153, 0, FLOOR), 2.0, 5.0, HEART, "Geometry/Heart", collide=False, tags=("Heart",))
+    cylinder("Heart_Glow", (153, 0, FLOOR), 3.2 if shifted else 2.0, 7.0 if shifted else 5.0, HEART, "Geometry/Heart", collide=False, tags=("Heart",))
 
     # Enclosing walls
     slab("Wall_South", 30, 124, -17, -16, FLOOR + 14.0, DARK, "Geometry/Walls", bottom=PIT - 1.0)
@@ -815,7 +917,6 @@ def build_vault():
     lore("Margin_08", (150, -6, FLOOR), yaw=180.0)
     # What Old Palimpsest was curled around is only there once it is gone (docs/STORY.md, Act 1).
     needs_flag(lore("Odile_07", (150.5, 2.0, FLOOR), yaw=180.0), "Killed.ThePalimpsest")
-    lantern = needs_flag(marker("Note", "OdilesLantern", "", (150.2, 0.6, FLOOR)), "Killed.ThePalimpsest") if False else None
     lantern = actors.spawn_actor_from_class(unreal.UnderpaintingPickup, v((150.2, 0.6, FLOOR + 0.25)), unreal.Rotator(0, 0, 0))
     lantern.set_editor_property("item_id", unreal.Name("OdilesLantern"))
     lantern.set_editor_property("count", 1)
@@ -836,13 +937,14 @@ def build_vault():
     place("GalleryFarLedge", "", (112, 0, FLOOR), half=(5, 11, 3))
     place("TheHeart", "The Heart", (140, 0, FLOOR), half=(14, 14, 4))
 
-    # Enemies: 6 Pentiments, 4 Blotters and the boss
-    for p in ((36, -6, FLOOR), (40, 7, FLOOR), (61, 3, FLOOR + 0.5), (81, 3, FLOOR - 0.5),
-              (88, 10, PIT), (110, 6, FLOOR)):
-        enemy("Pentiment", p)
-    for p in ((56, 8, PIT), (74, -6, PIT), (109, -5, FLOOR), (118, 4, FLOOR)):
-        enemy("Blotter", p)
-    enemy("ThePalimpsest", (142, 0, FLOOR))
+    # Enemies: 6 Pentiments, 4 Blotters and the boss. After the Turning nothing comes back here.
+    if not shifted:
+        for p in ((36, -6, FLOOR), (40, 7, FLOOR), (61, 3, FLOOR + 0.5), (81, 3, FLOOR - 0.5),
+                  (88, 10, PIT), (110, 6, FLOOR)):
+            enemy("Pentiment", p)
+        for p in ((56, 8, PIT), (74, -6, PIT), (109, -5, FLOOR), (118, 4, FLOOR)):
+            enemy("Blotter", p)
+        enemy("ThePalimpsest", (142, 0, FLOOR))
 
     # Harvest nodes: 3 Bone Black, 3 Slumber Blue (one-time)
     for p in ((43, -10, FLOOR), (96, -10, PIT), (120, 10, FLOOR)):
@@ -856,11 +958,13 @@ def build_vault():
 
 def build_all():
     problems = []
-    with unreal.ScopedSlowTask(3, "Building the Sleeping Matriarch grey-box") as task:
+    wanted = [a for a in sys.argv[1:] if a in ("A", "B")] or ["B", "A"]      # "A" last, so the village is left open
+    with unreal.ScopedSlowTask(3 * len(wanted), "Building the Sleeping Matriarch grey-box") as task:
         task.make_dialog(True)
-        for build in (build_scumblewood, build_vault, build_village):  # village last, so it is left open
-            task.enter_progress_frame(1)
-            problems += build()
+        for version in wanted:
+            for build in (build_scumblewood, build_vault, build_village):
+                task.enter_progress_frame(1)
+                problems += build(shifted=(version == "B"))
     eal.save_directory("/Game/Greybox")
     eal.save_directory("/Game/StyleKit")
     unreal.log("GREYBOX DONE. Problems: %s" % (problems or "none"))

@@ -392,6 +392,12 @@ void AUnderpaintingHUD::DrawHUD()
 		DrawText(Prompt, TextColour, X, Y, nullptr, 1.2f);
 	}
 
+	// Last, so it covers everything: the Turning, its title card, and the end card.
+	if (Player)
+	{
+		DrawTurning(Player, UUnderpaintingProgressSubsystem::Get(this));
+	}
+
 	RawCanvas->PopTransform();
 	Canvas->ClipX = RealX;
 	Canvas->ClipY = RealY;
@@ -833,4 +839,73 @@ void AUnderpaintingHUD::DrawChoice(const UUnderpaintingProgress* Progress)
 		Cursor += 116.0f;
 	}
 	DrawText(TEXT("Number to choose (you will be asked again)   [E] or [Q] walk away"), DimColour, X + 24.0f, Cursor, nullptr, 0.9f);
+}
+
+void AUnderpaintingHUD::DrawTurning(const AUnderpaintingPlayerCharacter* Player, UUnderpaintingProgress* Progress)
+{
+	const float W = Canvas->ClipX, H = Canvas->ClipY;
+	const float Delta = GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.0f;
+	const auto Centred = [this, W](const FString& Text, float Y, const FLinearColor& Colour, float Scale)
+	{
+		float TextW = 0.0f, TextH = 0.0f;
+		GetTextSize(Text, TextW, TextH, nullptr, Scale);
+		DrawText(Text, Colour, (W - TextW) * 0.5f, Y, nullptr, Scale);
+	};
+
+	// The Turning: the ground moves, the view is taken away, three lines, and the world is different (GDD section 8).
+	const float T = Player->GetTurningTime();
+	if (T >= 0.0f)
+	{
+		const float Dark = FMath::Clamp((T - 2.0f) / 1.2f, 0.0f, 1.0f);
+		DrawRect(FLinearColor(0.01f, 0.008f, 0.012f, Dark), 0.0f, 0.0f, W, H);
+		if (T < 2.6f)
+		{
+			Centred(TEXT("The floor moves. Hold on."), H * 0.72f, GlimColour, 1.3f);
+		}
+		const TCHAR* Lines[] = { TEXT("Under your hand, the wall is warm."), TEXT("Far above, an eye the size of a lake half opens."), TEXT("She turns over in her sleep.") };
+		for (int32 Index = 0; Index < 3; ++Index)
+		{
+			const float Alpha = FMath::Clamp((T - 3.4f - Index * 1.6f) / 0.8f, 0.0f, 1.0f);
+			if (Alpha > 0.0f)
+			{
+				Centred(Lines[Index], H * 0.40f + Index * 34.0f, FLinearColor(0.93f, 0.87f, 0.74f, Alpha), 1.25f);
+			}
+		}
+		return;
+	}
+
+	// The changed level has just opened: come up out of the dark under the title.
+	if (UUnderpaintingProgressSubsystem* Travel = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr)
+	{
+		if (Travel->ConsumeJustTurned())
+		{
+			TurnedCardRemaining = 5.0f;
+		}
+	}
+	if (TurnedCardRemaining > 0.0f)
+	{
+		TurnedCardRemaining -= Delta;
+		const float Alpha = FMath::Clamp(TurnedCardRemaining / 2.5f, 0.0f, 1.0f);
+		DrawRect(FLinearColor(0.01f, 0.008f, 0.012f, Alpha), 0.0f, 0.0f, W, H);
+		Centred(TEXT("THE TURNING"), H * 0.40f, FLinearColor(0.93f, 0.87f, 0.74f, FMath::Min(1.0f, TurnedCardRemaining)), 2.0f);
+		Centred(TEXT("The light has moved. So has the way home."), H * 0.40f + 54.0f, FLinearColor(0.93f, 0.87f, 0.74f, FMath::Min(1.0f, TurnedCardRemaining)), 1.0f);
+	}
+
+	// The end of the slice: once, when Hesper has been answered.
+	if (Progress && Menu == EUnderpaintingMenu::None && Progress->IsQuestComplete(TEXT("MQ_ColdUnderTheRibs")) && !Progress->HasFlag(TEXT("Slice.EndSeen")))
+	{
+		EndCardTime = FMath::Max(0.0f, EndCardTime) + Delta;
+		const float Alpha = FMath::Clamp(EndCardTime / 2.0f, 0.0f, 0.86f);
+		DrawRect(FLinearColor(0.01f, 0.008f, 0.012f, Alpha), 0.0f, 0.0f, W, H);
+		const FLinearColor Ink(0.93f, 0.87f, 0.74f, FMath::Clamp(EndCardTime - 1.0f, 0.0f, 1.0f));
+		Centred(TEXT("UNDERPAINTING"), H * 0.34f, Ink, 2.2f);
+		Centred(TEXT("End of Act 1: Dusk"), H * 0.34f + 60.0f, Ink, 1.2f);
+		Centred(TEXT("The lamp is still going out. One of them is warm."), H * 0.34f + 100.0f, Ink, 1.0f);
+		Centred(TEXT("You can keep walking."), H * 0.34f + 150.0f, Ink * FLinearColor(1.0f, 1.0f, 1.0f, 0.7f), 0.9f);
+		if (EndCardTime > 14.0f)
+		{
+			Progress->SetFlag(TEXT("Slice.EndSeen"));
+			EndCardTime = -1.0f;
+		}
+	}
 }

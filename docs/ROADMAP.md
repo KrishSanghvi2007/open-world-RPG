@@ -87,7 +87,7 @@ All 10 recipes, both stations, all 12 attunement nodes with their effects, palet
 
 **Done when:** craft every recipe from a debug-filled inventory and feel two different two-pigment builds.
 
-### M8. The region shift
+### M8. The region shift (done; one ending played, the Stair not yet walked by hand)
 The Turning: "B" versions of the three levels, the Stair of Spines, the Nape Overlook, the changed village, quest results visible.
 
 **Done when:** finish the boss, watch the Turning, and walk the new route back to a changed village.

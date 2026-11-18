@@ -112,6 +112,19 @@ public:
 
 	bool HasAttunement(FName NodeId) const { return Data.Attunements.Contains(NodeId); }
 
+	// --- The Turning (the region shift) ---
+
+	/** Set for good once the Matriarch has turned: the "B" levels are the world from then on. */
+	static const FName TurnedFlag;
+
+	bool HasTurned() const { return Data.Flags.Contains(TurnedFlag); }
+
+	/** True when the Heart wall has been decided and she has not turned yet. */
+	bool IsTurningDue() const;
+
+	/** A zone's light right now: its before or after value, plus anything a quest ending added. */
+	float GetZoneLight(FName ZoneId, float Before, float After) const;
+
 	// --- Gear ---
 
 	static const FName StartingWeapon;

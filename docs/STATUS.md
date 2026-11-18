@@ -24,6 +24,7 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - **Look test** (`/Game/LookTest/Maps/`, pictures in `docs/looktest/`): one corner of the village square in three painterly styles, built by `tools/looktest/`. Working choice: B, Glaze.
 - **First combat** (`Source/Underpainting/Combat/`): stamina, sprint, dodge, light and heavy attacks, and a data-driven Blotter, in `/Game/Maps/Dev/L_Combat_Greybox`. Tests: `Underpainting.Combat.*`.
 - **Story** written: `docs/STORY.md`.
+- **The region shift (M8)**: the Turning sequence, `World.Turned`, "B" levels for all three zones (`build_matriarch_greybox.py B`), Stair of Spines, Nape Overlook, after-shift consequences, end card. `tools/dev/check_route.py` checks a route can be walked. Devlog: `docs/devlog/009-the-turning.md`.
 - **Crafting and attunement depth (M7)**: all 10 recipes, saved gear (`Equip`, Tab menu), Braided Wick, Sanguine Draught (K), Blue Tincture (L), tier-2 attunement effects, F7 debug fill. Devlog: `docs/devlog/008-crafting-and-attunement.md`.
 - **Quests and choices (M6)**: quest endings made at a place (`AUnderpaintingChoicePoint`), asked twice, setting permanent world flags; inspectables; things that appear or vanish by flag; dialogue for three more quests. Devlog: `docs/devlog/007-quests-and-choices.md`.
 - **Enemies and the boss (M5)**: `Source/Underpainting/Combat/UnderpaintingBestiary.*` (Madderback, Pentiment, Old Palimpsest with two phases and the heartbeat), three-attacker limit, a test room per enemy in `/Game/Maps/Dev`. First enemy style probe done. Devlog: `docs/devlog/006-enemies-and-boss.md`.
@@ -40,10 +41,10 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - Nobody has walked the forest or the vault by hand; the scripted play teleports.
 - Enemies have no models, animations or path-finding.
 - Dying restarts the level.
-- The three zones are separate levels; the "B" versions come with the shift (M8).
+- The three zones are separate levels, each with an A (before) and B (after the Turning) version.
 
 ## Next (Claude does these; see `docs/ROADMAP.md`)
 Scope is the Act 1 slice only. In order:
-1. **M8, the region shift:** the Turning, "B" versions of the three levels, the Stair of Spines, the "after the shift" quest consequences, the end of the main quest with Hesper.
-2. **M9** the UI.
-3. Left over: enemy navigation, signposts, the Nape Overlook secret (M3); "A Fair Grind" (stretch); three small attunement effects (see devlog 008).
+1. **M9, the UI:** journal, proper inventory and palette screens, settings with key rebinding, notices that do not sit on menus, one UI style probe.
+2. Left over: enemy navigation, signposts (M3); "A Fair Grind" (stretch); three small attunement effects (devlog 008); trading with Ilka and Corin; Glim carried between levels.
+3. Remaining style probes: player, NPC, boss, interior, item icon.
