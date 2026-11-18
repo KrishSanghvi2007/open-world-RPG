@@ -35,7 +35,7 @@
 
 The Heart scene was also played: no lantern before the boss dies, lantern and note after, the wall left bare for 4 Ceruse, and the quest moved on to the Turning.
 
-10 automated tests pass. The new one plays the Ledger twice, Corin's quest once, and checks Hesper's return.
+9 automated tests pass. The new one plays the Ledger twice, Corin's quest once, and checks Hesper's return.
 
 ## Not done, or not checked
 
