@@ -10,6 +10,7 @@
 
 class UUnderpaintingVitalsComponent;
 class UAnimMontage;
+class UUnderpaintingAutopilot;
 
 UENUM(BlueprintType)
 enum class EPlayerAction : uint8
@@ -26,6 +27,8 @@ UCLASS(abstract)
 class AUnderpaintingPlayerCharacter : public AUnderpaintingCharacter
 {
 	GENERATED_BODY()
+
+	friend class UUnderpaintingAutopilot;
 
 public:
 
@@ -44,8 +47,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void StartDodge();
 
+	/** A dodge in a chosen direction (world space), for the autopilot and for anything that knows where it wants to go. */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void StartDodgeInDirection(FVector Direction);
+
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SetSprinting(bool bWantsSprint);
+
+	/** Development: play from a script (see UnderpaintingAutopilot.h for the verbs). */
+	UFUNCTION(BlueprintCallable, Category = "Underpainting|Dev")
+	void DevAutopilot(const FString& Script);
+
+	UFUNCTION(BlueprintCallable, Category = "Underpainting|Dev")
+	FString DevAutopilotStatus() const;
+
+	/** Development: save frames of the game view for a clip (Saved/FightClips/<Name>/). */
+	UFUNCTION(BlueprintCallable, Category = "Underpainting|Dev")
+	void DevRecord(const FString& Name, float Seconds, float Fps);
 
 	/** Swaps the weapon for another row in data/items.json. */
 	UFUNCTION(BlueprintCallable, Category = "Combat")
@@ -218,6 +236,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UUnderpaintingVitalsComponent> Vitals;
 
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	TObjectPtr<UUnderpaintingAutopilot> Autopilot;
+
 	/** Rows in data/items.json. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Equipment")
 	FName WeaponId = TEXT("LimnersKnife");
@@ -335,6 +356,7 @@ private:
 	int32 StrokeHitsDone = 0;
 	float HeavyHeldSince = -1.0f;
 	bool bDodgeRewarded = false;
+	FVector ForcedDodgeDirection = FVector::ZeroVector;
 	float ZoneAmbientLight = 1.0f;
 	bool bDevInvulnerable = false;
 	float BorrowedLight = 0.0f;

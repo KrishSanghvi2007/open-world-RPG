@@ -1,5 +1,6 @@
 #include "UnderpaintingPlayerCharacter.h"
 #include "UnderpaintingSettings.h"
+#include "UnderpaintingAutopilot.h"
 
 #include "Underpainting.h"
 #include "UnderpaintingCombatRules.h"
@@ -29,6 +30,7 @@ AUnderpaintingPlayerCharacter::AUnderpaintingPlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	Vitals = CreateDefaultSubobject<UUnderpaintingVitalsComponent>(TEXT("Vitals"));
+	Autopilot = CreateDefaultSubobject<UUnderpaintingAutopilot>(TEXT("Autopilot"));
 
 	FlareLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("FlareLight"));
 	FlareLight->SetupAttachment(RootComponent);
@@ -576,7 +578,8 @@ void AUnderpaintingPlayerCharacter::StartDodge()
 	}
 
 	// Dodge the way the player is pushing; with no input, step back.
-	FVector Direction = GetLastMovementInputVector();
+	FVector Direction = ForcedDodgeDirection.IsNearlyZero() ? GetLastMovementInputVector() : ForcedDodgeDirection;
+	ForcedDodgeDirection = FVector::ZeroVector;
 	Direction.Z = 0.0f;
 	DodgeDirection = Direction.IsNearlyZero() ? -GetActorForwardVector() : Direction.GetSafeNormal();
 
@@ -592,6 +595,28 @@ void AUnderpaintingPlayerCharacter::StartDodge()
 			Anim->Montage_Play(DodgeMontage, DodgeMontage->GetPlayLength() / FMath::Max(DodgeDuration, 0.1f));
 		}
 	}
+}
+
+void AUnderpaintingPlayerCharacter::StartDodgeInDirection(FVector Direction)
+{
+	ForcedDodgeDirection = Direction;
+	StartDodge();
+	ForcedDodgeDirection = FVector::ZeroVector;
+}
+
+void AUnderpaintingPlayerCharacter::DevAutopilot(const FString& Script)
+{
+	Autopilot->Run(Script);
+}
+
+FString AUnderpaintingPlayerCharacter::DevAutopilotStatus() const
+{
+	return Autopilot->Describe();
+}
+
+void AUnderpaintingPlayerCharacter::DevRecord(const FString& Name, float Seconds, float Fps)
+{
+	Autopilot->StartRecording(Name, Seconds, Fps);
 }
 
 void AUnderpaintingPlayerCharacter::SetSprinting(bool bInWantsSprint)

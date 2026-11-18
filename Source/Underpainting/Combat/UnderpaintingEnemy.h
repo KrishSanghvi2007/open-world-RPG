@@ -50,6 +50,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Enemy")
 	FString GetDisplayName() const { return Row.DisplayName; }
 
+	/** Seconds until the attack being wound up goes live, or -1 if none is. */
+	float GetTimeUntilHit() const { return State == EEnemyState::Attacking && AttackClock.GetPhase() == EAttackPhase::Windup ? AttackClock.Timing.Windup - AttackClock.Elapsed : -1.0f; }
+
 	/** Name of the attack in progress, or None. */
 	UFUNCTION(BlueprintPure, Category = "Enemy")
 	FName GetCurrentAttackName() const;
