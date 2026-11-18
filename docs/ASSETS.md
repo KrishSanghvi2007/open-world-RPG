@@ -4,4 +4,4 @@ Re-downloadable packs (Fab, Marketplace, Poly Haven) live in `Content/ThirdParty
 
 | Pack | Source / URL | Licence | Installed to | Used for |
 |---|---|---|---|---|
-| *(none yet)* | | | | |
+| Mannequins (Manny and Quinn, with animations) | Ships with Unreal Engine 5.8: `Templates/TemplateResources/High/Characters/Content`. Restore with `tools/restore_engine_content.sh` | Unreal Engine EULA | `Content/Characters/` (ignored by git; it must stay at this path because the template Blueprints point at it) | Placeholder player and enemy bodies until our own characters exist |

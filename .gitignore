@@ -32,3 +32,6 @@ Thumbs.db
 __pycache__/
 *.pyc
 .claude/settings.local.json
+
+# Engine-supplied mannequin pack (126 MB). Restore with tools/restore_engine_content.sh; see docs/ASSETS.md.
+/Content/Characters/
