@@ -17,7 +17,7 @@ Last updated: 2026-11-18, late. Claude keeps this page current while you are awa
 | M8 | The Turning: all three places change, the Stair of Spines, the Nape Overlook, an end card | 009 |
 | M9 | The satchel (pack, journal, notes, settings), keys you can change, continue | 010 |
 
-Also: the **style kit** paints every placeholder in the Glaze look, and there are style probes for an environment corner, two props, an enemy (the Blotter) and a UI screen (the satchel).
+Also: the **style kit** paints every placeholder in the Glaze look, and there are style probes for an environment corner, two props, an enemy (the Blotter), a UI screen (the satchel) and item icons (devlog 012, not in the game yet).
 
 ## Test it in 10 minutes
 
@@ -68,6 +68,7 @@ Only hands can judge these. The question to answer is in italics.
 
 **The screens**
 24. *The satchel.* Does paper and ink feel like this game? Should every menu look like it?
+24a. *The icons* (devlog 012). Would you want these on the Pack page in place of the text list?
 25. *Changing a key.* Change Dodge to something else. Did it work, and was it obvious how?
 
 ## What is broken, rough or unproven

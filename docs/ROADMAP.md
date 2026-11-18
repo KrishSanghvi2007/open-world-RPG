@@ -19,7 +19,7 @@ Every milestone ends with a "done when" test the owner can do in under 5 minutes
   | Boss | To do |
   | Interior | To do |
   | UI screen | Done: the satchel (devlog 010) |
-  | Item icon | To do |
+  | Item icon | Done: three painted by script (devlog 012); not in the game yet |
 
 - **Autonomy.** Claude does not wait for the owner. Choices that come up are decided (recommended, reversible option), logged in `docs/QUESTIONS.md`, and work continues. Claude stops only for spending money, deleting the owner's work, or anything irreversible.
 - Commit and push after each task. Run `python3 tools/validate_data.py` after data changes.
