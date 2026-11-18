@@ -309,7 +309,7 @@ def _spawn_working_actor(kind, data_id, text, ground, yaw):
     return actor
 
 
-def marker(kind, data_id, text, ground, colour=None, yaw=0.0):
+def marker(kind, data_id, text, ground, colour=None, yaw=0.0, labelled=True):
     """A labelled gameplay object standing on the ground point given (metres): the working actor where the
     game has one, otherwise a placeholder shape. Either way it carries the tags Marker, its kind and its ID."""
     mesh, size, default_colour = MARKER_STYLES[kind]
@@ -329,7 +329,7 @@ def marker(kind, data_id, text, ground, colour=None, yaw=0.0):
                             "Markers/" + kind, unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw),
                             collide=False, tags=("Marker", kind, data_id))
         Zone.flat = False
-    if kind != "Lore":      # things to find do not announce themselves
+    if kind != "Lore" and labelled:      # things to find, and things that may not be there, do not announce themselves
         label(text, (ground[0], ground[1], ground[2] + size[2] + 0.5), "Markers/" + kind + "/Labels")
     return actor
 
@@ -342,9 +342,9 @@ def lore(lore_id, ground, yaw=0.0):
     return marker("Lore", lore_id, LORE[lore_id]["Title"], ground, yaw=yaw)
 
 
-def cache(cache_id, text, ground, contents):
+def cache(cache_id, text, ground, contents, labelled=True):
     """A one-time store. contents: (pigment or item ID, count) pairs."""
-    actor = marker("Cache", cache_id, text, ground)
+    actor = marker("Cache", cache_id, text, ground, labelled=labelled)
     if hasattr(unreal, "UnderpaintingCache") and isinstance(actor, unreal.UnderpaintingCache):
         entries = []
         for item_id, count in contents:
@@ -585,7 +585,7 @@ def build_village(shifted=False):
         for side in (-1, 1):
             box("LowerGate_Post_%s" % ("L" if side < 0 else "R"), (side * 2.6, -37.5, 2.5), (0.8, 0.8, 5.0), VIOLET, "Geometry/Parapets")
         # Corin, if he was finished in Bone Black, stands guard here and the Blotters stay away.
-        guard = marker("NPC", "CorinHalfSeen", "Corin, at the gate", (6, -34, 0))
+        guard = marker("NPC", "CorinHalfSeen", "Corin, at the gate", (6, -34, 0), labelled=False)
         if guard:
             guard.set_editor_property("requires_flag", unreal.Name("Corin_Gatekeeper"))
         for p in ((-17, -22, 0), (13, -19, 0)):
@@ -766,12 +766,12 @@ def build_scumblewood(shifted=False):
         marker("Exit", "VarnishVillage", "To Varnish", off("Entry", -8, 0))
         marker("Note", "FirstWell", "The First Well", off("FirstWell", 0, -6))
     marker("Lampstand", "SunwardClearing", "Lampstand", off("SunwardClearing", 11, -3))
-    corin = marker("NPC", "CorinHalfSeen", "Corin Half-Seen", off("SunwardClearing", -2, 4))
+    corin = marker("NPC", "CorinHalfSeen", "Corin Half-Seen", off("SunwardClearing", -2, 4), labelled=not shifted)
     if shifted:
         # Finished, he has somewhere to be: the foot of the Stair (Terre Verte) or the village gate (Bone Black).
         if corin:
             corin.set_editor_property("hidden_by_flag", unreal.Name("Corin_Moved"))
-        warden = marker("NPC", "CorinHalfSeen", "Corin, warden of the wood", (280, 20, -16))
+        warden = marker("NPC", "CorinHalfSeen", "Corin, warden of the wood", (280, 20, -16), labelled=False)
         if warden:
             warden.set_editor_property("requires_flag", unreal.Name("Corin_Warden"))
     marker("Note", "BroodNest", "Hollow Vertebra: Madderback brood nest", off("HollowVertebra", 0, 10))
@@ -803,7 +803,7 @@ def build_scumblewood(shifted=False):
 
     # The Unseen Side: Corin's bare back, and the cache only an unfinished Corin can point to.
     choice_point("SQ_TheUnseenSide", "Corin's unpainted back", off("SunwardClearing", -2, 5.0)[:2] + (at["SunwardClearing"][2] + 1.0,), yaw=90.0, size=(0.1, 0.7, 1.6))
-    needs_flag(cache("CorinsCache", "Cache", off("SunwardClearing", -12, 12), [("SlumberBlue", 2)]), "Scumblewood_PentimentoCacheRevealed")
+    needs_flag(cache("CorinsCache", "Cache", off("SunwardClearing", -12, 12), [("SlumberBlue", 2)], labelled=False), "Scumblewood_PentimentoCacheRevealed")
 
     # Enemies: 6 Madderbacks and 6 Blotters. Burning the nest halves the Madderbacks.
     for i, p in enumerate((off("Bend", 3, -3), off("HollowVertebra", -5, -3), off("HollowVertebra", 4, 4),

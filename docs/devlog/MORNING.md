@@ -77,7 +77,8 @@ Only hands can judge these. The question to answer is in italics.
 - Whether a changed key actually works in play. The setting saves; I cannot press keys.
 - Walking any route. The script teleports. The main routes of all three zones and the Stair of Spines have passed a ground trace (no gaps, nothing too steep). That trace found one real fault, now fixed: the ramp out of the Vault's gallery pit ended against a wall. The jumps across the gallery's sketched platforms cannot be traced and are untested.
 - The Madderback and the Pentiment have now been fought by script, every attack seen landing (see below), but not by hand.
-- Only the green ending of the Heart wall was played through the Turning. The red wall, Corin's three endings and "pour the flame into the Lampstand" are built but unseen.
+- Two full runs of the act have now been scripted: green Heart wall, and red Heart wall with Corin finished in Bone Black (8 Madderbacks instead of 6, Corin at the village gate, no Blotters in the Hem). Corin as warden, Corin left unfinished, and "pour the flame into the Lampstand" are covered by automated test only. Pouring the flame changes nothing you can see yet.
+- The end card: I fixed it being drawn under the notices but have still not seen it clean.
 - A gamepad.
 
 **Found and fixed tonight by scripted play**
@@ -85,6 +86,8 @@ Only hands can judge these. The question to answer is in italics.
 - One Flare caught the Pentiment four times in eight seconds. Now once; it will not Redraw again for 8 seconds.
 - The ramp out of the Vault's gallery pit ended against a wall.
 - A lip of up to 0.9 m on every ramp of the Stair of Spines.
+- Odile's lantern stayed in your pack after you gave it to Hesper. It is handed over now.
+- Floating name labels showed for people and caches that were not there (Corin's other selves, his hidden cache).
 
 **Rough**
 - Everyone and everything is a plain shape. No models, no animation, no sound.

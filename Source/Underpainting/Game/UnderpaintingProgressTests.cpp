@@ -318,6 +318,12 @@ bool FUnderpaintingChoiceTest::RunTest(const FString& Parameters)
 		const TArray<int32> With = Return->GetOfferedChoices(*Ask);
 		TestTrue(TEXT("With the lantern, only holding it out"), With.Num() == 1 && With[0] == 0);
 	}
+	// Pour the flame into the Lampstand: the village gets her, and the lantern leaves your pack.
+	TestEqual(TEXT("Holding it out leads to the flame"), Return->ChooseDialogue(TEXT("Hesper_Return"), 0), FName(TEXT("Hesper_Return_Flame")));
+	TestEqual(TEXT("Pouring leads to her answer"), Return->ChooseDialogue(TEXT("Hesper_Return_Flame2"), 1), FName(TEXT("Hesper_Return_Pour")));
+	TestTrue(TEXT("The flame is in the Lampstand"), Return->HasFlag(TEXT("Varnish_FlameInLamp")));
+	TestFalse(TEXT("And was not kept"), Return->HasFlag(TEXT("Varnish_FlameKept")));
+	TestEqual(TEXT("The lantern has been given"), Return->GetItemCount(TEXT("OdilesLantern")), 0);
 
 	// Flags the game provides by itself.
 	TestTrue(TEXT("Has.<pigment>"), Heart->HasFlag(TEXT("Has.Ceruse")));

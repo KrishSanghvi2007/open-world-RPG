@@ -713,7 +713,8 @@
         "RequireFlags": [],
         "ForbidFlags": [],
         "SetFlags": [
-          "Varnish_FlameKept"
+          "Varnish_FlameKept",
+          "Give.OdilesLantern"
         ],
         "StartQuest": ""
       },
@@ -723,7 +724,8 @@
         "RequireFlags": [],
         "ForbidFlags": [],
         "SetFlags": [
-          "Varnish_FlameInLamp"
+          "Varnish_FlameInLamp",
+          "Give.OdilesLantern"
         ],
         "StartQuest": ""
       }

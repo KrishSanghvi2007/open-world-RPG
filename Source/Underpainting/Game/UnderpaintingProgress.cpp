@@ -617,6 +617,13 @@ FName UUnderpaintingProgress::ChooseDialogue(FName RowId, int32 ChoiceIndex)
 	const FDialogueChoice& Choice = Row->Choices[ChoiceIndex];
 	for (const FName& Flag : Choice.SetFlags)
 	{
+		// "Give.<Item>" hands one of that item over instead of setting a flag (the mirror of "Has.<Item>").
+		const FString Whole = Flag.ToString();
+		if (Whole.StartsWith(TEXT("Give.")))
+		{
+			RemoveItem(FName(*Whole.RightChop(5)), 1);
+			continue;
+		}
 		Data.Flags.AddUnique(Flag);
 	}
 	if (!Choice.StartQuest.IsNone())

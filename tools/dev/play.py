@@ -57,13 +57,15 @@ def say(pawn, what):
 
 
 def talk(pawn, reply=1):
-    """Talks to whoever is in reach, taking the given reply whenever one is offered."""
+    """Talks to whoever is in reach. reply is the number to press whenever a reply is offered, or a list giving
+    the number to press on each line in turn (the last one repeats)."""
+    replies = reply if isinstance(reply, (list, tuple)) else [reply]
     pawn.interact()
-    for _ in range(12):
+    for line in range(12):
         if "menu=1 " not in pawn.describe_state():
             break
         print("    line:", pawn.describe_state().split("row=")[1].split(" ")[0])
-        pawn.menu_number(reply)
+        pawn.menu_number(replies[min(line, len(replies) - 1)])
         pawn.interact()
 
 
@@ -121,7 +123,14 @@ def main(args):
         pawn.set_actor_location(find(world, "Place", args[1]).get_actor_location(), False, True)
     elif command == "hidden":
         # hidden <Kind> <Id>: is this marker out of the world right now?
-        print(args[2], "hidden =", find(world, args[1], args[2]).get_editor_property("hidden"))
+        index = 1
+        while True:
+            try:
+                actor = find(world, args[1], args[2], index)
+            except RuntimeError:
+                break
+            print(actor.get_actor_label() if hasattr(actor, "get_actor_label") else actor.get_name(), "hidden =", actor.get_editor_property("hidden"), "at", actor.get_actor_location())
+            index += 1
     elif command == "fill":
         pawn.dev_fill()
     elif command == "craftall":
@@ -183,6 +192,19 @@ def main(args):
         print("captured:", pawn.dev_press_key(key))
         for action in ("Use", "Dodge", "Flare", "Pack"):
             print("   ", action, "=", pawn.dev_describe_key(unreal.Name(action)))
+    elif command == "talkseq":
+        # talkseq <NpcId> <n> <n> ...: talk, pressing these numbers on successive lines.
+        goto(world, pawn, "NPC", args[1]); talk(pawn, [int(n) for n in args[2:]])
+    elif command == "corin":
+        # corin <ending 1-3>: The Unseen Side from first meeting to its ending (1 Terre Verte, 2 Bone Black, 3 leave him).
+        pawn.dev_set_invulnerable(True)
+        goto(world, pawn, "NPC", "CorinHalfSeen"); talk(pawn, 2); say(pawn, "walked round him")
+        goto(world, pawn, "NPC", "CorinHalfSeen"); talk(pawn, 1); say(pawn, "took the quest")
+        pawn.set_actor_location(find(world, "Place", "CorinsBack").get_actor_location(), False, True); say(pawn, "saw his back")
+        goto(world, pawn, "NPC", "CorinHalfSeen"); talk(pawn, 1); say(pawn, "talked again")
+        pawn.dev_grant(unreal.Name("TerreVerte"), 3); pawn.dev_grant(unreal.Name("BoneBlack"), 3)
+        goto(world, pawn, "Choice", "SQ_TheUnseenSide"); pawn.interact(); say(pawn, "at his back")
+        pawn.menu_number(int(args[1]) if len(args) > 1 else 3); pawn.menu_number(1); say(pawn, "decided")
     elif command == "count":
         cls = getattr(unreal, args[1])
         print(args[1], len(unreal.GameplayStatics.get_all_actors_of_class(world, cls)))

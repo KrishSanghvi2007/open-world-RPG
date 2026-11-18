@@ -192,7 +192,7 @@ One row per line of dialogue. A conversation is a chain of rows.
 
 `FDialogueChoice`: `Label` (string), `Next` (FName; empty ends the conversation), `RequireFlags` / `ForbidFlags` (FName[]: the reply is only offered when these hold), `SetFlags` (FName[]), `StartQuest` (FName: a quest to start, or empty).
 
-**Flags.** Any name can be set as a flag. Quest choices set their `WorldFlags`. The game also provides `Has.<Item or Pigment>` (the player carries at least one) and `Killed.<Enemy>` (one has been killed). The game also provides these automatically from quest progress: `Q.<Quest>.Active`, `Q.<Quest>.Done`, and `Q.<Quest>.Step<N>` (true while step N, counting from 1, is the current one).
+**Flags.** Any name can be set as a flag. Quest choices set their `WorldFlags`. In a reply's `SetFlags`, `Give.<Item>` takes one of that item from the player instead of setting a flag. The game also provides `Has.<Item or Pigment>` (the player carries at least one) and `Killed.<Enemy>` (one has been killed). The game also provides these automatically from quest progress: `Q.<Quest>.Active`, `Q.<Quest>.Done`, and `Q.<Quest>.Step<N>` (true while step N, counting from 1, is the current one).
 
 A finished conversation counts as the event `Talk` with the NPC as target.
 
