@@ -15,8 +15,8 @@
 
 ## What it found (all fixed)
 
-1. **The ramp out of the Vault's gallery pit ended against a wall.** Fall in, and you might never get out.
-2. **A lip of up to 0.9 m on every ramp of the Stair of Spines.** The new road home could not be climbed.
+1. **The ramp out of the Vault's gallery pit ended against a wall.** Fall in, and the way back up was blocked at the top.
+2. **A lip of up to 0.9 m on every ramp of the Stair of Spines.** Too high to step up; the new road home would have needed a jump at every vertebra.
 3. **The Pentiment never thrust.** It walked in too close and always swept. It now holds at spear's length.
 4. **One Flare locked the Pentiment down for eight seconds** (caught four times running). Now once per Flare.
 5. **Ending a conversation was counted twice.** A quest with two "talk to them" steps in a row skipped one.
