@@ -31,6 +31,5 @@ Not yet playable: harvesting, crafting, attunement, dialogue, quests, saving. Th
 
 See `docs/QUESTIONS.md`. The ones most worth your eye:
 
-1. **Art style:** B, Glaze. (A, Gouache and C, Ink and Wash are one setting away.)
 6. **The story's central truth:** the Limner is the god's own unfinished self-portrait.
 7. **A seventh pigment, Lampblack,** in Act 3: suggested, not added.

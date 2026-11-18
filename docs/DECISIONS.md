@@ -47,5 +47,5 @@ Newest first. Format: `date: decision (who): why`
 - 2026-11-18: Every roadmap milestone has a "done when" test the owner can do in under 5 minutes (owner).
 - 2026-11-18: Combat is built from timed phases in C++ (wind-up, active, recovery), not from animation events, so the rules work and can be tested before any animation exists (Claude).
 - 2026-11-18: Enemies read their numbers from `data/enemies.json`; how far an attack reaches and when an enemy chooses it is behaviour and lives in that enemy's C++ class (Claude).
-- 2026-11-18: Working art direction is look-test style B, Glaze (Claude; see `docs/QUESTIONS.md` 1, owner may change).
+- 2026-11-18: **Art direction is look-test style B, Glaze**: soft, warm, luminous, thin layers over a light ground (`docs/looktest/B_Glaze_*.png`, level `L_LookTest_Glaze`). Style probes are made in this style (owner).
 
