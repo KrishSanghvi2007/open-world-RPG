@@ -2,6 +2,7 @@
 // relight, rest, attune, talk again, then save and load. Run with: Automation RunTests Underpainting.Game
 
 #include "Misc/AutomationTest.h"
+#include "UnderpaintingSettings.h"
 
 #include "UnderpaintingDataSubsystem.h"
 #include "UnderpaintingProgress.h"
@@ -434,6 +435,38 @@ bool FUnderpaintingTurningTest::RunTest(const FString& Parameters)
 	Progress->EndDialogue(TEXT("HesperVane"));
 	TestTrue(TEXT("Cold Under the Ribs is done"), Progress->IsQuestComplete(Quest));
 
+	return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FUnderpaintingKeySettingsTest, "Underpainting.Game.KeySettings", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FUnderpaintingKeySettingsTest::RunTest(const FString& Parameters)
+{
+	UUnderpaintingSettingsSave* Settings = NewObject<UUnderpaintingSettingsSave>();
+
+	// Every action has a key to begin with, and no two share one.
+	TSet<FKey> Seen;
+	for (const FUnderpaintingAction& Action : UUnderpaintingSettingsSave::Actions())
+	{
+		TestTrue(*FString::Printf(TEXT("%s has a default key"), *Action.Id.ToString()), Settings->GetKey(Action.Id).IsValid());
+		TestFalse(*FString::Printf(TEXT("%s does not share its key"), *Action.Id.ToString()), Seen.Contains(Settings->GetKey(Action.Id)));
+		Seen.Add(Settings->GetKey(Action.Id));
+	}
+
+	// A free key is simply taken.
+	Settings->SetKey(TEXT("Dodge"), EKeys::C);
+	TestEqual(TEXT("Dodge is on C"), Settings->GetKey(TEXT("Dodge")), EKeys::C);
+
+	// A key already in use is swapped, so nothing is left without one.
+	Settings->SetKey(TEXT("Flare"), EKeys::E);
+	TestEqual(TEXT("Flare took E"), Settings->GetKey(TEXT("Flare")), EKeys::E);
+	TestEqual(TEXT("Use got Flare's old key"), Settings->GetKey(TEXT("Use")), EKeys::F);
+
+	Settings->ResetKeys();
+	TestEqual(TEXT("Reset puts Use back on E"), Settings->GetKey(TEXT("Use")), EKeys::E);
+	TestEqual(TEXT("Reset puts Dodge back"), Settings->GetKey(TEXT("Dodge")), EKeys::LeftControl);
+
+	TestEqual(TEXT("Normal text size"), Settings->GetUIScale(), 1.0f);
 	return !HasAnyErrors();
 }
 

@@ -1,94 +1,108 @@
 # Good morning
 
-Last updated: 2026-11-18, night. Claude keeps this page current while you are away.
+Last updated: 2026-11-18, late. Claude keeps this page current while you are away.
+
+**The short version:** all nine milestones of the Act 1 slice are built. The act can be played from Hesper's first line to an end card. Almost all of it has been driven by script and automated test, and **almost none of it has been played with real hands**. That is the one thing I cannot do, and it is what today is for.
 
 ## What is playable
 
-- **The walking skeleton (M2):** one connected loop in the village. Talk to Hesper, harvest, craft, relight the Lampstand, rest, attune, finish the quest, fight a Blotter, save and load.
-- **Combat depth (M4):** two palette wells, six Strokes that cost light, the Contrast rule (+30% in the complementary colour), lock-on, poultice and lamp oil, the perfect dodge.
-- **The Turning (M8):** Act 1 can be played from the first line to an end card. All three places change; the Stair of Spines and the Nape Overlook are in. `docs/devlog/009-the-turning.md`.
-- **Crafting, gear and the full palette (M7):** all 10 recipes, wearable gear, two new potions (K and L), all 12 attunement nodes. **F7** fills your pack for testing. `docs/devlog/008-crafting-and-attunement.md`.
-- **Quests and choices (M6):** three more quests, choices that ask twice and change the world, and the Heart scene with Odile's lantern and note. `docs/devlog/007-quests-and-choices.md`.
-- **Enemies and the boss (M5):** Madderback, Pentiment and Old Palimpsest, each with a test room under Maps → Dev. A first enemy style probe (the Blotter) is in `docs/devlog/006-enemies-and-boss.md`.
-- **Exploration, first pass (M3):** the three zones connect through blue doorways; the Flare; sketched platforms; one-sided walls with caches behind them; 18 notes to find; a compass.
-- **The style kit:** every grey-box level is now painted in the Glaze look (sky, haze, violet shadows, brush strokes) with no models.
-- **A fight room** with one Blotter, and a **look test** in the chosen art style (Glaze).
+| | What | Devlog |
+|---|---|---|
+| M2 | The first loop: talk, harvest, craft, relight, rest, attune | 001–003 |
+| M3 | Three connected zones, the Flare, sketched platforms, one-sided walls, 18 notes, a compass | 004 |
+| M4 | Two palette wells, six Strokes, the Contrast rule, lock-on, the perfect dodge | 005 |
+| M5 | Blotter, Madderback, Pentiment and the boss Old Palimpsest, each with a test room | 006 |
+| M6 | Quests that end in a choice that asks twice and changes the world; the Heart scene | 007 |
+| M7 | All 10 recipes, wearable gear, potions, all 12 attunement nodes | 008 |
+| M8 | The Turning: all three places change, the Stair of Spines, the Nape Overlook, an end card | 009 |
+| M9 | The satchel (pack, journal, notes, settings), keys you can change, continue | 010 |
+
+Also: the **style kit** paints every placeholder in the Glaze look, and there are style probes for an environment corner, two props, an enemy (the Blotter) and a UI screen (the satchel).
 
 ## Test it in 10 minutes
 
-1. Open **Unreal**. If it is not open, type `/ready` to Claude.
-2. **The loop (6 min).** Content Drawer → Maps → Matriarch → **L_Matriarch_Village_A** → Play.
-   Keys: **WASD** move, **mouse** look, **E** use or talk, **1-9** choose, **Q** close a menu, **Tab** pack, **left mouse** light attack, **right mouse** heavy (hold it for the Stroke), **Q** lock on, **Z** swap well, **H** poultice, **J** lamp oil, **Left Ctrl** dodge, **Left Shift** sprint, **F** flare, **G** fix a sketched platform, **F5** save, **F9** load, **F8** new game. **Esc** stops.
-   Follow the quest text at the top right: talk to Hesper (the teal figure by the tall lamp post), go up the ramp for Ochre, take linseed from the brown drum, use the grey slab, pour the oil into the lamp post, rest there and press 1, talk to Hesper again. Then go down the other ramp and fight the white figure.
-   Press **F5**, stop, press Play again: you are where you were, with what you had.
-   Then walk through the blue doorway at the north end of the square into the forest, and on to the Vault.
-3. **The look (2 min).** Maps under LookTest → **L_LookTest_Glaze** → Play.
-4. **The story (2 min).** Read section 1 of `docs/STORY.md`. It changed this evening on your advisor's note: Act 1 is now about Hesper's wife. Outlines for Acts 2 and 3 are in `docs/story/`.
-   After the quest, talk to Hesper again and ask her things; talk to Bartram; in the forest, talk to Corin and Ilka.
+1. Open **Unreal**. If it is not open, type `/ready` to Claude. Click on the Unreal window so it is in front (it runs very slowly otherwise).
+2. Content Drawer → Maps → Matriarch → **L_Matriarch_Village_A** → Play.
+3. **Keys.** WASD move, mouse look, Space jump, **E** use or talk, **1–9** choose, **Tab** satchel, **Q** close a menu or lock on, **left mouse** light attack, **right mouse** heavy (hold for a Stroke), **Left Ctrl** dodge, **Left Shift** sprint, **Z** swap well, **F** flare, **G** fix a platform, **H** poultice, **J** lamp oil, **K** draught, **L** tincture. **Esc** stops. You can change most of these on the satchel's Settings page.
+4. **The first quest (5 min).** Follow the text at the top right. Talk to Hesper (the figure by the tall lamp post), go up the ramp for Ochre, take linseed from the brown drum, use the grey slab, pour the oil into the lamp post, rest there and press 1, talk to Hesper again.
+5. **The satchel (1 min).** Press Tab. Left and Right turn the pages.
+6. **A fight (2 min).** Stop. Maps → Dev → **L_Combat_Greybox** → Play. One Blotter.
+7. **A build (2 min).** In that room press **F7** (fills your pack), then walk to the lamp post, rest, and attune two colours. Hold right mouse for a Stroke.
+
+To see the end of the act without playing an hour: ask Claude for "a save at the Heart wall".
 
 ## Where your feel-feedback matters most
 
-These are the things only hands can judge. For each, the question to answer is in italics.
+Only hands can judge these. The question to answer is in italics.
 
 **Movement**
-1. *Walking and sprinting in the village square.* Is the walk speed right for a place this size? Is sprint (Left Shift) worth its Stamina?
-2. *The two ramps between terraces.* Do they feel like part of the village or like obstacles?
-3. *Jumping in the Vault* (`L_Matriarch_Vault_A`). Gravity is 0.6 there. Is it floaty-pleasant or floaty-annoying?
+1. *Walking and sprinting in the village square.* Is the walk speed right for a place this size? Is sprint worth its Stamina?
+2. *The ramps between terraces.* Part of the village, or obstacles?
+3. *Jumping in the Vault.* Gravity is 0.6 there. Floaty-pleasant or floaty-annoying?
 
-**Combat** (the Blotter by the village's lower gate, or `L_Combat_Greybox`)
-4. *The dodge* (Left Ctrl). It lasts 0.6 s and cannot be hit for the first 0.3 s. Does it go far enough? Does it feel safe when it should?
-5. *Reading the Blotter.* It glows warm before each hit. Is the warning long enough to react to, and too long to be tense? Its three attacks should feel different: a poke, a sweep, a lunge.
-6. *Your swings.* Light takes 0.75 s, heavy 1.3 s, and you can only shuffle while swinging. Is that "weighty and deliberate" or just slow? There are no animations yet, only a thin outline where the swing reaches, so judge the timing, not the look.
-7. *Stamina.* 100, with 12 per light attack and 20 per dodge. Do you run out at interesting moments or annoying ones?
-8. *Stagger.* Three light hits in a row stagger the Blotter for 2 seconds. Does that feel earned?
-
-9a. *Strokes.* After attuning Ochre, hold right mouse for Glaze. Does "hold for the special, tap for the heavy" feel natural, or do you get the wrong one? The hold is 0.28 s.
-9b. *Lock-on* (Q). Does the camera help or fight you?
-9c. *Two at once.* The forest has pairs of Blotters. Too much for a first fight outside the village?
-
-9d. *The Madderback's charge* (`L_Combat_Madderback`). Can you bait it into a pillar on purpose? That is the whole enemy.
-9e. *The Pentiment's Redraw* (`L_Combat_Pentiment`). Is the fade long enough to think "Flare!" and press F?
-9f. *The boss* (`L_Combat_Boss`). Does the moment it turns red read as "the rule just changed"?
-
-9g. *The second ask.* At the brood nest in the forest, pick an ending. Does "This cannot be painted over" make you hesitate, or is it just one more button?
-9h. *The hollow.* After the boss, you find a lantern and a note. Does the note land, read cold, with no cutscene around it?
-
-9i. *Two builds.* Press F7 in the village, attune two colours at the Lampstand, fight in `L_Combat_Greybox`. Then try two others. Do they feel like different ways to play, or the same fight in a different colour?
-9j. *Heavy against light.* Make the Bone Scraper (slow, hits hard) and compare it with the knife. Is slow fun, or just slow?
-
-9k. *The Turning.* Nine seconds of shake, dark and three lines. Too long, too short, too quiet? Does it feel like something enormous moved?
-9l. *The walk home.* Up the Stair of Spines with the village above you. Is the changed forest readable as "the same place, moved", or just a new corridor?
-9m. *The Nape Overlook.* You could see it all game. Is getting there a reward?
+**Combat**
+4. *The dodge.* 0.6 s long, safe for the first 0.3 s. Far enough? Safe when it should be?
+5. *Reading the Blotter.* It glows warm before each hit. Is the warning long enough to react to, short enough to be tense?
+6. *Your swings.* Light 0.75 s, heavy 1.3 s, and you can only shuffle while swinging. Weighty, or just slow? There are no animations, so judge the timing, not the look.
+7. *Stamina.* Do you run out at interesting moments or annoying ones?
+8. *Strokes.* Hold right mouse 0.28 s for the Stroke, tap for a heavy. Do you get the one you meant?
+9. *Lock-on* (Q). Does the camera help or fight you?
+10. *The Madderback* (`L_Combat_Madderback`). Can you bait its charge into a pillar on purpose? That is the whole enemy.
+11. *The Pentiment* (`L_Combat_Pentiment`). When it fades, is there time to think "Flare!" and press F?
+12. *The boss* (`L_Combat_Boss`). Does the moment it turns red read as "the rule just changed"?
+13. *Two builds.* After F7, try two colours, then two others. Different ways to play, or the same fight in another colour?
+14. *Heavy against light.* Make the Bone Scraper and compare it with the knife. Is slow fun?
 
 **Exploration**
-9. *"Use" follows your eyes.* Stand between Hesper and the Lampstand and turn: does the prompt switch when you expect it to?
-10. *The lesson wall* in the forest (`L_Matriarch_Scumblewood_A`, past the second lamp post). Coming down the gorge you meet a dark wall with a pale cross-hatched patch. Would you think to walk into it? This is the game's signature idea and the design says to drop it if testers miss it.
-11. *The Flare* (F) in the Vault's gallery. 8 seconds and 8 metres: enough to cross two platforms, not three. Tense or stingy?
-12. *Finding notes.* Odile's notes are cream slips; the Hand's only show after a Flare. Did you find any without being told where?
-13. *The compass* at the top. Useful, or noise?
+15. *"Use" follows your eyes.* Stand between Hesper and the Lampstand and turn. Does the prompt switch when you expect?
+16. *The lesson wall* in the forest, past the second lamp post: a dark wall with a pale cross-hatched patch. Would you think to walk into it? The design says to drop the idea if testers miss it.
+17. *The Flare* in the Vault's gallery. 8 seconds and 8 metres. Tense or stingy?
+18. *Finding notes.* Did you find any without being told where?
 
-## What is broken or rough
+**Story moments**
+19. *The second ask.* At the brood nest, pick an ending. Does "This cannot be painted over" make you hesitate?
+20. *The hollow.* After the boss: a lantern and a note, no cutscene. Does the note land?
+21. *The Turning.* Nine seconds of shake, dark and three lines. Does it feel like something enormous moved?
+22. *The walk home.* Is the changed forest "the same place, moved", or just a new corridor?
+23. *The Nape Overlook.* You could see it all game. Is getting there a reward?
 
-- Only one ending of the Heart wall (green) has been played through the Turning. Nobody has walked the Stair of Spines with a keyboard.
-- Glim drops back to 100 whenever a level loads.
-- Corin's quest and Hesper's return are checked by automated test only, not in play.
+**The screens**
+24. *The satchel.* Does paper and ink feel like this game? Should every menu look like it?
+25. *Changing a key.* Change Dodge to something else. Did it work, and was it obvious how?
 
-- **The Mac is short of memory with Unreal open.** Unreal showed a memory warning during a test (about 4.5 GB had spilled to disk). The game still ran. Closing Blender and the Epic Games Launcher while playtesting should help; tell Claude if the game stutters.
-- **Nobody has played the loop by hand yet.** Claude drove it from a script and it passed; real keys and a real mouse may still find problems.
-- A "Message Log" window may sit on top of the Unreal viewport after Claude runs tests. Close it with its ✕.
-- Menus are plain text with number keys.
-- Nobody has walked the forest or the vault: the script teleports. Ramps, jumps and the lesson wall are untested by hand.
-- Enemies walk straight at you (no path-finding). The Madderback and the Pentiment have never been fought, by script or by hand.
-- Unreal runs very slowly when its window is not in front. Click on it before judging speed.
-- Enemies have no models or animations and no path-finding.
-- Dying restarts the level.
-- The **Diagnostics** button in Unreal's bottom bar is no longer red. It was Unreal's own start-up report; the one real error it listed is fixed.
+## What is broken, rough or unproven
+
+**Unproven (built, tested by script, never by hand)**
+- The whole game with a real keyboard and mouse.
+- Whether a changed key actually works in play. The setting saves; I cannot press keys.
+- Walking any route. The script teleports. The Stair of Spines passed a ground trace (no gaps, 25° at steepest); the forest gorge and the Vault platforms have had no such check.
+- The Madderback and the Pentiment have never been fought.
+- Only the green ending of the Heart wall was played through the Turning. The red wall, Corin's three endings and "pour the flame into the Lampstand" are built but unseen.
+- A gamepad.
+
+**Rough**
+- Everyone and everything is a plain shape. No models, no animation, no sound.
+- Enemies walk straight at you; pillars confuse them.
+- The Turning is words on black.
+- Only the satchel has the paper look. Dialogue, crafting, the palette and the fighting HUD are plain panels.
+- No trading (Ilka and Corin should trade after their quests).
+- "A Fair Grind", the stretch quest, is not built.
+- Three small attunement effects are missing (devlog 008).
+- Moving, looking and jumping cannot be rebound.
+
+**The Mac**
+- It runs short of memory with Unreal open (about 4.3 GB spilled to disk tonight, and the warning showed twice). The game kept running. Closing Blender and other large apps while you play should help.
+- A "Message Log" window may sit over the Unreal viewport after Claude runs tests. Close it with its ✕.
 
 ## Open questions (with what Claude chose)
 
-See `docs/QUESTIONS.md`. The ones most worth your eye:
+All 34 are in `docs/QUESTIONS.md` with the alternatives. The ones most worth your eye:
 
-6. **The story's central truth:** the Limner is the god's own unfinished self-portrait.
-10. **A Blotter in the village** for the test loop only.
-12. **Saving:** on rest and on F5; one save.
-7. **A seventh pigment, Lampblack,** in Act 3: suggested, not added.
+- **6. The story's central truth:** the Limner is the god's own unfinished self-portrait.
+- **23. You can leave the Vault without Odile's lantern.** Hesper then gets a plainer ending.
+- **24. Crafted gear puts itself on.**
+- **28. After the Turning you are standing exactly where you stood**, and walk out.
+- **29. Closing the Furrow seals the First Well's cache for good** if you had not opened it.
+- **31. The Stair of Spines has high walls**, so nobody falls into a pit with no way out.
+- **32. The paper look** for menus.
+- **7. A seventh pigment, Lampblack,** in Act 3: suggested, not added.

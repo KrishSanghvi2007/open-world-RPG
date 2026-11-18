@@ -57,3 +57,4 @@ Newest first. Format: `date: decision (who): why`
 - 2026-11-18: The style kit's master material takes one colour and derives its dark and light values in the shader, so every placeholder (level script or C++) only sets a colour. Erasures set "Purity" to keep their white exact (Claude).
 - 2026-11-18: Quest endings are made at a place in the world and always asked twice; consequences are permanent flags in the save that levels read (`RequiresFlag`, `HiddenByFlag`, `RemovedByFlag`, yield flags).
 - 2026-11-18: The region shift is a permanent save flag (`World.Turned`); from then on every zone loads its `LevelAfter`. The level builder makes A and B from the same function (`shifted=True`), so shared geometry cannot drift apart.
+- 2026-11-18: Player settings (keys, text size) live in their own save slot, apart from the game save. Rebindable actions are bound in C++ with `BindKey` from that file; movement and camera stay on the engine's Input Actions for now.

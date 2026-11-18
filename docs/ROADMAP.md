@@ -18,7 +18,7 @@ Every milestone ends with a "done when" test the owner can do in under 5 minutes
   | Enemy | Done: the Blotter (devlog 006) |
   | Boss | To do |
   | Interior | To do |
-  | UI screen | To do |
+  | UI screen | Done: the satchel (devlog 010) |
   | Item icon | To do |
 
 - **Autonomy.** Claude does not wait for the owner. Choices that come up are decided (recommended, reversible option), logged in `docs/QUESTIONS.md`, and work continues. Claude stops only for spending money, deleting the owner's work, or anything irreversible.
@@ -92,7 +92,7 @@ The Turning: "B" versions of the three levels, the Stair of Spines, the Nape Ove
 
 **Done when:** finish the boss, watch the Turning, and walk the new route back to a changed village.
 
-### M9. The full UI
+### M9. The full UI (done; moving, looking and jumping are not rebindable yet)
 Menus, HUD, inventory, journal, palette, map or compass, settings with rebinding, one UI style probe.
 
 **Done when:** every system above can be used without debug keys.

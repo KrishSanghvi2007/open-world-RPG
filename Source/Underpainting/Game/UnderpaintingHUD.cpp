@@ -4,6 +4,7 @@
 #include "UnderpaintingEnemy.h"
 #include "UnderpaintingPlayerCharacter.h"
 #include "UnderpaintingProgressSubsystem.h"
+#include "UnderpaintingSettings.h"
 #include "UnderpaintingVitalsComponent.h"
 #include "UnderpaintingWorldActors.h"
 #include "CanvasTypes.h"
@@ -129,6 +130,98 @@ void AUnderpaintingHUD::ToggleInventory()
 	else if (Menu == EUnderpaintingMenu::None)
 	{
 		Menu = EUnderpaintingMenu::Inventory;
+		bConfirmNewGame = false;
+	}
+}
+
+void AUnderpaintingHUD::MoveTab(int32 Direction)
+{
+	if (Menu == EUnderpaintingMenu::Inventory)
+	{
+		SatchelTab = (SatchelTab + Direction + 4) % 4;
+		bConfirmNewGame = false;
+	}
+}
+
+int32 AUnderpaintingHUD::SettingsRowCount() const
+{
+	return 2 + UUnderpaintingSettingsSave::Actions().Num() + 2;        // text size, hints, the keys, reset keys, new game
+}
+
+void AUnderpaintingHUD::MoveCursor(int32 Direction)
+{
+	if (Menu != EUnderpaintingMenu::Inventory)
+	{
+		return;
+	}
+	if (SatchelTab == 3)
+	{
+		SettingsCursor = (SettingsCursor + Direction + SettingsRowCount()) % SettingsRowCount();
+		bConfirmNewGame = false;
+	}
+	else if (SatchelTab == 2)
+	{
+		NotesPage = FMath::Max(0, NotesPage + Direction);
+	}
+}
+
+void AUnderpaintingHUD::ActivateSetting()
+{
+	UUnderpaintingSettings* Settings = UUnderpaintingSettings::Get(this);
+	if (!Settings)
+	{
+		return;
+	}
+	const TArray<FUnderpaintingAction>& Actions = UUnderpaintingSettingsSave::Actions();
+	const int32 KeyRow = SettingsCursor - 2;
+	if (SettingsCursor == 0)
+	{
+		Settings->CycleTextSize();
+	}
+	else if (SettingsCursor == 1)
+	{
+		Settings->ToggleKeyHints();
+	}
+	else if (Actions.IsValidIndex(KeyRow))
+	{
+		CapturingAction = Actions[KeyRow].Id;        // the player controller hands us the next key pressed
+	}
+	else if (KeyRow == Actions.Num())
+	{
+		Settings->ResetKeys();
+		AddNotice(TEXT("Keys put back as they were."));
+	}
+	else if (!bConfirmNewGame)
+	{
+		bConfirmNewGame = true;
+	}
+	else
+	{
+		bConfirmNewGame = false;
+		CloseMenu();
+		if (AUnderpaintingPlayerCharacter* Player = Cast<AUnderpaintingPlayerCharacter>(GetOwningPawn()))
+		{
+			Player->StartNewGame();
+		}
+	}
+}
+
+void AUnderpaintingHUD::CaptureKey(FKey Key)
+{
+	const FName Action = CapturingAction;
+	CapturingAction = NAME_None;
+	// Keys the menus themselves need cannot be given away.
+	static const TArray<FKey> Reserved = { EKeys::Escape, EKeys::Left, EKeys::Right, EKeys::Up, EKeys::Down,
+		EKeys::One, EKeys::Two, EKeys::Three, EKeys::Four, EKeys::Five, EKeys::Six, EKeys::Seven, EKeys::Eight, EKeys::Nine,
+		EKeys::F5, EKeys::F7, EKeys::F8, EKeys::F9, EKeys::W, EKeys::A, EKeys::S, EKeys::D, EKeys::SpaceBar };
+	if (Reserved.Contains(Key))
+	{
+		AddNotice(Key == EKeys::Escape ? TEXT("Left as it was.") : *FString::Printf(TEXT("%s is kept for moving and menus."), *Key.GetDisplayName(false).ToString()));
+		return;
+	}
+	if (UUnderpaintingSettings* Settings = UUnderpaintingSettings::Get(this))
+	{
+		Settings->SetKey(Action, Key);
 	}
 }
 
@@ -154,6 +247,11 @@ void AUnderpaintingHUD::CloseMenu()
 
 void AUnderpaintingHUD::Advance()
 {
+	if (Menu == EUnderpaintingMenu::Inventory && SatchelTab == 3)
+	{
+		ActivateSetting();        // on the settings tab, Use presses the highlighted row
+		return;
+	}
 	if (Menu != EUnderpaintingMenu::Dialogue)
 	{
 		CloseMenu();
@@ -225,12 +323,21 @@ void AUnderpaintingHUD::ChooseNumber(int32 Number)
 			}
 		}
 	}
-	else if (Menu == EUnderpaintingMenu::Inventory)
+	else if (Menu == EUnderpaintingMenu::Inventory && SatchelTab == 0)
 	{
 		const TArray<FName> Gear = Progress->GetGear();
 		if (Gear.IsValidIndex(Index))
 		{
 			Progress->Equip(Gear[Index]);
+		}
+	}
+	else if (Menu == EUnderpaintingMenu::Inventory && SatchelTab == 2)
+	{
+		// Read a note again.
+		const TArray<FName>& Found = Progress->GetData().FoundLore;
+		if (Found.IsValidIndex(NotesPage * 9 + Index))
+		{
+			OpenReading(Found[NotesPage * 9 + Index]);
 		}
 	}
 	else if (Menu == EUnderpaintingMenu::Choice)
@@ -347,7 +454,8 @@ void AUnderpaintingHUD::DrawHUD()
 	const UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
 
 	// Everything is laid out for a 720-line screen and scaled up from there, so text stays readable.
-	const float UIScale = FMath::Max(1.0f, Canvas->ClipY / 720.0f) * 1.25f;
+	const UUnderpaintingSettings* Settings = UUnderpaintingSettings::Get(this);
+	const float UIScale = FMath::Max(1.0f, Canvas->ClipY / 720.0f) * 1.25f * (Settings ? Settings->Read()->GetUIScale() : 1.0f);
 	const float RealX = Canvas->ClipX, RealY = Canvas->ClipY;
 	FCanvas* RawCanvas = Canvas->Canvas;
 	RawCanvas->PushAbsoluteTransform(FScaleMatrix(FVector(UIScale, UIScale, 1.0f)));
@@ -366,7 +474,10 @@ void AUnderpaintingHUD::DrawHUD()
 	}
 	if (Progress)
 	{
-		DrawTracker(Progress);
+		if (Menu != EUnderpaintingMenu::Inventory)
+		{
+			DrawTracker(Progress);        // the satchel has the Journal; the tracker would sit on its corner
+		}
 		switch (Menu)
 		{
 		case EUnderpaintingMenu::Dialogue: DrawDialogue(Progress); break;
@@ -383,7 +494,7 @@ void AUnderpaintingHUD::DrawHUD()
 	// The interaction prompt.
 	if (Player && Menu == EUnderpaintingMenu::None && Player->GetFocus())
 	{
-		const FString Prompt = FString::Printf(TEXT("[E]  %s"), *Player->GetFocus()->GetUsablePrompt());
+		const FString Prompt = FString::Printf(TEXT("[%s]  %s"), Settings ? *Settings->Read()->DescribeKey(TEXT("Use")) : TEXT("E"), *Player->GetFocus()->GetUsablePrompt());
 		float Width = 0.0f, Height = 0.0f;
 		GetTextSize(Prompt, Width, Height, nullptr, 1.2f);
 		const float X = (Canvas->ClipX - Width) * 0.5f;
@@ -437,17 +548,19 @@ void AUnderpaintingHUD::DrawPlayerBars(const AUnderpaintingPlayerCharacter* Play
 			DrawText(Cost > 0 ? FString::Printf(TEXT("%d Glim here   light %.0f%%"), Cost, Player->GetLightHere() * 100.0f) : FString(TEXT("free in this light")),
 				DimColour, WellX + 120.0f, Y + 22.0f, nullptr, 0.9f);
 		}
-		DrawText(FString::Printf(TEXT("Poultice %d [H]   Lamp Oil %d [J]"), Progress->GetItemCount(TEXT("MossPoultice")), Progress->GetItemCount(TEXT("LampOil"))),
-			DimColour, WellX, Y + 50.0f, nullptr, 0.85f);
+		const UUnderpaintingSettings* ItemSettings = UUnderpaintingSettings::Get(this);
+		const UUnderpaintingSettingsSave* ItemKeys = ItemSettings ? ItemSettings->Read() : GetDefault<UUnderpaintingSettingsSave>();
+		DrawText(FString::Printf(TEXT("Poultice %d [%s]   Lamp Oil %d [%s]"), Progress->GetItemCount(TEXT("MossPoultice")), *ItemKeys->DescribeKey(TEXT("Poultice")),
+			Progress->GetItemCount(TEXT("LampOil")), *ItemKeys->DescribeKey(TEXT("LampOil"))), DimColour, WellX, Y + 50.0f, nullptr, 0.85f);
 		FString Extras;
 		if (Progress->GetItemCount(TEXT("SanguineDraught")) > 0 || Player->GetDraughtRemaining() > 0.0f)
 		{
-			Extras += FString::Printf(TEXT("Draught %d [K]%s   "), Progress->GetItemCount(TEXT("SanguineDraught")),
+			Extras += FString::Printf(TEXT("Draught %d [%s]%s   "), Progress->GetItemCount(TEXT("SanguineDraught")), *ItemKeys->DescribeKey(TEXT("Draught")),
 				Player->GetDraughtRemaining() > 0.0f ? *FString::Printf(TEXT(" %.0fs"), Player->GetDraughtRemaining()) : TEXT(""));
 		}
 		if (Progress->GetItemCount(TEXT("BlueTincture")) > 0 || Player->GetTinctureRemaining() > 0.0f)
 		{
-			Extras += FString::Printf(TEXT("Tincture %d [L]%s"), Progress->GetItemCount(TEXT("BlueTincture")),
+			Extras += FString::Printf(TEXT("Tincture %d [%s]%s"), Progress->GetItemCount(TEXT("BlueTincture")), *ItemKeys->DescribeKey(TEXT("Tincture")),
 				Player->GetTinctureRemaining() > 0.0f ? *FString::Printf(TEXT(" %.0fs"), Player->GetTinctureRemaining()) : TEXT(""));
 		}
 		if (!Extras.IsEmpty())
@@ -462,7 +575,15 @@ void AUnderpaintingHUD::DrawPlayerBars(const AUnderpaintingPlayerCharacter* Play
 	}
 	else if (Menu == EUnderpaintingMenu::None)
 	{
-		DrawText(TEXT("E use   F flare   G fix   Tab pack   Mouse L light, R heavy (hold: Stroke)   Q lock on   Z swap well   L-Ctrl dodge   L-Shift sprint   F5/F9 save/load"), DimColour, X, Canvas->ClipY - 30.0f, nullptr, 0.85f);
+		const UUnderpaintingSettings* KeySettings = UUnderpaintingSettings::Get(this);
+		const UUnderpaintingSettingsSave* Keys = KeySettings ? KeySettings->Read() : nullptr;
+		if (Keys && Keys->bKeyHints)
+		{
+			DrawText(FString::Printf(TEXT("%s use   %s light   %s heavy (hold: Stroke)   %s dodge   %s sprint   %s lock on   %s swap well   %s flare   %s satchel"),
+				*Keys->DescribeKey(TEXT("Use")), *Keys->DescribeKey(TEXT("LightAttack")), *Keys->DescribeKey(TEXT("HeavyAttack")), *Keys->DescribeKey(TEXT("Dodge")),
+				*Keys->DescribeKey(TEXT("Sprint")), *Keys->DescribeKey(TEXT("LockOn")), *Keys->DescribeKey(TEXT("SwapWell")), *Keys->DescribeKey(TEXT("Flare")),
+				*Keys->DescribeKey(TEXT("Pack"))), DimColour, X, Canvas->ClipY - 30.0f, nullptr, 0.85f);
+		}
 	}
 }
 
@@ -534,12 +655,14 @@ void AUnderpaintingHUD::DrawNotices()
 	const float Now = GetWorld()->GetTimeSeconds();
 	Notices.RemoveAll([Now](const FNotice& Notice) { return Now - Notice.Time > NoticeSeconds; });
 
-	float Y = Canvas->ClipY * 0.24f;
+	// In the middle of the screen while playing; tucked into the top left corner while a menu is open.
+	const bool bAside = Menu != EUnderpaintingMenu::None;
+	float Y = bAside ? 12.0f : Canvas->ClipY * 0.24f;
 	for (const FNotice& Notice : Notices)
 	{
 		float Width = 0.0f, Height = 0.0f;
 		GetTextSize(Notice.Text, Width, Height, nullptr, 1.0f);
-		const float X = (Canvas->ClipX - Width) * 0.5f;
+		const float X = bAside ? 24.0f : (Canvas->ClipX - Width) * 0.5f;
 		DrawRect(BackColour, X - 10.0f, Y - 3.0f, Width + 20.0f, Height + 6.0f);
 		DrawText(Notice.Text, TextColour, X, Y, nullptr, 1.0f);
 		Y += Height + 10.0f;
@@ -642,71 +765,283 @@ void AUnderpaintingHUD::DrawAttunement(const UUnderpaintingProgress* Progress)
 	DrawText(TEXT("Number to attune   [E] or [Q] stand up"), DimColour, X + 20.0f, Cursor + 6.0f, nullptr, 0.9f);
 }
 
+namespace
+{
+	// The satchel is paper and ink (the UI style probe).
+	const FLinearColor SheetPaper = FLinearColor::FromSRGBColor(FColor::FromHex(TEXT("E9DFC8")));
+	const FLinearColor PaperShade = FLinearColor::FromSRGBColor(FColor::FromHex(TEXT("CDBF9F")));
+	const FLinearColor SheetInk = FLinearColor::FromSRGBColor(FColor::FromHex(TEXT("2E2A2A")));
+	const FLinearColor InkSoft = FLinearColor::FromSRGBColor(FColor::FromHex(TEXT("6E6258")));
+	const FLinearColor InkRed = FLinearColor::FromSRGBColor(FColor::FromHex(TEXT("9E2B25")));
+	const FLinearColor InkGreen = FLinearColor::FromSRGBColor(FColor::FromHex(TEXT("3F6B4A")));
+	const TCHAR* TabNames[] = { TEXT("Pack"), TEXT("Journal"), TEXT("Notes"), TEXT("Settings") };
+	const TCHAR* TabStrokes[] = { TEXT("D9A441"), TEXT("9E2B25"), TEXT("2F4BA8"), TEXT("6B8F71") };
+}
+
+float AUnderpaintingHUD::DrawPaper(const FString& Title, float& OutX, float& OutWidth)
+{
+	const float Width = FMath::Min(1000.0f, Canvas->ClipX - 80.0f);
+	const float Height = FMath::Min(620.0f, Canvas->ClipY - 96.0f);
+	const float X = (Canvas->ClipX - Width) * 0.5f;
+	const float Y = 62.0f;
+
+	// A sheet with a soft shadow, a darker deckle edge, and faint ruled lines.
+	DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.35f), X + 6.0f, Y + 8.0f, Width, Height);
+	DrawRect(PaperShade, X - 2.0f, Y - 2.0f, Width + 4.0f, Height + 4.0f);
+	DrawRect(SheetPaper, X, Y, Width, Height);
+	for (float LineY = Y + 96.0f; LineY < Y + Height - 20.0f; LineY += 26.0f)
+	{
+		DrawRect(FLinearColor(PaperShade.R, PaperShade.G, PaperShade.B, 0.45f), X + 24.0f, LineY, Width - 48.0f, 1.0f);
+	}
+
+	// Tabs: each a word with a stroke of one pigment under it. The open one is inked; the others are pencil.
+	float TabX = X + 28.0f;
+	for (int32 Index = 0; Index < 4; ++Index)
+	{
+		const bool bOpen = Index == SatchelTab;
+		float TextW = 0.0f, TextH = 0.0f;
+		GetTextSize(TabNames[Index], TextW, TextH, nullptr, 1.3f);
+		DrawText(TabNames[Index], bOpen ? SheetInk : InkSoft, TabX, Y + 16.0f, nullptr, 1.3f);
+		const FLinearColor Stroke = FLinearColor::FromSRGBColor(FColor::FromHex(TabStrokes[Index]));
+		if (bOpen)
+		{
+			// A loaded brush dragged left to right: three passes, slightly off each other, thinning at the end.
+			DrawRect(FLinearColor(Stroke.R, Stroke.G, Stroke.B, 0.85f), TabX - 6.0f, Y + 46.0f, TextW + 10.0f, 5.0f);
+			DrawRect(FLinearColor(Stroke.R, Stroke.G, Stroke.B, 0.55f), TabX - 2.0f, Y + 50.0f, TextW + 16.0f, 3.0f);
+			DrawRect(FLinearColor(Stroke.R, Stroke.G, Stroke.B, 0.30f), TabX + 8.0f, Y + 44.0f, TextW + 12.0f, 2.0f);
+		}
+		else
+		{
+			DrawRect(FLinearColor(Stroke.R, Stroke.G, Stroke.B, 0.35f), TabX, Y + 48.0f, TextW, 2.0f);
+		}
+		TabX += TextW + 44.0f;
+	}
+	DrawText(TEXT("[Left] [Right] turn the page"), InkSoft, X + Width - 250.0f, Y + 24.0f, nullptr, 0.85f);
+	DrawText(Title, InkSoft, X + 28.0f, Y + 66.0f, nullptr, 0.9f);
+
+	OutX = X + 28.0f;
+	OutWidth = Width - 56.0f;
+	return Y + 100.0f;
+}
+
 void AUnderpaintingHUD::DrawInventory(const UUnderpaintingProgress* Progress)
 {
-	const FUnderpaintingProgressData& Data = Progress->GetData();
-	const float Width = 520.0f;
-	const float X = 60.0f;
-	const float Y = 110.0f;
-
-	TArray<FString> Lines;
-	Lines.Add(TEXT("PIGMENT (wet / dry)"));
-	TSet<FName> PigmentIds;
-	for (const TPair<FName, int32>& Pair : Data.WetPigment) { PigmentIds.Add(Pair.Key); }
-	for (const TPair<FName, int32>& Pair : Data.DryPigment) { PigmentIds.Add(Pair.Key); }
-	for (const FName& Id : PigmentIds)
+	static const TCHAR* Titles[] = { TEXT("What you carry, and what you wear."), TEXT("What you have been asked, and what you decided."),
+		TEXT("What you have found to read."), TEXT("How the game answers your hands.") };
+	float X = 0.0f, Width = 0.0f;
+	const float Y = DrawPaper(Titles[SatchelTab], X, Width);
+	switch (SatchelTab)
 	{
-		if (Progress->GetPigment(Id) > 0)
-		{
-			Lines.Add(FString::Printf(TEXT("   %s   %d / %d"), *Progress->GetDisplayName(Id), Progress->GetWetPigment(Id), Progress->GetDryPigment(Id)));
-		}
+	case 0: DrawPackTab(Progress, X, Y, Width); break;
+	case 1: DrawJournalTab(Progress, X, Y, Width); break;
+	case 2: DrawNotesTab(Progress, X, Y, Width); break;
+	default: DrawSettingsTab(X, Y, Width); break;
 	}
-	Lines.Add(TEXT(""));
-	Lines.Add(TEXT("PACK"));
+}
+
+void AUnderpaintingHUD::DrawPackTab(const UUnderpaintingProgress* Progress, float X, float Y, float Width)
+{
+	const FUnderpaintingProgressData& Data = Progress->GetData();
+	const UUnderpaintingDataSubsystem* DataTables = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>() : nullptr;
+	const float Column = Width / 3.0f;
+
+	// Pigment: a dab of the colour, then wet and dry.
+	float Cursor = Y;
+	DrawText(TEXT("PIGMENT"), InkSoft, X, Cursor, nullptr, 0.9f);
+	DrawText(TEXT("wet / dry"), InkSoft, X + 150.0f, Cursor, nullptr, 0.8f);
+	Cursor += 26.0f;
+	for (const TCHAR* Id : { TEXT("Ochre"), TEXT("TerreVerte"), TEXT("Sanguine"), TEXT("BoneBlack"), TEXT("Ceruse"), TEXT("SlumberBlue") })
+	{
+		const FPigmentRow* Row = DataTables ? DataTables->FindPigment(Id) : nullptr;
+		const FLinearColor Dab = Row ? UUnderpaintingDataSubsystem::HexToColour(Row->ColourHex) : SheetInk;
+		const bool bHave = Progress->GetPigment(Id) > 0;
+		DrawRect(FLinearColor(Dab.R, Dab.G, Dab.B, bHave ? 1.0f : 0.25f), X, Cursor + 3.0f, 22.0f, 14.0f);
+		DrawRect(FLinearColor(Dab.R, Dab.G, Dab.B, bHave ? 0.5f : 0.12f), X + 18.0f, Cursor + 7.0f, 12.0f, 8.0f);
+		DrawText(FString::Printf(TEXT("%s"), *Progress->GetDisplayName(Id)), bHave ? SheetInk : InkSoft, X + 38.0f, Cursor, nullptr, 1.0f);
+		DrawText(FString::Printf(TEXT("%d / %d"), Progress->GetWetPigment(Id), Progress->GetDryPigment(Id)), bHave ? SheetInk : InkSoft, X + 170.0f, Cursor, nullptr, 1.0f);
+		Cursor += 26.0f;
+	}
+	Cursor += 14.0f;
+	DrawWrapped(TEXT("Wet pigment is half lost if you are rubbed out. Resting at a Lampstand dries it."), X, Cursor, Column - 30.0f, InkSoft, 0.8f);
+
+	// The pack.
+	float PackY = Y;
+	const float PackX = X + Column;
+	DrawText(TEXT("PACK"), InkSoft, PackX, PackY, nullptr, 0.9f);
+	PackY += 26.0f;
 	for (const TPair<FName, int32>& Pair : Data.Items)
 	{
-		if (Pair.Value > 0)
+		const FItemRow* Item = Progress->GetItemRow(Pair.Key);
+		if (Pair.Value > 0 && Item && Item->Type != EItemType::Weapon && Item->Type != EItemType::Armour && PackY < Canvas->ClipY - 170.0f)
 		{
-			Lines.Add(FString::Printf(TEXT("   %s   x%d"), *Progress->GetDisplayName(Pair.Key), Pair.Value));
+			DrawText(FString::Printf(TEXT("%s"), *Item->DisplayName), SheetInk, PackX, PackY, nullptr, 1.0f);
+			DrawText(FString::Printf(TEXT("x%d"), Pair.Value), InkSoft, PackX + Column - 70.0f, PackY, nullptr, 1.0f);
+			PackY += 26.0f;
 		}
 	}
-	Lines.Add(TEXT(""));
-	Lines.Add(TEXT("GEAR (press its number to put it on)"));
+
+	// Gear.
+	float GearY = Y;
+	const float GearX = X + Column * 2.0f;
+	DrawText(TEXT("GEAR"), InkSoft, GearX, GearY, nullptr, 0.9f);
+	DrawText(TEXT("number to put on"), InkSoft, GearX + 70.0f, GearY, nullptr, 0.8f);
+	GearY += 26.0f;
 	const TArray<FName> Gear = Progress->GetGear();
-	for (int32 GearIndex = 0; GearIndex < Gear.Num(); ++GearIndex)
+	for (int32 Index = 0; Index < Gear.Num(); ++Index)
 	{
-		const FItemRow* Item = Progress->GetItemRow(Gear[GearIndex]);
+		const FItemRow* Item = Progress->GetItemRow(Gear[Index]);
 		if (!Item)
 		{
 			continue;
 		}
-		const bool bOn = Gear[GearIndex] == Progress->GetEquippedWeapon() || Gear[GearIndex] == Progress->GetEquippedArmour();
-		const FString Numbers = Item->Type == EItemType::Weapon
+		const bool bOn = Gear[Index] == Progress->GetEquippedWeapon() || Gear[Index] == Progress->GetEquippedArmour();
+		if (bOn)
+		{
+			DrawRect(FLinearColor(0.85f, 0.42f, 0.10f, 0.30f), GearX - 6.0f, GearY, Column - 10.0f, 42.0f);
+		}
+		DrawText(FString::Printf(TEXT("%d.  %s"), Index + 1, *Item->DisplayName), SheetInk, GearX, GearY, nullptr, 1.0f);
+		DrawText(Item->Type == EItemType::Weapon
 			? FString::Printf(TEXT("%d / %d damage, reach %.1f m"), Item->LightDamage, Item->HeavyDamage, Item->Reach)
-			: FString::Printf(TEXT("stops %.0f%% of damage"), Item->DamageReduction * 100.0f);
-		Lines.Add(FString::Printf(TEXT("   %d.  %s   %s%s"), GearIndex + 1, *Item->DisplayName, *Numbers, bOn ? TEXT("   [ON]") : TEXT("")));
+			: FString::Printf(TEXT("stops %.0f%% of damage"), Item->DamageReduction * 100.0f), InkSoft, GearX + 24.0f, GearY + 22.0f, nullptr, 0.8f);
+		GearY += 46.0f;
 	}
-	Lines.Add(TEXT(""));
-	Lines.Add(FString::Printf(TEXT("ATTUNED: %d      DEATHS: %d"), Data.Attunements.Num(), Data.Deaths));
-	Lines.Add(TEXT(""));
-	Lines.Add(TEXT("FOUND"));
-	int32 Found = 0, Total = 0;
-	Progress->CountLore(ELoreKind::FieldNote, Found, Total);
-	Lines.Add(FString::Printf(TEXT("   Odile's notes   %d of %d"), Found, Total));
-	Progress->CountLore(ELoreKind::Marginalia, Found, Total);
-	Lines.Add(FString::Printf(TEXT("   Marginalia   %d of %d"), Found, Total));
-	Progress->CountLore(ELoreKind::Ledger, Found, Total);
-	Lines.Add(FString::Printf(TEXT("   Ledgers   %d of %d"), Found, Total));
-	Lines.Add(FString::Printf(TEXT("   Places   %d      Caches   %d"), Data.DiscoveredPlaces.Num(), Data.OpenedCaches.Num()));
+}
 
-	DrawPanel(X, Y, Width, 60.0f + Lines.Num() * LineHeight);
-	DrawText(TEXT("Your pack"), GlimColour, X + 20.0f, Y + 14.0f, nullptr, 1.2f);
-	float Cursor = Y + 48.0f;
-	for (const FString& Line : Lines)
+void AUnderpaintingHUD::DrawJournalTab(const UUnderpaintingProgress* Progress, float X, float Y, float Width)
+{
+	const FUnderpaintingProgressData& Data = Progress->GetData();
+	const float Column = Width * 0.5f;
+	float Left = Y, Right = Y;
+
+	DrawText(TEXT("IN HAND"), InkSoft, X, Left, nullptr, 0.9f);
+	Left += 26.0f;
+	DrawText(TEXT("DONE"), InkSoft, X + Column, Right, nullptr, 0.9f);
+	Right += 26.0f;
+	bool bAnyOpen = false;
+	for (const TPair<FName, FQuestProgress>& Pair : Data.Quests)
 	{
-		DrawText(Line, Line.StartsWith(TEXT("   ")) ? TextColour : DimColour, X + 20.0f, Cursor, nullptr, 1.0f);
-		Cursor += LineHeight;
+		const FQuestRow* Row = Progress->GetQuestRow(Pair.Key);
+		if (!Row)
+		{
+			continue;
+		}
+		if (Pair.Value.bComplete)
+		{
+			DrawText(Row->DisplayName, SheetInk, X + Column, Right, nullptr, 1.05f);
+			Right += 24.0f;
+			const FName ChoiceId = Pair.Value.Choice;
+			const FQuestChoice* Choice = Row->Choices.FindByPredicate([ChoiceId](const FQuestChoice& Entry) { return Entry.ChoiceId == ChoiceId; });
+			if (Choice)
+			{
+				// What you decided, in red: it is permanent.
+				Right = DrawWrapped(FString::Printf(TEXT("You chose: %s."), *Choice->Label), X + Column + 16.0f, Right, Column - 30.0f, InkRed, 0.9f) + 4.0f;
+				Right = DrawWrapped(Choice->Consequence, X + Column + 16.0f, Right, Column - 30.0f, InkSoft, 0.8f);
+			}
+			Right += 14.0f;
+			continue;
+		}
+
+		bAnyOpen = true;
+		DrawText(Row->DisplayName, SheetInk, X, Left, nullptr, 1.05f);
+		Left += 26.0f;
+		for (int32 Step = 0; Step < Row->Steps.Num() && Step <= Pair.Value.Step; ++Step)
+		{
+			const bool bNow = Step == Pair.Value.Step;
+			DrawText(bNow ? TEXT(">") : TEXT("x"), bNow ? InkRed : InkGreen, X + 4.0f, Left, nullptr, 0.9f);
+			Left = DrawWrapped(Row->Steps[Step], X + 24.0f, Left, Column - 50.0f, bNow ? SheetInk : InkSoft, 0.9f) + 4.0f;
+		}
+		Left += 14.0f;
 	}
+	if (!bAnyOpen)
+	{
+		DrawText(TEXT("Nothing is being asked of you."), InkSoft, X, Left, nullptr, 0.95f);
+	}
+}
+
+void AUnderpaintingHUD::DrawNotesTab(const UUnderpaintingProgress* Progress, float X, float Y, float Width)
+{
+	const TArray<FName>& Found = Progress->GetData().FoundLore;
+	const int32 Pages = FMath::Max(1, (Found.Num() + 8) / 9);
+	NotesPage = FMath::Clamp(NotesPage, 0, Pages - 1);
+
+	int32 Have = 0, Total = 0;
+	FString Counts;
+	Progress->CountLore(ELoreKind::FieldNote, Have, Total);
+	Counts += FString::Printf(TEXT("Odile's notes %d of %d      "), Have, Total);
+	Progress->CountLore(ELoreKind::Marginalia, Have, Total);
+	Counts += FString::Printf(TEXT("Marginalia %d of %d      "), Have, Total);
+	Progress->CountLore(ELoreKind::Ledger, Have, Total);
+	Counts += FString::Printf(TEXT("Ledgers %d of %d"), Have, Total);
+	DrawText(Counts, InkSoft, X, Y, nullptr, 0.9f);
+
+	float Cursor = Y + 34.0f;
+	if (Found.Num() == 0)
+	{
+		DrawText(TEXT("Nothing yet. Things worth reading do not announce themselves."), InkSoft, X, Cursor, nullptr, 0.95f);
+		return;
+	}
+	for (int32 Slot = 0; Slot < 9; ++Slot)
+	{
+		const int32 Index = NotesPage * 9 + Slot;
+		if (!Found.IsValidIndex(Index))
+		{
+			break;
+		}
+		const FLoreRow* Row = Progress->GetLore(Found[Index]);
+		if (!Row)
+		{
+			continue;
+		}
+		const bool bHand = Row->Kind == ELoreKind::Marginalia;
+		DrawText(FString::Printf(TEXT("%d.  %s"), Slot + 1, *Row->Title), bHand ? FLinearColor::FromSRGBColor(FColor::FromHex(TEXT("2F4BA8"))) : SheetInk, X, Cursor, nullptr, 1.0f);
+		DrawText(Row->Text.Left(84) + (Row->Text.Len() > 84 ? TEXT("...") : TEXT("")), InkSoft, X + 28.0f, Cursor + 22.0f, nullptr, 0.8f);
+		Cursor += 50.0f;
+	}
+	DrawText(FString::Printf(TEXT("Number to read again      [Up] [Down] page %d of %d"), NotesPage + 1, Pages), InkSoft, X, Canvas->ClipY - 70.0f, nullptr, 0.85f);
+}
+
+void AUnderpaintingHUD::DrawSettingsTab(float X, float Y, float Width)
+{
+	const UUnderpaintingSettings* Settings = UUnderpaintingSettings::Get(this);
+	if (!Settings)
+	{
+		return;
+	}
+	const UUnderpaintingSettingsSave* Save = Settings->Read();
+	const TArray<FUnderpaintingAction>& Actions = UUnderpaintingSettingsSave::Actions();
+	static const TCHAR* Sizes[] = { TEXT("small"), TEXT("normal"), TEXT("large"), TEXT("largest") };
+
+	struct FRow { FString Label; FString Value; };
+	TArray<FRow> Rows;
+	Rows.Add({ TEXT("Text size"), Sizes[FMath::Clamp(Save->TextSizeStep, 0, 3)] });
+	Rows.Add({ TEXT("Key hints along the bottom"), Save->bKeyHints ? TEXT("shown") : TEXT("hidden") });
+	for (const FUnderpaintingAction& Action : Actions)
+	{
+		Rows.Add({ Action.Label, CapturingAction == Action.Id ? FString(TEXT("press a key...")) : Save->DescribeKey(Action.Id) });
+	}
+	Rows.Add({ TEXT("Put all keys back"), FString() });
+	Rows.Add({ TEXT("New game"), bConfirmNewGame ? FString(TEXT("Press again to erase your save. This cannot be undone.")) : FString() });
+
+	// Two columns so everything fits on the sheet: general on the left with the first keys, the rest on the right.
+	const int32 PerColumn = (Rows.Num() + 1) / 2;
+	const float Column = Width * 0.5f;
+	for (int32 Index = 0; Index < Rows.Num(); ++Index)
+	{
+		const float RowX = X + (Index >= PerColumn ? Column : 0.0f);
+		const float RowY = Y + (Index % PerColumn) * 26.0f;
+		const bool bHere = Index == SettingsCursor;
+		if (bHere)
+		{
+			DrawRect(FLinearColor(0.85f, 0.42f, 0.10f, 0.30f), RowX - 8.0f, RowY - 2.0f, Column - 16.0f, 24.0f);
+			DrawText(TEXT(">"), InkRed, RowX - 4.0f, RowY, nullptr, 1.0f);
+		}
+		DrawText(Rows[Index].Label, SheetInk, RowX + 14.0f, RowY, nullptr, 0.95f);
+		const bool bWarn = Index == Rows.Num() - 1 || (Index >= 2 && Index < 2 + Actions.Num() && CapturingAction == Actions[Index - 2].Id);
+		DrawText(Rows[Index].Value, bWarn ? InkRed : InkGreen, RowX + (Index == Rows.Num() - 1 ? 110.0f : 270.0f), RowY, nullptr, Index == Rows.Num() - 1 ? 0.8f : 0.95f);
+	}
+	const FString UseKey = Save->DescribeKey(TEXT("Use"));
+	DrawText(FString::Printf(TEXT("[Up] [Down] choose      [%s] change      Moving is W A S D, looking is the mouse, jumping is Space."), *UseKey),
+		InkSoft, X, Canvas->ClipY - 70.0f, nullptr, 0.85f);
 }
 
 void AUnderpaintingHUD::DrawReading(const UUnderpaintingProgress* Progress)

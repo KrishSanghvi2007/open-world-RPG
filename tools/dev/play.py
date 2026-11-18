@@ -163,6 +163,26 @@ def main(args):
         pawn.set_actor_location(unreal.Vector(x * 100.0, y * 100.0, z * 100.0 + 100.0), False, True)
         pawn.set_actor_rotation(unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw), True)
         pawn.get_controller().set_control_rotation(unreal.Rotator(roll=0.0, pitch=float(args[5]) if len(args) > 5 else 0.0, yaw=yaw))
+    elif command == "satchel":
+        # satchel <tab 0-3> [rows down]: open the satchel on a tab and move the highlight.
+        pawn.dev_open_satchel(int(args[1]))
+        if len(args) > 2:
+            pawn.dev_move_cursor(int(args[2]))
+    elif command == "rebind":
+        # rebind <row> <Key>: on the settings tab, go to a row, press Use, then press the key (e.g. rebind 5 C).
+        pawn.dev_open_satchel(3); pawn.dev_move_cursor(int(args[1])); pawn.interact()
+        key = unreal.Key()
+        key.set_editor_property("key_name", unreal.Name(args[2]))
+        print("captured:", pawn.dev_press_key(key))
+        for action in ("Use", "Dodge", "Flare", "Pack"):
+            print("   ", action, "=", pawn.dev_describe_key(unreal.Name(action)))
+    elif command == "key":
+        # key <Key>: the key the settings screen is waiting for.
+        key = unreal.Key()
+        key.set_editor_property("key_name", unreal.Name(args[1]))
+        print("captured:", pawn.dev_press_key(key))
+        for action in ("Use", "Dodge", "Flare", "Pack"):
+            print("   ", action, "=", pawn.dev_describe_key(unreal.Name(action)))
     elif command == "count":
         cls = getattr(unreal, args[1])
         print(args[1], len(unreal.GameplayStatics.get_all_actors_of_class(world, cls)))

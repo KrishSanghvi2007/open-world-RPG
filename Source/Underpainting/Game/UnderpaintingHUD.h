@@ -1,6 +1,7 @@
-// A plain drawn HUD for the walking skeleton: bars, the quest tracker, the interaction prompt, short notices,
-// and four simple menus (dialogue, crafting, the palette, the pack). Everything is text on panels, driven by
-// number keys. It is replaced by a designed UI in milestone M9; the game rules do not depend on it.
+// The drawn HUD: bars, the quest tracker, the compass, the interaction prompt, short notices, and the menus
+// (dialogue, crafting, the palette, quest choices, reading, and the satchel with its Pack, Journal, Notes and
+// Settings tabs). Everything is drawn on the Canvas and driven by keys; the game rules do not depend on it.
+// The satchel is the UI style probe: a sheet of paper, ink, and strokes of the six pigments.
 
 #pragma once
 
@@ -59,6 +60,20 @@ public:
 	/** A number key, 1 to 9: pick a reply, craft a recipe, or buy a node. */
 	void ChooseNumber(int32 Number);
 
+	/** The satchel's tabs: left and right. */
+	void MoveTab(int32 Direction);
+
+	/** Up and down a list (the settings rows, the pages of notes). */
+	void MoveCursor(int32 Direction);
+
+	/** True while the settings screen is waiting for the player to press the key they want. */
+	bool IsCapturingKey() const { return !CapturingAction.IsNone(); }
+
+	/** The key pressed while waiting: it becomes the binding. */
+	void CaptureKey(FKey Key);
+
+	int32 GetSatchelTab() const { return SatchelTab; }
+
 	/** The dialogue row on screen, for tests and tools. */
 	FName GetDialogueRow() const { return DialogueRow; }
 
@@ -75,6 +90,13 @@ private:
 	void DrawCrafting(const UUnderpaintingProgress* Progress);
 	void DrawAttunement(const UUnderpaintingProgress* Progress);
 	void DrawInventory(const UUnderpaintingProgress* Progress);
+	float DrawPaper(const FString& Title, float& OutX, float& OutWidth);
+	void DrawPackTab(const UUnderpaintingProgress* Progress, float X, float Y, float Width);
+	void DrawJournalTab(const UUnderpaintingProgress* Progress, float X, float Y, float Width);
+	void DrawNotesTab(const UUnderpaintingProgress* Progress, float X, float Y, float Width);
+	void DrawSettingsTab(float X, float Y, float Width);
+	void ActivateSetting();
+	int32 SettingsRowCount() const;
 	void DrawReading(const UUnderpaintingProgress* Progress);
 	void DrawChoice(const UUnderpaintingProgress* Progress);
 	void DrawTurning(const AUnderpaintingPlayerCharacter* Player, UUnderpaintingProgress* Progress);
@@ -99,6 +121,13 @@ private:
 	FName ChoiceQuest;
 	FString ChoiceSubject;
 	int32 ChoicePending = INDEX_NONE;
+
+	// The satchel.
+	int32 SatchelTab = 0;
+	int32 SettingsCursor = 0;
+	int32 NotesPage = 0;
+	FName CapturingAction;
+	bool bConfirmNewGame = false;
 
 	struct FNotice
 	{

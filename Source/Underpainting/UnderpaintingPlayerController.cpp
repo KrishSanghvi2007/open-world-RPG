@@ -7,6 +7,7 @@
 #include "InputMappingContext.h"
 #include "Blueprint/UserWidget.h"
 #include "Underpainting.h"
+#include "UnderpaintingHUD.h"
 #include "Widgets/Input/SVirtualJoystick.h"
 
 void AUnderpaintingPlayerController::BeginPlay()
@@ -64,4 +65,18 @@ bool AUnderpaintingPlayerController::ShouldUseTouchControls() const
 {
 	// are we on a mobile platform? Should we force touch?
 	return SVirtualJoystick::ShouldDisplayTouchInterface() || bForceTouchControls;
+}
+
+bool AUnderpaintingPlayerController::InputKey(const FInputKeyEventArgs& Params)
+{
+	AUnderpaintingHUD* HUD = Cast<AUnderpaintingHUD>(GetHUD());
+	if (HUD && HUD->IsCapturingKey() && !Params.Key.IsAnalog())
+	{
+		if (Params.Event == IE_Pressed)
+		{
+			HUD->CaptureKey(Params.Key);
+		}
+		return true;
+	}
+	return Super::InputKey(Params);
 }

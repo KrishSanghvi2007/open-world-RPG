@@ -24,6 +24,7 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - **Look test** (`/Game/LookTest/Maps/`, pictures in `docs/looktest/`): one corner of the village square in three painterly styles, built by `tools/looktest/`. Working choice: B, Glaze.
 - **First combat** (`Source/Underpainting/Combat/`): stamina, sprint, dodge, light and heavy attacks, and a data-driven Blotter, in `/Game/Maps/Dev/L_Combat_Greybox`. Tests: `Underpainting.Combat.*`.
 - **Story** written: `docs/STORY.md`.
+- **The UI (M9)**: the satchel (`DrawInventory` and its four tab functions in `UnderpaintingHUD.cpp`), `Game/UnderpaintingSettings.*` (rebindable keys, text size, own save file), key capture in `AUnderpaintingPlayerController::InputKey`, continue from the saved zone, Health and Glim carried between zones. Devlog: `docs/devlog/010-the-satchel.md`.
 - **The region shift (M8)**: the Turning sequence, `World.Turned`, "B" levels for all three zones (`build_matriarch_greybox.py B`), Stair of Spines, Nape Overlook, after-shift consequences, end card. `tools/dev/check_route.py` checks a route can be walked. Devlog: `docs/devlog/009-the-turning.md`.
 - **Crafting and attunement depth (M7)**: all 10 recipes, saved gear (`Equip`, Tab menu), Braided Wick, Sanguine Draught (K), Blue Tincture (L), tier-2 attunement effects, F7 debug fill. Devlog: `docs/devlog/008-crafting-and-attunement.md`.
 - **Quests and choices (M6)**: quest endings made at a place (`AUnderpaintingChoicePoint`), asked twice, setting permanent world flags; inspectables; things that appear or vanish by flag; dialogue for three more quests. Devlog: `docs/devlog/007-quests-and-choices.md`.
@@ -44,7 +45,9 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - The three zones are separate levels, each with an A (before) and B (after the Turning) version.
 
 ## Next (Claude does these; see `docs/ROADMAP.md`)
-Scope is the Act 1 slice only. In order:
-1. **M9, the UI:** journal, proper inventory and palette screens, settings with key rebinding, notices that do not sit on menus, one UI style probe.
-2. Left over: enemy navigation, signposts (M3); "A Fair Grind" (stretch); three small attunement effects (devlog 008); trading with Ilka and Corin; Glim carried between levels.
-3. Remaining style probes: player, NPC, boss, interior, item icon.
+All nine slice milestones are built. No Acts 2-3 and no full art pass until the owner says so. What is left inside the slice, in order:
+1. **Prove what is unproven by script:** fight the Madderback and the Pentiment; play the red Heart wall and Corin's endings through the Turning; trace the forest gorge and the Vault for walkability with `tools/dev/check_route.py`.
+2. **Leftovers:** enemy navigation, signposts (M3); trading with Ilka and Corin; three small attunement effects (devlog 008); "A Fair Grind" (stretch).
+3. **The paper look** on the other menus, if the owner likes the satchel.
+4. **Remaining style probes:** player, NPC, boss, interior, item icon.
+5. Act on the owner's playtest notes as soon as there are any: they outrank everything above.

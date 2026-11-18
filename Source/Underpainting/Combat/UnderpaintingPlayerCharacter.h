@@ -146,6 +146,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dev")
 	void DevGrant(FName Id, int32 Count);
 
+	/** For scripted checks: open the satchel on a tab (0 Pack, 1 Journal, 2 Notes, 3 Settings). */
+	UFUNCTION(BlueprintCallable, Category = "Underpainting|Dev")
+	void DevOpenSatchel(int32 Tab);
+
+	/** For scripted checks: move the highlight in the satchel. */
+	UFUNCTION(BlueprintCallable, Category = "Underpainting|Dev")
+	void DevMoveCursor(int32 Steps);
+
+	/** For scripted checks: the key the settings screen is waiting for. Returns false if it was not waiting. */
+	UFUNCTION(BlueprintCallable, Category = "Underpainting|Dev")
+	bool DevPressKey(FKey Key);
+
+	/** For scripted checks: the key an action is on, as the hints show it. */
+	UFUNCTION(BlueprintCallable, Category = "Underpainting|Dev")
+	FString DevDescribeKey(FName ActionId) const;
+
 	/** Debug (F7): 20 of every pigment, dried, a full pack of materials, and every recipe taught. For testing crafting. */
 	UFUNCTION(BlueprintCallable, Category = "Underpainting|Dev")
 	void DevFill();
@@ -331,6 +347,12 @@ private:
 	void DraughtPressed() { UseDraught(); }
 	void TincturePressed() { UseTincture(); }
 	void DevFillPressed() { DevFill(); }
+	void TabLeftPressed();
+	void TabRightPressed();
+	void CursorUpPressed();
+	void CursorDownPressed();
+	void BindGameKeys();
+	FDelegateHandle KeysChangedHandle;
 	void LampOilPressed() { UseLampOil(); }
 	void TickLockOn(float DeltaTime);
 	void ApplyHit(AActor* Target, float Damage, float StaggerDamage, const TCHAR* What);

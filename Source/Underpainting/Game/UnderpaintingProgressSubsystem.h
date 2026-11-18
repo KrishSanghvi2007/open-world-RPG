@@ -83,6 +83,17 @@ public:
 	/** Asks for the player to be put back at the saved position when the next level starts (after a death). */
 	void RequestRestore() { bRestorePending = true; ArrivingFromZone = NAME_None; }
 
+	bool IsRestorePending() const { return bRestorePending; }
+
+	/** Remembers the player's Health and Glim so they survive a change of level. */
+	void StashVitals(const APawn* Player);
+
+	/** The Health and Glim carried from the last level, once. */
+	bool ConsumeVitals(float& OutHealth, float& OutGlim);
+
+	/** The level the save was made in, as it is now: its "B" level if she has turned since. None if there is no save. */
+	FName GetSavedLevel() const;
+
 	/** True once after a load: the player should be put back where the save says. */
 	bool ConsumeRestore();
 
@@ -95,6 +106,8 @@ private:
 	FName ArrivingFromZone;
 	bool bRestorePending = false;
 	bool bJustTurned = false;
+	float CarriedHealth = -1.0f;
+	float CarriedGlim = 0.0f;
 	bool bHasKeptTransform = false;
 	FTransform KeptTransform;
 };

@@ -1,4 +1,5 @@
 #include "UnderpaintingPlayerCharacter.h"
+#include "UnderpaintingSettings.h"
 
 #include "Underpainting.h"
 #include "UnderpaintingCombatRules.h"
@@ -72,6 +73,11 @@ void AUnderpaintingPlayerCharacter::BeginPlay()
 	// After the Turning the level is swapped under you: you are still standing where you stood.
 	FTransform Kept;
 	UUnderpaintingProgressSubsystem* Travel = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr;
+	float CarriedHealth = 0.0f, CarriedGlim = 0.0f;
+	if (Travel && Travel->ConsumeVitals(CarriedHealth, CarriedGlim))
+	{
+		Vitals->SetHealthAndGlim(CarriedHealth, CarriedGlim);        // walking between zones does not top you up
+	}
 	if (Travel && Travel->ConsumeKeptTransform(Kept))
 	{
 		SetActorTransform(Kept, false, nullptr, ETeleportType::TeleportPhysics);
@@ -79,6 +85,7 @@ void AUnderpaintingPlayerCharacter::BeginPlay()
 		{
 			PlayerController->SetControlRotation(Kept.Rotator());
 		}
+		Travel->SaveGame(this);        // the changed world is the world now
 	}
 }
 
@@ -208,6 +215,10 @@ void AUnderpaintingPlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayRe
 	{
 		Progress->OnChanged.Remove(ProgressChangedHandle);
 	}
+	if (UUnderpaintingSettings* Settings = UUnderpaintingSettings::Get(this))
+	{
+		Settings->OnKeysChanged.Remove(KeysChangedHandle);
+	}
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -244,7 +255,16 @@ void AUnderpaintingPlayerCharacter::RestoreFromSave()
 	const UUnderpaintingProgressSubsystem* Subsystem = GameInstance ? GameInstance->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr;
 	const UUnderpaintingSaveGame* Save = Subsystem ? Subsystem->GetLoadedSave() : nullptr;
 	UUnderpaintingProgressSubsystem* Mutable = GameInstance ? GameInstance->GetSubsystem<UUnderpaintingProgressSubsystem>() : nullptr;
-	if (Save && Mutable && Mutable->ConsumeRestore() && Save->LevelName == FName(*UGameplayStatics::GetCurrentLevelName(this, true)))
+	const FName Here(*UGameplayStatics::GetCurrentLevelName(this, true));
+	const UUnderpaintingDataSubsystem* ZoneData = GameInstance ? GameInstance->GetSubsystem<UUnderpaintingDataSubsystem>() : nullptr;
+	if (Save && Mutable && Mutable->IsRestorePending() && Mutable->GetSavedLevel() != Here && !Mutable->GetSavedLevel().IsNone()
+		&& ZoneData && !ZoneData->FindZoneForLevel(Here.ToString()).IsNone())
+	{
+		// The game has started in one zone but the save was made in another: go there. (Test rooms are left alone.)
+		UGameplayStatics::OpenLevel(this, FName(*FString::Printf(TEXT("/Game/Maps/Matriarch/%s"), *Mutable->GetSavedLevel().ToString())));
+		return;
+	}
+	if (Save && Mutable && Mutable->ConsumeRestore() && Mutable->GetSavedLevel() == Here)
 	{
 		SetActorTransform(Save->PlayerTransform, false, nullptr, ETeleportType::TeleportPhysics);
 		if (AController* PlayerController = GetController())
@@ -383,6 +403,13 @@ void AUnderpaintingPlayerCharacter::StartNewGame()
 	if (UUnderpaintingProgressSubsystem* Subsystem = GetGameInstance()->GetSubsystem<UUnderpaintingProgressSubsystem>())
 	{
 		Subsystem->NewGame();
+		// A new game starts in Varnish, unless this is a test room.
+		const UUnderpaintingDataSubsystem* ZoneData = GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>();
+		if (ZoneData && !ZoneData->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(this, true)).IsNone())
+		{
+			UGameplayStatics::OpenLevel(this, FName(TEXT("/Game/Maps/Matriarch/L_Matriarch_Village_A")));
+			return;
+		}
 		RestartLevel();
 	}
 }
@@ -390,49 +417,79 @@ void AUnderpaintingPlayerCharacter::StartNewGame()
 void AUnderpaintingPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	// Fixed keys for the first playable. These move to Input Actions (rebindable) when the options menu exists.
-	PlayerInputComponent->BindKey(EKeys::LeftMouseButton, IE_Pressed, this, &AUnderpaintingPlayerCharacter::StartLightAttack);
-	PlayerInputComponent->BindKey(EKeys::RightMouseButton, IE_Pressed, this, &AUnderpaintingPlayerCharacter::HeavyPressed);
-	PlayerInputComponent->BindKey(EKeys::RightMouseButton, IE_Released, this, &AUnderpaintingPlayerCharacter::HeavyReleased);
-	PlayerInputComponent->BindKey(EKeys::Z, IE_Pressed, this, &AUnderpaintingPlayerCharacter::SwapWellPressed);
-	PlayerInputComponent->BindKey(EKeys::H, IE_Pressed, this, &AUnderpaintingPlayerCharacter::PoulticePressed);
-	PlayerInputComponent->BindKey(EKeys::J, IE_Pressed, this, &AUnderpaintingPlayerCharacter::LampOilPressed);
-	PlayerInputComponent->BindKey(EKeys::K, IE_Pressed, this, &AUnderpaintingPlayerCharacter::DraughtPressed);
-	PlayerInputComponent->BindKey(EKeys::L, IE_Pressed, this, &AUnderpaintingPlayerCharacter::TincturePressed);
-	PlayerInputComponent->BindKey(EKeys::F7, IE_Pressed, this, &AUnderpaintingPlayerCharacter::DevFillPressed);
-	PlayerInputComponent->BindKey(EKeys::Gamepad_RightThumbstick, IE_Pressed, this, &AUnderpaintingPlayerCharacter::ToggleLockOn);
-	PlayerInputComponent->BindKey(EKeys::LeftControl, IE_Pressed, this, &AUnderpaintingPlayerCharacter::StartDodge);
-	PlayerInputComponent->BindKey(EKeys::LeftShift, IE_Pressed, this, &AUnderpaintingPlayerCharacter::SprintPressed);
-	PlayerInputComponent->BindKey(EKeys::LeftShift, IE_Released, this, &AUnderpaintingPlayerCharacter::SprintReleased);
-
-	PlayerInputComponent->BindKey(EKeys::E, IE_Pressed, this, &AUnderpaintingPlayerCharacter::InteractPressed);
-	PlayerInputComponent->BindKey(EKeys::Q, IE_Pressed, this, &AUnderpaintingPlayerCharacter::LockOrClosePressed);
-	PlayerInputComponent->BindKey(EKeys::Tab, IE_Pressed, this, &AUnderpaintingPlayerCharacter::InventoryPressed);
-	PlayerInputComponent->BindKey(EKeys::F5, IE_Pressed, this, &AUnderpaintingPlayerCharacter::SavePressed);
-	PlayerInputComponent->BindKey(EKeys::F9, IE_Pressed, this, &AUnderpaintingPlayerCharacter::LoadPressed);
-	PlayerInputComponent->BindKey(EKeys::F8, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NewGamePressed);
-	PlayerInputComponent->BindKey(EKeys::F, IE_Pressed, this, &AUnderpaintingPlayerCharacter::FlarePressed);
-	PlayerInputComponent->BindKey(EKeys::G, IE_Pressed, this, &AUnderpaintingPlayerCharacter::FlaskPressed);
-	PlayerInputComponent->BindKey(EKeys::Gamepad_DPad_Left, IE_Pressed, this, &AUnderpaintingPlayerCharacter::FlarePressed);
-	PlayerInputComponent->BindKey(EKeys::One, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<1>);
-	PlayerInputComponent->BindKey(EKeys::Two, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<2>);
-	PlayerInputComponent->BindKey(EKeys::Three, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<3>);
-	PlayerInputComponent->BindKey(EKeys::Four, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<4>);
-	PlayerInputComponent->BindKey(EKeys::Five, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<5>);
-	PlayerInputComponent->BindKey(EKeys::Six, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<6>);
-	PlayerInputComponent->BindKey(EKeys::Seven, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<7>);
-	PlayerInputComponent->BindKey(EKeys::Eight, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<8>);
-	PlayerInputComponent->BindKey(EKeys::Nine, IE_Pressed, this, &AUnderpaintingPlayerCharacter::NumberPressed<9>);
-	PlayerInputComponent->BindKey(EKeys::Gamepad_DPad_Up, IE_Pressed, this, &AUnderpaintingPlayerCharacter::InteractPressed);
-
-	PlayerInputComponent->BindKey(EKeys::Gamepad_FaceButton_Left, IE_Pressed, this, &AUnderpaintingPlayerCharacter::StartLightAttack);
-	PlayerInputComponent->BindKey(EKeys::Gamepad_FaceButton_Top, IE_Pressed, this, &AUnderpaintingPlayerCharacter::HeavyPressed);
-	PlayerInputComponent->BindKey(EKeys::Gamepad_FaceButton_Top, IE_Released, this, &AUnderpaintingPlayerCharacter::HeavyReleased);
-	PlayerInputComponent->BindKey(EKeys::Gamepad_FaceButton_Right, IE_Pressed, this, &AUnderpaintingPlayerCharacter::StartDodge);
-	PlayerInputComponent->BindKey(EKeys::Gamepad_LeftThumbstick, IE_Pressed, this, &AUnderpaintingPlayerCharacter::SprintPressed);
-	PlayerInputComponent->BindKey(EKeys::Gamepad_LeftThumbstick, IE_Released, this, &AUnderpaintingPlayerCharacter::SprintReleased);
+	BindGameKeys();
+	if (UUnderpaintingSettings* Settings = UUnderpaintingSettings::Get(this))
+	{
+		KeysChangedHandle = Settings->OnKeysChanged.AddUObject(this, &AUnderpaintingPlayerCharacter::BindGameKeys);
+	}
 }
+
+void AUnderpaintingPlayerCharacter::BindGameKeys()
+{
+	UInputComponent* Input = InputComponent;
+	if (!Input)
+	{
+		return;
+	}
+	Input->KeyBindings.Reset();
+
+	// The keys the player can change (the settings tab of the satchel). Moving, looking and jumping are Input Actions
+	// in the engine's mapping asset and stay on WASD, the mouse and Space for now.
+	const UUnderpaintingSettings* Settings = UUnderpaintingSettings::Get(this);
+	const UUnderpaintingSettingsSave* Keys = Settings ? Settings->Read() : GetDefault<UUnderpaintingSettingsSave>();
+	Input->BindKey(Keys->GetKey(TEXT("LightAttack")), IE_Pressed, this, &ThisClass::StartLightAttack);
+	Input->BindKey(Keys->GetKey(TEXT("HeavyAttack")), IE_Pressed, this, &ThisClass::HeavyPressed);
+	Input->BindKey(Keys->GetKey(TEXT("HeavyAttack")), IE_Released, this, &ThisClass::HeavyReleased);
+	Input->BindKey(Keys->GetKey(TEXT("SwapWell")), IE_Pressed, this, &ThisClass::SwapWellPressed);
+	Input->BindKey(Keys->GetKey(TEXT("Poultice")), IE_Pressed, this, &ThisClass::PoulticePressed);
+	Input->BindKey(Keys->GetKey(TEXT("LampOil")), IE_Pressed, this, &ThisClass::LampOilPressed);
+	Input->BindKey(Keys->GetKey(TEXT("Draught")), IE_Pressed, this, &ThisClass::DraughtPressed);
+	Input->BindKey(Keys->GetKey(TEXT("Tincture")), IE_Pressed, this, &ThisClass::TincturePressed);
+	Input->BindKey(Keys->GetKey(TEXT("Dodge")), IE_Pressed, this, &ThisClass::StartDodge);
+	Input->BindKey(Keys->GetKey(TEXT("Sprint")), IE_Pressed, this, &ThisClass::SprintPressed);
+	Input->BindKey(Keys->GetKey(TEXT("Sprint")), IE_Released, this, &ThisClass::SprintReleased);
+	Input->BindKey(Keys->GetKey(TEXT("Use")), IE_Pressed, this, &ThisClass::InteractPressed);
+	Input->BindKey(Keys->GetKey(TEXT("LockOn")), IE_Pressed, this, &ThisClass::LockOrClosePressed);
+	Input->BindKey(Keys->GetKey(TEXT("Pack")), IE_Pressed, this, &ThisClass::InventoryPressed);
+	Input->BindKey(Keys->GetKey(TEXT("Flare")), IE_Pressed, this, &ThisClass::FlarePressed);
+	Input->BindKey(Keys->GetKey(TEXT("Flask")), IE_Pressed, this, &ThisClass::FlaskPressed);
+
+	// Fixed: menus, the gamepad, and the debug keys (F5 save, F9 load, F8 new game, F7 fill the pack).
+	Input->BindKey(EKeys::Left, IE_Pressed, this, &ThisClass::TabLeftPressed);
+	Input->BindKey(EKeys::Right, IE_Pressed, this, &ThisClass::TabRightPressed);
+	Input->BindKey(EKeys::Up, IE_Pressed, this, &ThisClass::CursorUpPressed);
+	Input->BindKey(EKeys::Down, IE_Pressed, this, &ThisClass::CursorDownPressed);
+	Input->BindKey(EKeys::Gamepad_LeftShoulder, IE_Pressed, this, &ThisClass::TabLeftPressed);
+	Input->BindKey(EKeys::Gamepad_RightShoulder, IE_Pressed, this, &ThisClass::TabRightPressed);
+	Input->BindKey(EKeys::Gamepad_Special_Right, IE_Pressed, this, &ThisClass::InventoryPressed);
+	Input->BindKey(EKeys::F5, IE_Pressed, this, &ThisClass::SavePressed);
+	Input->BindKey(EKeys::F9, IE_Pressed, this, &ThisClass::LoadPressed);
+	Input->BindKey(EKeys::F8, IE_Pressed, this, &ThisClass::NewGamePressed);
+	Input->BindKey(EKeys::F7, IE_Pressed, this, &ThisClass::DevFillPressed);
+	Input->BindKey(EKeys::One, IE_Pressed, this, &ThisClass::NumberPressed<1>);
+	Input->BindKey(EKeys::Two, IE_Pressed, this, &ThisClass::NumberPressed<2>);
+	Input->BindKey(EKeys::Three, IE_Pressed, this, &ThisClass::NumberPressed<3>);
+	Input->BindKey(EKeys::Four, IE_Pressed, this, &ThisClass::NumberPressed<4>);
+	Input->BindKey(EKeys::Five, IE_Pressed, this, &ThisClass::NumberPressed<5>);
+	Input->BindKey(EKeys::Six, IE_Pressed, this, &ThisClass::NumberPressed<6>);
+	Input->BindKey(EKeys::Seven, IE_Pressed, this, &ThisClass::NumberPressed<7>);
+	Input->BindKey(EKeys::Eight, IE_Pressed, this, &ThisClass::NumberPressed<8>);
+	Input->BindKey(EKeys::Nine, IE_Pressed, this, &ThisClass::NumberPressed<9>);
+	Input->BindKey(EKeys::Gamepad_RightThumbstick, IE_Pressed, this, &ThisClass::ToggleLockOn);
+	Input->BindKey(EKeys::Gamepad_DPad_Left, IE_Pressed, this, &ThisClass::FlarePressed);
+	Input->BindKey(EKeys::Gamepad_DPad_Up, IE_Pressed, this, &ThisClass::InteractPressed);
+	Input->BindKey(EKeys::Gamepad_FaceButton_Left, IE_Pressed, this, &ThisClass::StartLightAttack);
+	Input->BindKey(EKeys::Gamepad_FaceButton_Top, IE_Pressed, this, &ThisClass::HeavyPressed);
+	Input->BindKey(EKeys::Gamepad_FaceButton_Top, IE_Released, this, &ThisClass::HeavyReleased);
+	Input->BindKey(EKeys::Gamepad_FaceButton_Right, IE_Pressed, this, &ThisClass::StartDodge);
+	Input->BindKey(EKeys::Gamepad_LeftThumbstick, IE_Pressed, this, &ThisClass::SprintPressed);
+	Input->BindKey(EKeys::Gamepad_LeftThumbstick, IE_Released, this, &ThisClass::SprintReleased);
+}
+
+void AUnderpaintingPlayerCharacter::TabLeftPressed() { if (AUnderpaintingHUD* HUD = GetUnderpaintingHUD()) { HUD->MoveTab(-1); } }
+void AUnderpaintingPlayerCharacter::TabRightPressed() { if (AUnderpaintingHUD* HUD = GetUnderpaintingHUD()) { HUD->MoveTab(1); } }
+void AUnderpaintingPlayerCharacter::CursorUpPressed() { if (AUnderpaintingHUD* HUD = GetUnderpaintingHUD()) { HUD->MoveCursor(-1); } }
+void AUnderpaintingPlayerCharacter::CursorDownPressed() { if (AUnderpaintingHUD* HUD = GetUnderpaintingHUD()) { HUD->MoveCursor(1); } }
 
 void AUnderpaintingPlayerCharacter::EquipWeapon(FName ItemId)
 {
@@ -1096,7 +1153,7 @@ void AUnderpaintingPlayerCharacter::RestartLevel()
 	if (Subsystem && Save && !Save->LevelName.IsNone())
 	{
 		Subsystem->RequestRestore();
-		UGameplayStatics::OpenLevel(this, FName(*FString::Printf(TEXT("/Game/Maps/Matriarch/%s"), *Save->LevelName.ToString())));
+		UGameplayStatics::OpenLevel(this, FName(*FString::Printf(TEXT("/Game/Maps/Matriarch/%s"), *Subsystem->GetSavedLevel().ToString())));
 		return;
 	}
 	UGameplayStatics::OpenLevel(this, FName(*UGameplayStatics::GetCurrentLevelName(this, true)));
@@ -1177,4 +1234,45 @@ FString AUnderpaintingPlayerCharacter::DevDescribeEnemies()
 			*It->GetCurrentAttackName().ToString(), It->GetActiveWeaknesses().Num() > 0 ? *It->GetActiveWeaknesses()[0].ToString() : TEXT("-"));
 	}
 	return Text;
+}
+
+void AUnderpaintingPlayerCharacter::DevOpenSatchel(int32 Tab)
+{
+	if (AUnderpaintingHUD* HUD = GetUnderpaintingHUD())
+	{
+		HUD->CloseMenu();
+		HUD->ToggleInventory();
+		for (int32 Guard = 0; Guard < 4 && HUD->GetSatchelTab() != Tab; ++Guard)
+		{
+			HUD->MoveTab(1);
+		}
+	}
+}
+
+void AUnderpaintingPlayerCharacter::DevMoveCursor(int32 Steps)
+{
+	if (AUnderpaintingHUD* HUD = GetUnderpaintingHUD())
+	{
+		for (int32 Step = 0; Step < FMath::Abs(Steps); ++Step)
+		{
+			HUD->MoveCursor(Steps > 0 ? 1 : -1);
+		}
+	}
+}
+
+bool AUnderpaintingPlayerCharacter::DevPressKey(FKey Key)
+{
+	AUnderpaintingHUD* HUD = GetUnderpaintingHUD();
+	if (!HUD || !HUD->IsCapturingKey())
+	{
+		return false;
+	}
+	HUD->CaptureKey(Key);
+	return true;
+}
+
+FString AUnderpaintingPlayerCharacter::DevDescribeKey(FName ActionId) const
+{
+	const UUnderpaintingSettings* Settings = UUnderpaintingSettings::Get(this);
+	return Settings ? Settings->Read()->DescribeKey(ActionId) : FString();
 }

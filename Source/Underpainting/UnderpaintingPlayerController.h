@@ -43,6 +43,9 @@ protected:
 	/** Gameplay initialization */
 	virtual void BeginPlay() override;
 
+	/** While the settings screen is waiting for a key, the next key pressed is taken as the new binding and nothing else sees it. */
+	virtual bool InputKey(const FInputKeyEventArgs& Params) override;
+
 	/** Input mapping context setup */
 	virtual void SetupInputComponent() override;
 

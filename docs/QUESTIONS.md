@@ -35,4 +35,7 @@ Choices Claude made while the owner was away. Each has the question, what was ch
 | 29 | What closing the Furrow costs. | The First Well and its cache (2 Terre Verte) are sealed in for good if you had not opened it. Ilka moves to the Stair. | Move the cache out too, so nothing can be lost. | 2026-11-18 |
 | 30 | The village had one Blotter by the lower gate for early testing. | Removed: the design has no fighting in the village before the Turning. Combat is tried in the test rooms. | Keep it for convenience. | 2026-11-18 |
 | 31 | The Stair of Spines has high walls both sides. | Yes, so nobody can fall off into a pit with no way out. Only the Overlook is open to the view. | Low parapets and a respawn on falling (better views; needs a fall rule). | 2026-11-18 |
+| 32 | What menus look like. | The satchel is paper, ruled lines and ink, with a brush stroke of pigment under the open tab (the UI style probe). Other menus keep the plain panels until you say. | Keep everything as violet panels; or go further (torn edges, handwriting), which needs art. | 2026-11-18 |
+| 33 | Two actions on one key. | Not possible: giving an action a key that is in use swaps the two. | Allow it and warn; or refuse the change. | 2026-11-18 |
+| 34 | Starting the game with a save from another zone. | It opens the zone you last rested in. Test rooms under Maps/Dev are left alone. | Always start in the level you pressed Play in. | 2026-11-18 |
 

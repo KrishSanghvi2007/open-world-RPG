@@ -96,6 +96,7 @@ bool UUnderpaintingProgressSubsystem::TravelToZone(const UObject* WorldContext, 
 	}
 
 	ArrivingFromZone = Data->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(WorldContext, true));
+	StashVitals(UGameplayStatics::GetPlayerPawn(WorldContext, 0));
 	bRestorePending = false;
 	UGameplayStatics::OpenLevel(WorldContext, FName(*FString::Printf(TEXT("/Game/Maps/Matriarch/%s"), *Level.ToString())));
 	return true;
@@ -141,6 +142,7 @@ bool UUnderpaintingProgressSubsystem::CompleteTurning(APawn* Player)
 		return false;        // not standing in a zone (a test room): the world is turned, but there is nothing to reload
 	}
 
+	StashVitals(Player);
 	KeptTransform = Player->GetActorTransform();
 	bHasKeptTransform = true;
 	bJustTurned = true;
@@ -159,4 +161,37 @@ bool UUnderpaintingProgressSubsystem::ConsumeKeptTransform(FTransform& OutTransf
 	OutTransform = KeptTransform;
 	bHasKeptTransform = false;
 	return true;
+}
+
+void UUnderpaintingProgressSubsystem::StashVitals(const APawn* Player)
+{
+	const UUnderpaintingVitalsComponent* Vitals = Player ? Player->FindComponentByClass<UUnderpaintingVitalsComponent>() : nullptr;
+	if (Vitals && !Vitals->IsDead())
+	{
+		CarriedHealth = Vitals->GetHealth();
+		CarriedGlim = Vitals->GetGlim();
+	}
+}
+
+bool UUnderpaintingProgressSubsystem::ConsumeVitals(float& OutHealth, float& OutGlim)
+{
+	if (CarriedHealth < 0.0f)
+	{
+		return false;
+	}
+	OutHealth = CarriedHealth;
+	OutGlim = CarriedGlim;
+	CarriedHealth = -1.0f;
+	return true;
+}
+
+FName UUnderpaintingProgressSubsystem::GetSavedLevel() const
+{
+	const UUnderpaintingDataSubsystem* Data = GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>();
+	if (!LoadedSave || LoadedSave->LevelName.IsNone() || !Data)
+	{
+		return NAME_None;
+	}
+	const FName Zone = Data->FindZoneForLevel(LoadedSave->LevelName.ToString());
+	return Zone.IsNone() ? LoadedSave->LevelName : GetLevelForZone(Zone);
 }
