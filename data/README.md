@@ -34,6 +34,7 @@ The six pigments. A pigment is a crafting material, the currency for attunement,
 | `Rarity` | enum | `Common`, `Uncommon`, `Rare`. |
 | `LightCost` | int | Glim spent per Stroke at ambient light 0. Actual cost = `LightCost x (1 - AmbientLight)`, rounded up. |
 | `Regrowth` | enum | `OnRest` (nodes in light of 0.5 or more regrow when the player rests), `Never` (nodes are one-time), `DropOnly` (no nodes; enemy drops only). |
+| `DeathLoss` | enum | `Half` (on death the player loses half of the wet units carried, rounded down) or `None` (never lost; used for pigments that cannot be regained). The first death of a save loses nothing. |
 | `CraftingUses` | FName[] | Items in `items.json` whose recipe uses this pigment. |
 | `AttunementPassive` | string | Player-facing text of the tier 1 passive. The numbers live in `attunements.json`. |
 | `StrokeName` | FName | ID of the Stroke that replaces the heavy attack while this pigment is the active well. |
@@ -130,6 +131,7 @@ Weakness rule for the boss: in phase 1 only the weakness and resistance that mat
 | `Name` | row key | Quest ID. `MQ_` = main, `SQ_` = side. |
 | `DisplayName` | string | Name shown to the player. |
 | `QuestType` | enum | `Main` or `Side`. |
+| `SliceScope` | enum | `Core` (must be built for the slice) or `Stretch` (built only if time allows; nothing else may depend on it). |
 | `Act` | int | Story act (all are 1 in the slice). |
 | `Giver` | FName | NPC ID. |
 | `Zone` | FName | Zone row in `regions.json` where most of the quest happens. |
@@ -180,5 +182,6 @@ When adding rows, keep these true (a validation script should check them):
 - `attunements.Prerequisites` → `attunements.Name`; `quests.Prerequisites` → `quests.Name`
 - `pigments.SourceZones`, `enemies.Zones`, `quests.Zone`, `regions.ParentRegion` → `regions.Name`
 - `regions.Enemies`, `regions.EnemiesAfterShift` → `enemies.Name`
+- No recipe may have a `Stretch` quest as its `UnlockId`.
 - `pigments.CraftingUses` must list exactly the items whose recipe has that pigment as an input.
 - `regions.HarvestNodeCounts` must be the same length as `regions.Pigments`.

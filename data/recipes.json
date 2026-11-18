@@ -34,9 +34,9 @@
       { "Id": "LinseedOil", "Count": 1 }
     ],
     "Station": "GrindingSlab",
-    "UnlockType": "Quest",
-    "UnlockId": "SQ_AFairGrind",
-    "Notes": "Unlocked by either outcome of the quest."
+    "UnlockType": "Attunement",
+    "UnlockId": "Ceruse_T1",
+    "Notes": "Unlocked by attuning to Ceruse, so it does not depend on the stretch quest SQ_AFairGrind."
   },
   {
     "Name": "Recipe_SanguineDraught",

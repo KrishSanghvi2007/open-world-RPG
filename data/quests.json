@@ -3,6 +3,7 @@
     "Name": "MQ_DuskOnTheShoulder",
     "DisplayName": "Dusk on the Shoulder",
     "QuestType": "Main",
+    "SliceScope": "Core",
     "Act": 1,
     "Giver": "HesperVane",
     "Zone": "VarnishVillage",
@@ -29,6 +30,7 @@
     "Name": "MQ_ColdUnderTheRibs",
     "DisplayName": "Cold Under the Ribs",
     "QuestType": "Main",
+    "SliceScope": "Core",
     "Act": 1,
     "Giver": "HesperVane",
     "Zone": "GrisailleVault",
@@ -82,6 +84,7 @@
     "Name": "SQ_TheUnseenSide",
     "DisplayName": "The Unseen Side",
     "QuestType": "Side",
+    "SliceScope": "Core",
     "Act": 1,
     "Giver": "CorinHalfSeen",
     "Zone": "Scumblewood",
@@ -129,6 +132,7 @@
     "Name": "SQ_TickWardensLedger",
     "DisplayName": "The Tick-Warden's Ledger",
     "QuestType": "Side",
+    "SliceScope": "Core",
     "Act": 1,
     "Giver": "IlkaThrum",
     "Zone": "Scumblewood",
@@ -168,6 +172,7 @@
     "Name": "SQ_AFairGrind",
     "DisplayName": "A Fair Grind",
     "QuestType": "Side",
+    "SliceScope": "Stretch",
     "Act": 1,
     "Giver": "BartramSedge",
     "Zone": "VarnishVillage",
@@ -198,6 +203,6 @@
     ],
     "RewardItems": [],
     "RewardPigments": [],
-    "RewardNotes": "Either outcome unlocks Recipe_FixativeFlask. TeachOchreWash also grants 2 FixativeFlask. This is the first quest to cut if the slice runs long."
+    "RewardNotes": "TeachOchreWash grants 2 FixativeFlask. Stretch goal: built only after the four Core quests are finished. Nothing else in the slice depends on it."
   }
 ]

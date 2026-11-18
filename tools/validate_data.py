@@ -63,4 +63,8 @@ for r in D["regions"]:
 # items with craft source have recipes
 for i in D["items"]:
     if "Crafted" in i["Source"] and "Recipe_"+i["Name"] not in N["recipes"]: err.append(("norecipe",i["Name"]))
+for r in D["recipes"]:
+    if r["UnlockType"]=="Quest" and [q for q in D["quests"] if q["Name"]==r["UnlockId"]][0]["SliceScope"]!="Core": err.append(("stretch-unlock",r["Name"]))
+for p in D["pigments"]:
+    if (p["DeathLoss"]=="None")!=(p["Regrowth"]=="Never"): err.append(("deathloss",p["Name"]))
 print("ERRORS:",err or "none")

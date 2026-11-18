@@ -6,13 +6,8 @@ Claude keeps this file current. It says what's done, what's next, and what's wai
 - [ ] Finish installing Xcode (App Store), open it once, and accept the prompts.
 - [ ] One-time GitHub login in the browser when the Mac Claude asks (so it can push for you).
 
-## Decisions waiting on you (from the GDD, section 13; recommendation listed first)
-1. Death cost: lose half of your unbanked ("wet") pigment, with no corpse-run? Or no loss / classic retrieval.
-2. Keep the one-sided forest (only sun-facing sides are painted) as a signature idea, after a one-day test?
-3. Are "finishing" choices permanent? Recommended: yes, with palette slots freely swappable.
-4. Build 4 quests, with the 5th ("A Fair Grind") as a stretch goal?
-5. Lighting: simple stylized lighting with Lumen off, for 60 fps on 16 GB? Or low Lumen and a lower frame-rate target.
-6. Keep the title "Underpainting" for now?
+## Decisions waiting on you
+None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 
 ## Done
 - Claude Code installed on the Mac; Blender MCP connected and tested (telemetry off).

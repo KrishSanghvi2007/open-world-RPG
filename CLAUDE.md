@@ -21,7 +21,7 @@ The owner gives *intent* (what and why). You decide *how*, then do it end to end
 - Gameplay code lives in **C++** (`Source/`). Blueprints stay thin: visual hookup, tuning and animation only. That way the game logic stays readable, diffable and reviewable.
 - Before bulk editor changes made through MCP: save all in Unreal, then commit. MCP edits are not always undoable.
 - Keep the vertical-slice scope in `docs/GDD.md`. If a task would grow scope, flag it as a decision instead of doing it.
-- Performance budget: an M2 Pro with 16 GB RAM must hold 60 fps at 1080p in the slice. Prefer stylized materials and simple stylized lighting. Whether to use Lumen is an open owner decision (see `docs/GDD.md` §13); until it's settled, keep Lumen off.
+- Performance budget: an M2 Pro with 16 GB RAM must hold 60 fps at 1080p in the slice. Prefer stylized materials. Lighting rule (`docs/GDD.md` §9): Lumen and ray tracing off; one shadow-casting sun plus one tinted sky light per zone; bounce painted into textures; small lights cast no shadows.
 
 ## End of every task (do this without being asked)
 1. Commit with a clear message: what changed and why.
