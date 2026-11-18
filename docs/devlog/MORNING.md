@@ -6,6 +6,7 @@ Last updated: 2026-11-18, night. Claude keeps this page current while you are aw
 
 - **The walking skeleton (M2):** one connected loop in the village. Talk to Hesper, harvest, craft, relight the Lampstand, rest, attune, finish the quest, fight a Blotter, save and load.
 - **Exploration, first pass (M3):** the three zones connect through blue doorways; the Flare; sketched platforms; one-sided walls with caches behind them; 18 notes to find; a compass.
+- **The style kit:** every grey-box level is now painted in the Glaze look (sky, haze, violet shadows, brush strokes) with no models.
 - **A fight room** with one Blotter, and a **look test** in the chosen art style (Glaze).
 
 ## Test it in 10 minutes

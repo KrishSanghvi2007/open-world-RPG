@@ -25,6 +25,7 @@ protected:
 
 	/** Pure white belongs to Erasures (GDD art rule 4). */
 	virtual FLinearColor GetBodyColour() const override { return FLinearColor::White; }
+	virtual float GetBodyPurity() const override { return 1.0f; }
 
 	/** Glim taken from the target when SmearLunge lands. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy|Tuning")

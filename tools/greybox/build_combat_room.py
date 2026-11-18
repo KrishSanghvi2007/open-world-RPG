@@ -40,7 +40,7 @@ def build_room():
     else:
         gb.levels.new_level(LEVEL)
     gb._counts.clear()
-    gb.Zone.unlit, gb.Zone.label_yaw = False, 180.0
+    gb.Zone.unlit, gb.Zone.label_yaw, gb.Zone.shadow_tint, gb.Zone.look = False, 180.0, "#4A3558", "VillageDusk"
     CREAM, TEAL, VIOLET, UMBER = "#F2E3C0", "#2E5E6E", "#4A3558", "#6B4F3A"
 
     gb.sun_and_sky(sun_colour="#FFD9A0", sky_tint=TEAL, sun_lux=6.0, sky_intensity=1.2, pitch=-40.0)

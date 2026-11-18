@@ -5,6 +5,7 @@
 #include "UnderpaintingHUD.h"
 #include "UnderpaintingPlayerCharacter.h"
 #include "UnderpaintingProgressSubsystem.h"
+#include "UnderpaintingStyle.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -109,7 +110,7 @@ FName AUnderpaintingSketchPlatform::GetPlatformKey() const
 void AUnderpaintingSketchPlatform::BeginPlay()
 {
 	Super::BeginPlay();
-	BodyMaterial = Body->CreateAndSetMaterialInstanceDynamic(0);
+	BodyMaterial = UnderpaintingStyle::MakeMaterial(Body);
 	Tick(0.0f);
 }
 
@@ -125,7 +126,7 @@ void AUnderpaintingSketchPlatform::SetSolid(bool bNewSolid, bool bFixed)
 	if (BodyMaterial)
 	{
 		// Solid: the one blue of the Vault. Only drawn: a pale ghost of itself. Fixed: touched with amber.
-		BodyMaterial->SetVectorParameterValue(TEXT("Color"), bFixed ? Hex(TEXT("5A6FB8")) : (bSolid ? Hex(TEXT("2F4BA8")) : Hex(TEXT("C9C6BE"))));
+		UnderpaintingStyle::SetColour(BodyMaterial, bFixed ? Hex(TEXT("5A6FB8")) : (bSolid ? Hex(TEXT("2F4BA8")) : Hex(TEXT("C9C6BE"))), bSolid ? 0.0f : 0.6f);
 	}
 	Body->SetRenderCustomDepth(!bSolid);
 }

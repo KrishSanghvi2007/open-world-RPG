@@ -24,6 +24,7 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - **Look test** (`/Game/LookTest/Maps/`, pictures in `docs/looktest/`): one corner of the village square in three painterly styles, built by `tools/looktest/`. Working choice: B, Glaze.
 - **First combat** (`Source/Underpainting/Combat/`): stamina, sprint, dodge, light and heavy attacks, and a data-driven Blotter, in `/Game/Maps/Dev/L_Combat_Greybox`. Tests: `Underpainting.Combat.*`.
 - **Story** written: `docs/STORY.md`.
+- **Style kit** (parallel track): `tools/stylekit/stylekit.py` and `/Game/StyleKit`. One Glaze material that paints three values from one colour, and a look per zone, applied automatically to the grey-box and to the C++ placeholders. Devlog: `docs/devlog/004-style-kit.md`.
 - **Exploration, first pass (M3)**: zone exits, gaze-based "Use", the Flare, sketched platforms, one-sided walls and caches, 18 lore notes from `data/lore.json`, named places, a compass. Code in `Source/Underpainting/Game/UnderpaintingExploration.*`. Devlog: `docs/devlog/003-exploration-first-pass.md`.
 - **Walking skeleton (M2)** in `L_Matriarch_Village_A`: dialogue from `data/dialogue.json`, harvesting, crafting, the Lampstand (relight, rest, save), attunement, the first quest, a Blotter, save and load. Code in `Source/Underpainting/Game/`. Tests: `Underpainting.Game.*`. Scripted play: `tools/dev/play.py`. Devlog: `docs/devlog/002-walking-skeleton.md`.
 - **Roadmap** set by the owner: `docs/ROADMAP.md`. Choices made while the owner is away are in `docs/QUESTIONS.md`.
@@ -38,8 +39,7 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 
 ## Next (Claude does these; see `docs/ROADMAP.md`)
 Scope is the Act 1 slice only. In order:
-1. **Style kit** (parallel track): Glaze master material, post-process and haze applied automatically to all placeholder geometry.
+1. **Story on paper** (parallel track): `docs/story/` outlines for Acts 2 and 3, and foreshadowing back into Act 1.
 2. Finish **M3**: navigation for enemies, signposts, the Nape Overlook secret, one style probe.
-3. **Story on paper** (parallel track): `docs/story/` outlines for Acts 2 and 3, and foreshadowing back into Act 1.
-4. **M4, combat depth:** Glim costs, Strokes, the Contrast rule, lock-on, the Moss Poultice, Lampstand respawn.
-5. Then M5 to M9.
+3. **M4, combat depth:** Glim costs, Strokes, the Contrast rule, lock-on, the Moss Poultice, Lampstand respawn.
+4. Then M5 to M9.

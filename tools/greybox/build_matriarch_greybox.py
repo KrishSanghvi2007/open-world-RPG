@@ -30,6 +30,12 @@ CUBE = "/Engine/BasicShapes/Cube"
 CYLINDER = "/Engine/BasicShapes/Cylinder"
 SPHERE = "/Engine/BasicShapes/Sphere"
 
+import importlib.util
+
+_spec = importlib.util.spec_from_file_location("stylekit", os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "stylekit", "stylekit.py"))
+stylekit = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(stylekit)
+
 actors = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
 levels = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
 editor = unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem)
@@ -80,7 +86,33 @@ def _parent_material(name, unlit):
 _material_cache = {}
 
 
-def material(hex_colour, unlit=False):
+# Which kind of painted surface a piece of geometry is, from the start of its name (see stylekit.SURFACES).
+SURFACE_BY_NAME = (
+    (("Floor", "Terrace", "Pad", "Path", "Shoulder", "Bedrock", "Entry", "Gallery_PitFloor", "RibStair", "Gallery_FarLedge", "Heart_Floor", "Ramp", "LessonReturn"), "Ground"),
+    (("Wall", "Vertebra", "Gorge", "Parapet", "Pillar", "Rib_", "Heart_Wall", "NapeOverlook", "FalseFront"), "Stone"),
+    (("Trunk",), "Wood"),
+    (("House",), "Plaster"),
+)
+
+
+def surface_for(name):
+    if name.endswith("_Roof"):
+        return "Roof"
+    for prefixes, surface in SURFACE_BY_NAME:
+        if name.startswith(prefixes):
+            return surface
+    return "Plaster"
+
+
+def material(hex_colour, unlit=False, surface="Plaster"):
+    """The style-kit material for a colour: painted Glaze in lit zones, paper Sketch in sketch zones."""
+    if unlit:
+        return stylekit.sketch(hex_colour, surface)
+    return stylekit.glaze(hex_colour, surface, Zone.shadow_tint)
+
+
+def flat_material(hex_colour, unlit=True):
+    """A plain flat colour, for markers that must stay readable in any light."""
     key = (hex_colour.upper(), unlit)
     if key in _material_cache:
         return _material_cache[key]
@@ -106,6 +138,9 @@ class Zone:
     """Settings shared by everything placed in the level being built."""
     unlit = False
     label_yaw = 180.0
+    shadow_tint = "#4A3558"      # the zone's shadow colour (GDD palette table)
+    look = "VillageDusk"         # a preset in stylekit.LOOKS
+    flat = False                 # True while placing markers
 
 
 def v(p):
@@ -116,7 +151,7 @@ def _mesh_actor(name, mesh_path, pos, scale, colour, folder, rot=None, collide=T
     actor = actors.spawn_actor_from_class(unreal.StaticMeshActor, v(pos), rot or unreal.Rotator(0, 0, 0))
     comp = actor.static_mesh_component
     comp.set_static_mesh(unreal.load_asset(mesh_path))
-    comp.set_material(0, material(colour, Zone.unlit))
+    comp.set_material(0, flat_material(colour) if Zone.flat else material(colour, Zone.unlit, surface_for(name)))
     if not collide:
         comp.set_collision_profile_name("NoCollision")
     actor.set_actor_scale3d(unreal.Vector(*scale))
@@ -285,11 +320,11 @@ def marker(kind, data_id, text, ground, colour=None, yaw=0.0):
         actor.tags = [unreal.Name(t) for t in ("Marker", kind, data_id)]
     else:
         centre = (ground[0], ground[1], ground[2] + size[2] / 2.0)
-        was_unlit, Zone.unlit = Zone.unlit, True  # markers stay readable in any light
+        Zone.flat = True                          # markers stay readable in any light
         actor = _mesh_actor(name, mesh, centre, size, colour or default_colour,
                             "Markers/" + kind, unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw),
                             collide=False, tags=("Marker", kind, data_id))
-        Zone.unlit = was_unlit
+        Zone.flat = False
     if kind != "Lore":      # things to find do not announce themselves
         label(text, (ground[0], ground[1], ground[2] + size[2] + 0.5), "Markers/" + kind + "/Labels")
     return actor
@@ -353,7 +388,7 @@ def passable_back(name, centre, size, front_yaw, tags=()):
     actor = actors.spawn_actor_from_class(unreal.UnderpaintingPassableBack, v(centre), unreal.Rotator(roll=0.0, pitch=0.0, yaw=front_yaw))
     actor.set_actor_scale3d(unreal.Vector(*size))
     comp = actor.get_component_by_class(unreal.StaticMeshComponent)
-    comp.set_material(0, material("#3A3A3A", Zone.unlit))
+    comp.set_material(0, material("#3A3A3A", Zone.unlit, "Stone"))
     actor.set_actor_label(name)
     actor.set_folder_path("Gameplay/PassableBacks")
     actor.tags = [unreal.Name(t) for t in ("PassableBack",) + tuple(tags)]
@@ -383,41 +418,13 @@ def player_start(ground, yaw=0.0):
 # Lighting (GDD section 9: one shadow-casting sun and one tinted sky light per zone)
 # --------------------------------------------------------------------------------------
 
-def sun_and_sky(sun_colour, sky_tint, sun_lux=6.0, sky_intensity=1.0, pitch=-25.0):
-    sun = actors.spawn_actor_from_class(unreal.DirectionalLight, v((0, 0, 30)),
-                                        unreal.Rotator(roll=0.0, pitch=pitch, yaw=90.0))  # shining from the west (-Y)
-    sun.set_actor_label("Sun")
-    sun.set_folder_path("Lighting")
-    comp = sun.light_component
-    comp.set_mobility(unreal.ComponentMobility.MOVABLE)
-    comp.set_intensity(sun_lux)
-    comp.set_light_color(_hex_to_linear(sun_colour))
-
-    atmosphere = actors.spawn_actor_from_class(unreal.SkyAtmosphere, v((0, 0, 0)), unreal.Rotator(0, 0, 0))
-    atmosphere.set_folder_path("Lighting")
-
-    sky = actors.spawn_actor_from_class(unreal.SkyLight, v((0, 0, 40)), unreal.Rotator(0, 0, 0))
-    sky.set_actor_label("SkyLight_ZoneTint")
-    sky.set_folder_path("Lighting")
-    sky_comp = sky.light_component
-    sky_comp.set_mobility(unreal.ComponentMobility.MOVABLE)
-    sky_comp.set_editor_property("real_time_capture", True)
-    sky_comp.set_intensity(sky_intensity)
-    sky_comp.set_light_color(_hex_to_linear(sky_tint))
-    sky_comp.set_editor_property("cast_shadows", False)
+def sun_and_sky(*_args, **_kwargs):
+    """Sky, sun, tinted sky light, haze and post-process for the zone being built, from the style kit."""
+    stylekit.apply_look(Zone.look)
 
 
-def fill_light(colour, lux=2.0):
-    """Shadowless fill so characters are visible in the unlit sketch zone."""
-    light = actors.spawn_actor_from_class(unreal.DirectionalLight, v((0, 0, 30)),
-                                          unreal.Rotator(roll=0.0, pitch=-60.0, yaw=20.0))
-    light.set_actor_label("Fill_NoShadow")
-    light.set_folder_path("Lighting")
-    comp = light.light_component
-    comp.set_mobility(unreal.ComponentMobility.MOVABLE)
-    comp.set_intensity(lux)
-    comp.set_light_color(_hex_to_linear(colour))
-    comp.set_cast_shadows(False)
+def fill_light(*_args, **_kwargs):
+    stylekit.apply_look(Zone.look)
 
 
 # --------------------------------------------------------------------------------------
@@ -475,7 +482,7 @@ def end_level(zone_id):
 
 def build_village():
     begin_level("L_Matriarch_Village_A")
-    Zone.unlit, Zone.label_yaw = False, -90.0
+    Zone.unlit, Zone.label_yaw, Zone.shadow_tint, Zone.look = False, -90.0, "#4A3558", "VillageDusk"
     OCHRE, ROSE, CREAM, TEAL, VIOLET = "#D9A441", "#C4574B", "#F2E3C0", "#2E5E6E", "#4A3558"
 
     sun_and_sky(sun_colour="#FFD9A0", sky_tint=TEAL, sun_lux=7.0, sky_intensity=1.2)
@@ -552,7 +559,7 @@ def build_village():
 
 def build_scumblewood():
     begin_level("L_Matriarch_Scumblewood_A")
-    Zone.unlit, Zone.label_yaw = False, 180.0
+    Zone.unlit, Zone.label_yaw, Zone.shadow_tint, Zone.look = False, 180.0, "#2E5E6E", "ForestHalfLight"
     GREEN, UMBER, CANVAS, CHARCOAL, SANGUINE = "#6B8F71", "#6B4F3A", "#D8CBB0", "#3A3A3A", "#9E2B25"
 
     sun_and_sky(sun_colour="#FFC98A", sky_tint="#4A3558", sun_lux=4.0, sky_intensity=0.8, pitch=-32.0)
@@ -689,7 +696,7 @@ def build_scumblewood():
 
 def build_vault():
     begin_level("L_Matriarch_Vault_A")
-    Zone.unlit, Zone.label_yaw = True, 180.0
+    Zone.unlit, Zone.label_yaw, Zone.shadow_tint, Zone.look = True, 180.0, "#4B4A48", "VaultSketch"
     PAPER, GREY, DARK, GRAPHITE, BLUE, HEART = "#E6E1D6", "#8C8A85", "#4B4A48", "#2E2E30", "#2F4BA8", "#E8923A"
     FLOOR = -10.0   # main floor height
     PIT = -18.0     # floor of the gallery pit
@@ -786,6 +793,7 @@ def build_all():
             task.enter_progress_frame(1)
             problems += build()
     eal.save_directory("/Game/Greybox")
+    eal.save_directory("/Game/StyleKit")
     unreal.log("GREYBOX DONE. Problems: %s" % (problems or "none"))
     return problems
 

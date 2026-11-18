@@ -54,4 +54,4 @@ Newest first. Format: `date: decision (who): why`
 - 2026-11-18: **Two parallel tracks between milestones.** (1) Story on paper: `docs/story/` outlines the Act 2 and 3 regions, quests, characters and key scenes, and adds the foreshadowing they need to Act 1's content. (2) Style kit: a reusable Glaze master material, post-process and haze applied automatically to all placeholder geometry, so playtests look coherent and painterly without real models. No new models beyond first-of-kind style probes (owner).
 - 2026-11-18: **"Use" targets what the player is looking at**, not the nearest thing (owner). Built as: the usable thing in reach closest to the centre of the view, with a little forgiveness for wide things.
 - 2026-11-18: `docs/devlog/MORNING.md` lists the exact moments where the owner's feel-feedback is needed most (owner).
-
+- 2026-11-18: The style kit's master material takes one colour and derives its dark and light values in the shader, so every placeholder (level script or C++) only sets a colour. Erasures set "Purity" to keep their white exact (Claude).

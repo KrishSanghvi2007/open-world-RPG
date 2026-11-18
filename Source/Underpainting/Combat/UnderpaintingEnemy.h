@@ -76,6 +76,9 @@ protected:
 	/** Called when an attack lands, after damage. */
 	virtual void OnAttackLanded(const FEnemyAttack& Attack, AActor* Target) {}
 
+	/** 1 keeps the body's colour flat and exact (Erasures); 0 paints it in three values like everything else. */
+	virtual float GetBodyPurity() const { return 0.0f; }
+
 	/** Colour of the placeholder body. */
 	virtual FLinearColor GetBodyColour() const { return FLinearColor(0.9f, 0.9f, 0.9f); }
 

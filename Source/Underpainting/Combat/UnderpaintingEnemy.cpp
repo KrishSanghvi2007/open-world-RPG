@@ -3,6 +3,7 @@
 #include "Underpainting.h"
 #include "UnderpaintingDataSubsystem.h"
 #include "UnderpaintingProgressSubsystem.h"
+#include "UnderpaintingStyle.h"
 #include "UnderpaintingVitalsComponent.h"
 #include "AIController.h"
 #include "Components/CapsuleComponent.h"
@@ -71,7 +72,7 @@ void AUnderpaintingEnemy::BeginPlay()
 	Vitals->OnDeath.AddDynamic(this, &AUnderpaintingEnemy::HandleDeath);
 	GetCharacterMovement()->MaxWalkSpeed = Row.MoveSpeed;
 
-	BodyMaterial = PlaceholderBody->CreateAndSetMaterialInstanceDynamic(0);
+	BodyMaterial = UnderpaintingStyle::MakeMaterial(PlaceholderBody);
 	UpdateTelegraph();
 }
 
@@ -368,8 +369,7 @@ void AUnderpaintingEnemy::UpdateTelegraph()
 		{
 			Colour = Colour * 0.45f;
 		}
-		BodyMaterial->SetVectorParameterValue(TEXT("Color"), Colour);
-		BodyMaterial->SetVectorParameterValue(TEXT("Colour"), Colour);
+		UnderpaintingStyle::SetColour(BodyMaterial, Colour, GetBodyPurity());
 	}
 
 	// A staggered or dead enemy slumps.

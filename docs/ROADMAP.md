@@ -34,8 +34,8 @@ Two tracks run alongside, worked on between milestones:
 
 | Track | What | Where | State |
 |---|---|---|---|
-| **Story on paper** | Outlines of the Act 2 and 3 regions, quests, characters and key dialogue scenes; foreshadowing added back into Act 1's content. | `docs/story/` | To start after M3 |
-| **Style kit** | A reusable Glaze master material, post-process and haze, applied automatically to all placeholder geometry so playtests look coherent and painterly without real models. No new models beyond first-of-kind style probes. | `tools/stylekit/`, `/Game/StyleKit/` | To start after M3 |
+| **Story on paper** | Outlines of the Act 2 and 3 regions, quests, characters and key dialogue scenes; foreshadowing added back into Act 1's content. | `docs/story/` | Next |
+| **Style kit** | A reusable Glaze master material, post-process and haze, applied automatically to all placeholder geometry so playtests look coherent and painterly without real models. No new models beyond first-of-kind style probes. | `tools/stylekit/`, `/Game/StyleKit/` | First version done (devlog 004); tune after the owner's playtest |
 
 ## Milestones
 

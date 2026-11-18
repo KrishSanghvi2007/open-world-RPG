@@ -5,6 +5,7 @@
 #include "UnderpaintingHUD.h"
 #include "UnderpaintingPlayerCharacter.h"
 #include "UnderpaintingProgressSubsystem.h"
+#include "UnderpaintingStyle.h"
 #include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -53,14 +54,11 @@ void AUnderpaintingInteractable::SetShape(const TCHAR* MeshPath, const FVector& 
 
 void AUnderpaintingInteractable::SetColour(const FLinearColor& Colour)
 {
-	if (!BodyMaterial && Body->GetStaticMesh())
+	if (!BodyMaterial)
 	{
-		BodyMaterial = Body->CreateAndSetMaterialInstanceDynamic(0);
+		BodyMaterial = UnderpaintingStyle::MakeMaterial(Body);
 	}
-	if (BodyMaterial)
-	{
-		BodyMaterial->SetVectorParameterValue(TEXT("Color"), Colour);
-	}
+	UnderpaintingStyle::SetColour(BodyMaterial, Colour);
 }
 
 UUnderpaintingProgress* AUnderpaintingInteractable::GetProgress() const
