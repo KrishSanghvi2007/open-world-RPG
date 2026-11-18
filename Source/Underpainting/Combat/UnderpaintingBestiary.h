@@ -21,6 +21,7 @@ protected:
 
 	virtual float GetAttackReach(const FEnemyAttack& Attack) const override;
 	virtual float GetAttackLunge(const FEnemyAttack& Attack) const override;
+	virtual float GetKnockbackScale() const override { return 0.5f; }        // a tick the size of a cart
 	virtual bool IsAreaAttack(const FEnemyAttack& Attack) const override;
 	virtual int32 ChooseAttack(float DistanceToTarget) const override;
 	virtual void OnAttackLanded(const FEnemyAttack& Attack, AActor* Target) override;

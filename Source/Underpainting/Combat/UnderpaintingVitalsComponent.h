@@ -117,6 +117,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vitals")
 	float DamageReduction = 0.0f;
 
+	/** World time of the last attempt that failed for want of Stamina or Glim, so the HUD can say so. */
+	float StaminaDeniedAt = -100.0f;
+	float GlimDeniedAt = -100.0f;
+
 	/** While true, hits pass through (the first part of a dodge). */
 	UPROPERTY(BlueprintReadWrite, Category = "Vitals")
 	bool bInvulnerable = false;

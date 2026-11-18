@@ -2,6 +2,7 @@
 
 #include "UnderpaintingDataSubsystem.h"
 #include "UnderpaintingEnemy.h"
+#include "UnderpaintingFeel.h"
 #include "UnderpaintingPlayerCharacter.h"
 #include "UnderpaintingProgressSubsystem.h"
 #include "UnderpaintingSettings.h"
@@ -47,8 +48,25 @@ void AUnderpaintingHUD::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
+void AUnderpaintingHUD::Sound(FName Row, float Volume)
+{
+	if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+	{
+		Feel->PlayFlat(Row, Volume);
+	}
+}
+
 void AUnderpaintingHUD::AddNotice(const FString& Text)
 {
+	// The few notices that are events get a sound of their own.
+	if (Text.StartsWith(TEXT("New quest")) || Text.StartsWith(TEXT("Quest complete")))
+	{
+		Sound(Text.StartsWith(TEXT("New")) ? TEXT("quest_new") : TEXT("quest_done"), 0.8f);
+	}
+	else if (Text.StartsWith(TEXT("Attuned")))
+	{
+		Sound(TEXT("attune"), 0.8f);
+	}
 	Notices.Add({ Text, GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0f });
 	if (Notices.Num() > 6)
 	{
@@ -78,6 +96,7 @@ void AUnderpaintingHUD::OpenDialogue(FName NpcId)
 	{
 		return;
 	}
+	Sound(TEXT("ui_open"));
 	Menu = EUnderpaintingMenu::Dialogue;
 	DialogueNpc = NpcId;
 	ShowDialogueRow(Entry);
@@ -85,17 +104,20 @@ void AUnderpaintingHUD::OpenDialogue(FName NpcId)
 
 void AUnderpaintingHUD::OpenCrafting(ECraftingStation Station)
 {
+	Sound(TEXT("ui_open"));
 	Menu = EUnderpaintingMenu::Crafting;
 	CraftingStation = Station;
 }
 
 void AUnderpaintingHUD::OpenAttunement()
 {
+	Sound(TEXT("ui_open"));
 	Menu = EUnderpaintingMenu::Attunement;
 }
 
 void AUnderpaintingHUD::OpenReading(FName LoreId)
 {
+	Sound(TEXT("ui_open"));
 	Menu = EUnderpaintingMenu::Reading;
 	ReadingLore = LoreId;
 }
@@ -110,6 +132,7 @@ void AUnderpaintingHUD::OpenText(const FString& Title, const FString& Text)
 
 void AUnderpaintingHUD::OpenChoice(FName QuestId, const FString& Subject)
 {
+	Sound(TEXT("ui_open"));
 	Menu = EUnderpaintingMenu::Choice;
 	ChoiceQuest = QuestId;
 	ChoiceSubject = Subject;
@@ -126,6 +149,7 @@ void AUnderpaintingHUD::ToggleInventory()
 	{
 		Menu = EUnderpaintingMenu::Inventory;
 		bConfirmNewGame = false;
+		Sound(TEXT("ui_satchel"));
 	}
 }
 
@@ -135,6 +159,7 @@ void AUnderpaintingHUD::MoveTab(int32 Direction)
 	{
 		SatchelTab = (SatchelTab + Direction + 4) % 4;
 		bConfirmNewGame = false;
+		Sound(TEXT("ui_page"));
 	}
 }
 
@@ -153,6 +178,7 @@ void AUnderpaintingHUD::MoveCursor(int32 Direction)
 	{
 		SettingsCursor = (SettingsCursor + Direction + SettingsRowCount()) % SettingsRowCount();
 		bConfirmNewGame = false;
+		Sound(TEXT("ui_move"), 0.4f);
 	}
 	else if (SatchelTab == 2)
 	{
@@ -222,6 +248,10 @@ void AUnderpaintingHUD::CaptureKey(FKey Key)
 
 void AUnderpaintingHUD::CloseMenu()
 {
+	if (Menu != EUnderpaintingMenu::None)
+	{
+		Sound(TEXT("ui_close"), 0.5f);
+	}
 	// Walking away from a conversation still counts as having had it.
 	if (Menu == EUnderpaintingMenu::Dialogue && !DialogueNpc.IsNone())
 	{
@@ -292,6 +322,10 @@ void AUnderpaintingHUD::ChooseNumber(int32 Number)
 		return;
 	}
 	const int32 Index = Number - 1;
+	if (Menu != EUnderpaintingMenu::None)
+	{
+		Sound(TEXT("ui_select"), 0.5f);
+	}
 
 	if (Menu == EUnderpaintingMenu::Dialogue)
 	{
@@ -315,6 +349,7 @@ void AUnderpaintingHUD::ChooseNumber(int32 Number)
 			else
 			{
 				Progress->Craft(Recipes[Index]);
+				Sound(TEXT("craft"), 0.8f);
 			}
 		}
 	}
@@ -362,6 +397,7 @@ void AUnderpaintingHUD::ChooseNumber(int32 Number)
 		{
 			// Second press, on "yes": it is done, and cannot be undone.
 			Progress->MakeChoice(ChoiceQuest, Row->Choices[ChoicePending].ChoiceId);
+			Sound(TEXT("choice"), 0.9f);
 			CloseMenu();
 		}
 		else if (Number == 2)
@@ -396,6 +432,131 @@ void AUnderpaintingHUD::DrawBar(float X, float Y, float Width, float Height, flo
 	if (!Label.IsEmpty())
 	{
 		DrawText(Label, TextColour, X + Width + 10.0f, Y - 2.0f, nullptr, 1.0f);
+	}
+}
+
+void AUnderpaintingHUD::DrawVital(float X, float Y, float Width, float Height, float Fraction, float& Ghost, const FLinearColor& Fill, const FString& Label, float DeniedAt, bool bLow)
+{
+	const float Now = GetWorld()->GetTimeSeconds();
+	const float Delta = GetWorld()->GetDeltaSeconds();
+	Fraction = FMath::Clamp(Fraction, 0.0f, 1.0f);
+	// What was just lost lingers as a pale strip and then drains, so the size of a hit can be read.
+	Ghost = Fraction >= Ghost ? Fraction : FMath::Max(Fraction, Ghost - 0.55f * Delta);
+
+	// Asked for more than there is: the bar jolts and its frame goes red for a moment.
+	const float Denied = FMath::Clamp(1.0f - (Now - DeniedAt) / 0.35f, 0.0f, 1.0f);
+	const float Jolt = Denied > 0.0f ? FMath::Sin(Now * 70.0f) * 4.0f * Denied : 0.0f;
+	DrawRect(Denied > 0.0f ? FMath::Lerp(BackColour, FLinearColor(0.9f, 0.1f, 0.05f, 1.0f), Denied) : BackColour, X - 2.0f + Jolt, Y - 2.0f, Width + 4.0f, Height + 4.0f);
+	DrawRect(FLinearColor(0.95f, 0.9f, 0.8f, 0.85f), X + Jolt, Y, Width * Ghost, Height);
+	// Running low: the bar pulses.
+	const float Pulse = bLow ? 0.65f + 0.35f * FMath::Sin(Now * 9.0f) : 1.0f;
+	DrawRect(Fill * FLinearColor(Pulse, Pulse, Pulse, 1.0f), X + Jolt, Y, Width * Fraction, Height);
+	if (!Label.IsEmpty())
+	{
+		DrawText(Label, TextColour, X + Width + 10.0f, Y - 2.0f, nullptr, 1.0f);
+	}
+}
+
+bool AUnderpaintingHUD::Hot(float X, float Y, float Width, float Height, int32 Number, FName Special)
+{
+	FHot Entry;
+	Entry.X = X; Entry.Y = Y; Entry.Width = Width; Entry.Height = Height; Entry.Number = Number; Entry.Special = Special;
+	Hots.Add(Entry);
+	const bool bOver = Pointer.X >= X && Pointer.X <= X + Width && Pointer.Y >= Y && Pointer.Y <= Y + Height;
+	if (bOver)
+	{
+		DrawRect(FLinearColor(1.0f, 0.62f, 0.2f, 0.22f), X, Y, Width, Height);
+	}
+	return bOver;
+}
+
+void AUnderpaintingHUD::DebugClick(float U, float V)
+{
+	Pointer = FVector2D(U * LastClip.X, V * LastClip.Y);
+	Click();
+}
+
+void AUnderpaintingHUD::Click()
+{
+	// The topmost thing under the pointer is the one drawn last.
+	for (int32 Index = Hots.Num() - 1; Index >= 0; --Index)
+	{
+		const FHot& Entry = Hots[Index];
+		if (Pointer.X < Entry.X || Pointer.X > Entry.X + Entry.Width || Pointer.Y < Entry.Y || Pointer.Y > Entry.Y + Entry.Height)
+		{
+			continue;
+		}
+		const FString Special = Entry.Special.ToString();
+		if (Entry.Special == TEXT("close")) { CloseMenu(); }
+		else if (Entry.Special == TEXT("advance")) { Advance(); }
+		else if (Special.StartsWith(TEXT("tab")))
+		{
+			SatchelTab = FCString::Atoi(*Special.RightChop(3));
+			bConfirmNewGame = false;
+			Sound(TEXT("ui_page"));
+		}
+		else if (Special.StartsWith(TEXT("row")))
+		{
+			SettingsCursor = FCString::Atoi(*Special.RightChop(3));
+			ActivateSetting();
+			Sound(TEXT("ui_select"), 0.5f);
+		}
+		else if (Entry.Number > 0) { ChooseNumber(Entry.Number); }
+		return;
+	}
+}
+
+void AUnderpaintingHUD::DrawFeel(const AUnderpaintingPlayerCharacter* Player)
+{
+	const UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this);
+	if (!Feel)
+	{
+		return;
+	}
+
+	// Numbers rising off hits.
+	for (const FUnderpaintingFloatingNumber& Entry : Feel->GetNumbers())
+	{
+		const FVector Screen = Project(Entry.Location);
+		if (Screen.Z <= 0.0f)
+		{
+			continue;
+		}
+		const float Alpha = FMath::Clamp(1.0f - (Entry.Age - 0.5f) / 0.4f, 0.0f, 1.0f);
+		// They land big and settle, so the eye catches them.
+		const float Pop = Entry.Scale * (1.25f + 0.6f * FMath::Clamp(1.0f - Entry.Age / 0.12f, 0.0f, 1.0f));
+		DrawText(Entry.Text, FLinearColor(0.0f, 0.0f, 0.0f, Alpha * 0.7f), Screen.X / ProjectionScale + 1.5f, Screen.Y / ProjectionScale + 1.5f, nullptr, Pop);
+		DrawText(Entry.Text, FLinearColor(Entry.Colour.R, Entry.Colour.G, Entry.Colour.B, Alpha), Screen.X / ProjectionScale, Screen.Y / ProjectionScale, nullptr, Pop);
+	}
+
+	// You were hit: the edges of the screen flush red, and a mark shows which way it came from.
+	const float Age = Feel->GetPlayerHitAge();
+	if (Age < 0.9f)
+	{
+		const float Strength = FMath::Clamp(1.0f - Age / 0.9f, 0.0f, 1.0f) * FMath::Clamp(0.35f + Feel->GetPlayerHitDamage() / 60.0f, 0.35f, 0.9f);
+		const float W = Canvas->ClipX, H = Canvas->ClipY;
+		const FLinearColor Flush(0.75f, 0.05f, 0.03f, Strength * 0.55f);
+		const float Edge = 26.0f + 30.0f * Strength;
+		DrawRect(Flush, 0.0f, 0.0f, W, Edge);
+		DrawRect(Flush, 0.0f, H - Edge, W, Edge);
+		DrawRect(Flush, 0.0f, Edge, Edge, H - 2.0f * Edge);
+		DrawRect(Flush, W - Edge, Edge, Edge, H - 2.0f * Edge);
+
+		if (const AController* Controller = Player->GetController())
+		{
+			FVector To = Feel->GetPlayerHitFrom() - Player->GetActorLocation();
+			To.Z = 0.0f;
+			const float Angle = FMath::DegreesToRadians(FRotator::NormalizeAxis(To.Rotation().Yaw - Controller->GetControlRotation().Yaw));
+			const FVector2D Centre(W * 0.5f, H * 0.5f);
+			const float Radius = FMath::Min(W, H) * 0.30f;
+			// Three blocks, fat to thin, pointing outward toward the attacker.
+			for (int32 Step = 0; Step < 3; ++Step)
+			{
+				const float R = Radius + Step * 16.0f;
+				const float Size = 22.0f - Step * 6.0f;
+				DrawRect(FLinearColor(0.95f, 0.2f, 0.1f, Strength), Centre.X + FMath::Sin(Angle) * R - Size * 0.5f, Centre.Y - FMath::Cos(Angle) * R - Size * 0.5f, Size, Size);
+			}
+		}
 	}
 }
 
@@ -456,11 +617,44 @@ void AUnderpaintingHUD::DrawHUD()
 	RawCanvas->PushAbsoluteTransform(FScaleMatrix(FVector(UIScale, UIScale, 1.0f)));
 	Canvas->ClipX = RealX / UIScale;
 	Canvas->ClipY = RealY / UIScale;
-	ProjectionScale = UIScale;
+	// Canvas->Project answers in the clip size set just above, which is already the scaled-down space everything is drawn in.
+	ProjectionScale = 1.0f;
+
+	LastClip = FVector2D(Canvas->ClipX, Canvas->ClipY);
+
+	// The mouse: shown while a menu is open, and every row of the menu can be pressed with it.
+	Hots.Reset();
+	Pointer = FVector2D(-1.0f, -1.0f);
+	if (APlayerController* PlayerController = GetOwningPlayerController())
+	{
+		const bool bWantPointer = Menu != EUnderpaintingMenu::None;
+		if (bWantPointer != bPointerShown)
+		{
+			bPointerShown = bWantPointer;
+			PlayerController->bShowMouseCursor = bWantPointer;
+			if (bWantPointer)
+			{
+				FInputModeGameAndUI Mode;
+				Mode.SetHideCursorDuringCapture(false);
+				Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+				PlayerController->SetInputMode(Mode);
+			}
+			else
+			{
+				PlayerController->SetInputMode(FInputModeGameOnly());
+			}
+		}
+		float MouseX = 0.0f, MouseY = 0.0f;
+		if (bWantPointer && PlayerController->GetMousePosition(MouseX, MouseY))
+		{
+			Pointer = FVector2D(MouseX / UIScale, MouseY / UIScale);
+		}
+	}
 
 	DrawEnemyBars();
 	if (Player)
 	{
+		DrawFeel(Player);
 		DrawPlayerBars(Player);
 	}
 	if (Player && Progress && Menu == EUnderpaintingMenu::None)
@@ -519,9 +713,23 @@ void AUnderpaintingHUD::DrawPlayerBars(const AUnderpaintingPlayerCharacter* Play
 
 	const float X = 40.0f;
 	const float Y = Canvas->ClipY - 110.0f;
-	DrawBar(X, Y, 300.0f, 16.0f, Vitals->GetHealthFraction(), HealthColour, FString::Printf(TEXT("Health %d"), FMath::CeilToInt(Vitals->GetHealth())));
-	DrawBar(X, Y + 26.0f, 300.0f, 12.0f, Vitals->GetStaminaFraction(), StaminaColour, FString::Printf(TEXT("Stamina %d"), FMath::CeilToInt(Vitals->GetStamina())));
-	DrawBar(X, Y + 48.0f, 300.0f * Vitals->MaxGlim / 100.0f, 12.0f, Vitals->GetGlimFraction(), GlimColour, FString::Printf(TEXT("Glim %d / %d"), FMath::CeilToInt(Vitals->GetGlim()), FMath::CeilToInt(Vitals->MaxGlim)));
+	// A gain of Glim blinks the bar bright, so light coming back is noticed.
+	if (LastGlim >= 0.0f && Vitals->GetGlim() > LastGlim + 0.5f)
+	{
+		GlimFlash = 0.5f;
+		Sound(TEXT("glim_gain"), 0.5f);
+	}
+	LastGlim = Vitals->GetGlim();
+	GlimFlash = FMath::Max(0.0f, GlimFlash - GetWorld()->GetDeltaSeconds());
+
+	DrawVital(X, Y, 300.0f, 16.0f, Vitals->GetHealthFraction(), GhostHealth, HealthColour, FString::Printf(TEXT("Health %d"), FMath::CeilToInt(Vitals->GetHealth())), -100.0f, Vitals->GetHealthFraction() < 0.3f);
+	DrawVital(X, Y + 26.0f, 300.0f, 12.0f, Vitals->GetStaminaFraction(), GhostStamina, StaminaColour, FString::Printf(TEXT("Stamina %d"), FMath::CeilToInt(Vitals->GetStamina())), Vitals->StaminaDeniedAt, Vitals->GetStamina() < 12.0f);
+	const float GlimWidth = 300.0f * Vitals->MaxGlim / 100.0f;
+	DrawVital(X, Y + 48.0f, GlimWidth, 12.0f, Vitals->GetGlimFraction(), GhostGlim, GlimColour, FString::Printf(TEXT("Glim %d / %d"), FMath::CeilToInt(Vitals->GetGlim()), FMath::CeilToInt(Vitals->MaxGlim)), Vitals->GlimDeniedAt, false);
+	if (GlimFlash > 0.0f)
+	{
+		DrawRect(FLinearColor(1.0f, 0.9f, 0.6f, GlimFlash * 1.4f), X, Y + 48.0f, GlimWidth * Vitals->GetGlimFraction(), 12.0f);
+	}
 
 	// The palette: two wells, the active one marked, with its Stroke and what that Stroke costs here.
 	if (const UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this))
@@ -682,10 +890,12 @@ void AUnderpaintingHUD::DrawDialogue(const UUnderpaintingProgress* Progress)
 	const TArray<int32> Offered = Progress->GetOfferedChoices(*Row);
 	if (Offered.Num() == 0)
 	{
-		DrawText(TEXT("[E] continue"), DimColour, X + 20.0f, Y + 170.0f, nullptr, 0.9f);
+		Hot(X, Y, Width, 200.0f, 0, TEXT("advance"));
+		DrawText(TEXT("[E] or click to continue"), DimColour, X + 20.0f, Y + 170.0f, nullptr, 0.9f);
 	}
 	for (int32 Index = 0; Index < Offered.Num(); ++Index)
 	{
+		Hot(X + 20.0f, Cursor - 1.0f, Width - 40.0f, LineHeight, Index + 1);
 		DrawText(FString::Printf(TEXT("%d.  %s"), Index + 1, *Row->Choices[Offered[Index]].Label), GoodColour, X + 30.0f, Cursor, nullptr, 1.0f);
 		Cursor += LineHeight;
 	}
@@ -717,11 +927,13 @@ void AUnderpaintingHUD::DrawCrafting(const UUnderpaintingProgress* Progress)
 		}
 		FString Why;
 		const bool bCan = Progress->CanCraft(Recipes[Index], &Why);
+		Hot(X + 10.0f, Cursor - 4.0f, Width - 20.0f, 46.0f, Index + 1);
 		DrawText(FString::Printf(TEXT("%d.  %s x%d"), Index + 1, *Progress->GetDisplayName(Recipe->OutputItem), Recipe->OutputCount), bCan ? GoodColour : DimColour, X + 20.0f, Cursor, nullptr, 1.05f);
 		DrawText(FString::Printf(TEXT("needs %s%s%s"), *Needs, bCan ? TEXT("") : TEXT("   -   "), bCan ? TEXT("") : *Why), DimColour, X + 50.0f, Cursor + 21.0f, nullptr, 0.9f);
 		Cursor += 50.0f;
 	}
-	DrawText(TEXT("Number to craft   [E] or [Q] leave"), DimColour, X + 20.0f, Cursor + 6.0f, nullptr, 0.9f);
+	Hot(X + 10.0f, Cursor + 2.0f, 330.0f, 24.0f, 0, TEXT("close"));
+	DrawText(TEXT("Number or click to craft   [E] or [Q] leave"), DimColour, X + 20.0f, Cursor + 6.0f, nullptr, 0.9f);
 }
 
 void AUnderpaintingHUD::DrawAttunement(const UUnderpaintingProgress* Progress)
@@ -752,12 +964,14 @@ void AUnderpaintingHUD::DrawAttunement(const UUnderpaintingProgress* Progress)
 		{
 			Cost += FString::Printf(TEXT(" + %d %s"), Node->TemperAmount, *Progress->GetDisplayName(Node->TemperPigment));
 		}
+		Hot(X + 10.0f, Cursor - 4.0f, Width - 20.0f, 46.0f, Index + 1);
 		DrawText(FString::Printf(TEXT("%d.  %s   (%s)   %s"), Index + 1, *Node->DisplayName, *Cost, bOwned ? TEXT("YOURS") : (bCan ? TEXT("") : *Why)),
 			bOwned ? GlimColour : (bCan ? GoodColour : DimColour), X + 20.0f, Cursor, nullptr, 1.0f);
 		DrawText(Node->EffectText.Left(130), DimColour, X + 50.0f, Cursor + 21.0f, nullptr, 0.85f);
 		Cursor += 50.0f;
 	}
-	DrawText(TEXT("Number to attune   [E] or [Q] stand up"), DimColour, X + 20.0f, Cursor + 6.0f, nullptr, 0.9f);
+	Hot(X + 10.0f, Cursor + 2.0f, 360.0f, 24.0f, 0, TEXT("close"));
+	DrawText(TEXT("Number or click to attune   [E] or [Q] stand up"), DimColour, X + 20.0f, Cursor + 6.0f, nullptr, 0.9f);
 }
 
 namespace
@@ -796,6 +1010,7 @@ float AUnderpaintingHUD::DrawPaper(const FString& Title, float& OutX, float& Out
 		const bool bOpen = Index == SatchelTab;
 		float TextW = 0.0f, TextH = 0.0f;
 		GetTextSize(TabNames[Index], TextW, TextH, nullptr, 1.3f);
+		Hot(TabX - 8.0f, Y + 10.0f, TextW + 16.0f, 44.0f, 0, FName(*FString::Printf(TEXT("tab%d"), Index)));
 		DrawText(TabNames[Index], bOpen ? SheetInk : InkSoft, TabX, Y + 16.0f, nullptr, 1.3f);
 		const FLinearColor Stroke = FLinearColor::FromSRGBColor(FColor::FromHex(TabStrokes[Index]));
 		if (bOpen)
@@ -811,7 +1026,9 @@ float AUnderpaintingHUD::DrawPaper(const FString& Title, float& OutX, float& Out
 		}
 		TabX += TextW + 44.0f;
 	}
-	DrawText(TEXT("[Left] [Right] turn the page"), InkSoft, X + Width - 250.0f, Y + 24.0f, nullptr, 0.85f);
+	DrawText(TEXT("[Left] [Right] or click a page"), InkSoft, X + Width - 330.0f, Y + 24.0f, nullptr, 0.85f);
+	Hot(X + Width - 92.0f, Y + 16.0f, 72.0f, 26.0f, 0, TEXT("close"));
+	DrawText(TEXT("close"), InkRed, X + Width - 80.0f, Y + 20.0f, nullptr, 0.95f);
 	DrawText(Title, InkSoft, X + 28.0f, Y + 66.0f, nullptr, 0.9f);
 
 	OutX = X + 28.0f;
@@ -894,6 +1111,7 @@ void AUnderpaintingHUD::DrawPackTab(const UUnderpaintingProgress* Progress, floa
 		{
 			DrawRect(FLinearColor(0.85f, 0.42f, 0.10f, 0.30f), GearX - 6.0f, GearY, Column - 10.0f, 42.0f);
 		}
+		Hot(GearX - 6.0f, GearY, Column - 10.0f, 42.0f, Index + 1);
 		DrawText(FString::Printf(TEXT("%d.  %s"), Index + 1, *Item->DisplayName), SheetInk, GearX, GearY, nullptr, 1.0f);
 		DrawText(Item->Type == EItemType::Weapon
 			? FString::Printf(TEXT("%d / %d damage, reach %.1f m"), Item->LightDamage, Item->HeavyDamage, Item->Reach)
@@ -988,6 +1206,7 @@ void AUnderpaintingHUD::DrawNotesTab(const UUnderpaintingProgress* Progress, flo
 			continue;
 		}
 		const bool bHand = Row->Kind == ELoreKind::Marginalia;
+		Hot(X - 6.0f, Cursor - 2.0f, Width, 46.0f, Slot + 1);
 		DrawText(FString::Printf(TEXT("%d.  %s"), Slot + 1, *Row->Title), bHand ? FLinearColor::FromSRGBColor(FColor::FromHex(TEXT("2F4BA8"))) : SheetInk, X, Cursor, nullptr, 1.0f);
 		DrawText(Row->Text.Left(84) + (Row->Text.Len() > 84 ? TEXT("...") : TEXT("")), InkSoft, X + 28.0f, Cursor + 22.0f, nullptr, 0.8f);
 		Cursor += 50.0f;
@@ -1025,6 +1244,7 @@ void AUnderpaintingHUD::DrawSettingsTab(float X, float Y, float Width)
 		const float RowX = X + (Index >= PerColumn ? Column : 0.0f);
 		const float RowY = Y + (Index % PerColumn) * 26.0f;
 		const bool bHere = Index == SettingsCursor;
+		Hot(RowX - 8.0f, RowY - 2.0f, Column - 16.0f, 24.0f, 0, FName(*FString::Printf(TEXT("row%d"), Index)));
 		if (bHere)
 		{
 			DrawRect(FLinearColor(0.85f, 0.42f, 0.10f, 0.30f), RowX - 8.0f, RowY - 2.0f, Column - 16.0f, 24.0f);
@@ -1059,7 +1279,8 @@ void AUnderpaintingHUD::DrawReading(const UUnderpaintingProgress* Progress)
 	DrawRect(Paper, X, Y, Width, 300.0f);
 	DrawText(Title, Ink * 0.8f + FLinearColor(0.1f, 0.1f, 0.1f), X + 30.0f, Y + 22.0f, nullptr, 0.95f);
 	DrawWrapped(Body, X + 30.0f, Y + 62.0f, Width - 60.0f, Ink, 1.15f);
-	DrawText(TEXT("[E] put it away"), Ink * 0.7f + FLinearColor(0.15f, 0.15f, 0.15f), X + 30.0f, Y + 268.0f, nullptr, 0.85f);
+	Hot(X, Y, Width, 300.0f, 0, TEXT("close"));
+	DrawText(TEXT("[E] or click to put it away"), Ink * 0.7f + FLinearColor(0.15f, 0.15f, 0.15f), X + 30.0f, Y + 268.0f, nullptr, 0.85f);
 }
 
 void AUnderpaintingHUD::DrawCompass(const AUnderpaintingPlayerCharacter* Player, const UUnderpaintingProgress* Progress)
@@ -1148,7 +1369,9 @@ void AUnderpaintingHUD::DrawChoice(const UUnderpaintingProgress* Progress)
 		DrawText(Cost, TextColour, X + 24.0f, Y + 54.0f, nullptr, 1.0f);
 		float Cursor = DrawWrapped(Choice.Consequence, X + 24.0f, Y + 84.0f, Width - 48.0f, TextColour, 1.0f) + 16.0f;
 		Cursor = DrawWrapped(TEXT("This cannot be painted over. It will be carried for as long as the world lasts."), X + 24.0f, Cursor, Width - 48.0f, HealthColour * 2.2f, 1.0f) + 12.0f;
+		Hot(X + 30.0f, Cursor - 2.0f, 260.0f, 26.0f, 1);
 		DrawText(TEXT("1.  Do it."), GoodColour, X + 40.0f, Cursor, nullptr, 1.1f);
+		Hot(X + 30.0f, Cursor + 26.0f, 260.0f, 26.0f, 2);
 		DrawText(TEXT("2.  Not yet."), TextColour, X + 40.0f, Cursor + 28.0f, nullptr, 1.1f);
 		return;
 	}
@@ -1163,12 +1386,14 @@ void AUnderpaintingHUD::DrawChoice(const UUnderpaintingProgress* Progress)
 		FString Why;
 		const bool bCan = Progress->CanChoose(ChoiceQuest, Choice.ChoiceId, &Why);
 		const FString Cost = Choice.CostPigment.IsNone() ? FString(TEXT("free")) : FString::Printf(TEXT("%d %s"), Choice.CostAmount, *Progress->GetDisplayName(Choice.CostPigment));
+		Hot(X + 12.0f, Cursor - 4.0f, Width - 24.0f, 108.0f, Index + 1);
 		DrawText(FString::Printf(TEXT("%d.  %s   (%s)%s%s"), Index + 1, *Choice.Label, *Cost, bCan ? TEXT("") : TEXT("   -   "), bCan ? TEXT("") : *Why),
 			bCan ? GoodColour : DimColour, X + 24.0f, Cursor, nullptr, 1.05f);
 		DrawWrapped(Choice.Consequence, X + 54.0f, Cursor + 24.0f, Width - 80.0f, DimColour, 0.85f);
 		Cursor += 116.0f;
 	}
-	DrawText(TEXT("Number to choose (you will be asked again)   [E] or [Q] walk away"), DimColour, X + 24.0f, Cursor, nullptr, 0.9f);
+	Hot(X + 12.0f, Cursor - 4.0f, 520.0f, 24.0f, 0, TEXT("close"));
+	DrawText(TEXT("Number or click to choose (you will be asked again)   [E] or [Q] walk away"), DimColour, X + 24.0f, Cursor, nullptr, 0.9f);
 }
 
 void AUnderpaintingHUD::DrawTurning(const AUnderpaintingPlayerCharacter* Player, UUnderpaintingProgress* Progress)

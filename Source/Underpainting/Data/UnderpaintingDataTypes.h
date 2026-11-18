@@ -781,3 +781,32 @@ struct FLoreRow : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Lore")
 	FName Zone;
 };
+
+// ---------------------------------------------------------------------------
+// sounds.json: what each thing that happens sounds like
+// ---------------------------------------------------------------------------
+
+USTRUCT(BlueprintType)
+struct FSoundRow : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	/** Object paths of sound assets. One is picked at random each time, so repeats do not sound stamped. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+	TArray<FString> Assets;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+	float Volume = 1.0f;
+
+	/** The pitch is a random value between these two. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+	float PitchMin = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+	float PitchMax = 1.0f;
+
+	/** Where the sound came from and its licence, for docs/ASSETS.md. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+	FString Source;
+};
+

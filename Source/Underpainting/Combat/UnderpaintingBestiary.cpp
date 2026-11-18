@@ -1,4 +1,5 @@
 #include "UnderpaintingBestiary.h"
+#include "UnderpaintingFeel.h"
 
 #include "Underpainting.h"
 #include "UnderpaintingPlayerCharacter.h"
@@ -242,6 +243,11 @@ void AOldPalimpsest::Tick(float DeltaTime)
 	if (HeartbeatTimer >= HeartbeatInterval)
 	{
 		HeartbeatTimer = 0.0f;
+		if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+		{
+			Feel->PlayFlat(TEXT("heartbeat"));
+			Feel->Shake(0.12f);
+		}
 		if (AUnderpaintingPlayerCharacter* Player = Cast<AUnderpaintingPlayerCharacter>(UGameplayStatics::GetPlayerPawn(this, 0)))
 		{
 			Player->LendLight(HeartbeatLight, HeartbeatLightSeconds);

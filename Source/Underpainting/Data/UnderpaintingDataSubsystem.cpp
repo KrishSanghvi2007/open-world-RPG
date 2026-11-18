@@ -69,6 +69,7 @@ int32 UUnderpaintingDataSubsystem::ReloadAll()
 	Regions = LoadTableFromJson(this, TEXT("regions"), FRegionRow::StaticStruct(), Problems);
 	Dialogue = LoadTableFromJson(this, TEXT("dialogue"), FDialogueRow::StaticStruct(), Problems);
 	Lore = LoadTableFromJson(this, TEXT("lore"), FLoreRow::StaticStruct(), Problems);
+	Sounds = LoadTableFromJson(this, TEXT("sounds"), FSoundRow::StaticStruct(), Problems);
 
 	for (const FString& Problem : Problems)
 	{
@@ -90,6 +91,7 @@ const FAttunementRow* UUnderpaintingDataSubsystem::FindAttunement(FName RowName)
 const FEnemyRow* UUnderpaintingDataSubsystem::FindEnemy(FName RowName) const { return FindRowIn<FEnemyRow>(Enemies, RowName); }
 const FQuestRow* UUnderpaintingDataSubsystem::FindQuest(FName RowName) const { return FindRowIn<FQuestRow>(Quests, RowName); }
 const FRegionRow* UUnderpaintingDataSubsystem::FindRegion(FName RowName) const { return FindRowIn<FRegionRow>(Regions, RowName); }
+const FSoundRow* UUnderpaintingDataSubsystem::FindSound(FName RowName) const { return FindRowIn<FSoundRow>(Sounds, RowName); }
 
 FLinearColor UUnderpaintingDataSubsystem::HexToColour(const FString& Hex)
 {

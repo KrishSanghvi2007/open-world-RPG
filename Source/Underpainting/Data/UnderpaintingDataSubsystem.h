@@ -62,6 +62,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Underpainting|Data")
 	UDataTable* GetLore() const { return Lore; }
 
+	UFUNCTION(BlueprintPure, Category = "Underpainting|Data")
+	UDataTable* GetSounds() const { return Sounds; }
+
 	/** The zone row whose level is the one given (for example "L_Matriarch_Vault_A"), or None. */
 	FName FindZoneForLevel(const FString& LevelName) const;
 
@@ -73,6 +76,7 @@ public:
 	const FEnemyRow* FindEnemy(FName RowName) const;
 	const FQuestRow* FindQuest(FName RowName) const;
 	const FRegionRow* FindRegion(FName RowName) const;
+	const FSoundRow* FindSound(FName RowName) const;
 
 	/** Converts "#RRGGBB" from the data files into a colour. Returns magenta if the text is not a valid hex colour. */
 	UFUNCTION(BlueprintPure, Category = "Underpainting|Data")
@@ -106,4 +110,7 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UDataTable> Lore;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UDataTable> Sounds;
 };

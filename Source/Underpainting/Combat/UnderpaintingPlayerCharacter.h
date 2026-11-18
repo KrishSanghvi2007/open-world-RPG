@@ -10,6 +10,7 @@
 
 class UUnderpaintingVitalsComponent;
 class UAnimMontage;
+class UAnimSequenceBase;
 class UUnderpaintingAutopilot;
 
 UENUM(BlueprintType)
@@ -20,6 +21,8 @@ enum class EPlayerAction : uint8
 	HeavyAttack,
 	Stroke,
 	Dodge,
+	/** Knocked out of what you were doing by a hit. Short, and a dodge can cut it shorter. */
+	Flinch,
 	Dead
 };
 
@@ -37,6 +40,8 @@ public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void Landed(const FHitResult& Hit) override;
+	virtual void OnJumped_Implementation() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void StartLightAttack();
@@ -53,6 +58,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SetSprinting(bool bWantsSprint);
+
+	/** Development: a mouse click at a point on the screen (0..1 across, 0..1 down), for testing menus without a hand on the mouse. */
+	UFUNCTION(BlueprintCallable, Category = "Underpainting|Dev")
+	void DevClickAt(float U, float V);
 
 	/** Development: play from a script (see UnderpaintingAutopilot.h for the verbs). */
 	UFUNCTION(BlueprintCallable, Category = "Underpainting|Dev")
@@ -91,6 +100,7 @@ public:
 	void OnRested();
 
 	virtual void DoMove(float Right, float Forward) override;
+	virtual void DoLook(float Yaw, float Pitch) override;
 
 	/** Uses whatever is in reach, or advances the open menu. The Interact key calls this; so can scripts and tests. */
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
@@ -276,6 +286,42 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Tuning")
 	float SprintSpeed = 750.0f;
 
+	// --- Feel: how it answers the hands. None of these change what a hit does. ---
+
+	/** A press made while busy is kept this long and carried out the moment it becomes possible. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Feel")
+	float InputBufferTime = 0.30f;
+
+	/** You can still jump this long after walking off an edge. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Feel")
+	float LedgeGraceTime = 0.15f;
+
+	/** How far through a light swing's recovery a dodge may cut in (0 = at once, 1 = never). Weighty: you commit to the hit. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Feel")
+	float DodgeCancelLight = 0.30f;
+
+	/** The same for a heavy swing or a Stroke: you commit for longer. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Feel")
+	float DodgeCancelHeavy = 0.55f;
+
+	/** How far through a light swing's recovery the next light may begin, so three lights flow as a combo. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Feel")
+	float LightChainAt = 0.50f;
+
+	/** Seconds you are knocked out of an action by a light hit and by a heavy one (22 damage or more). */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Feel")
+	float FlinchLight = 0.30f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Feel")
+	float FlinchHeavy = 0.50f;
+
+	/** Without lock-on, a swing turns to the nearest enemy within this distance (cm) and this angle (degrees) of where you are pushing. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Feel")
+	float AimAssistRange = 380.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Feel")
+	float AimAssistAngle = 70.0f;
+
 	/** Hold the heavy button this long (seconds) and it becomes the active well's Stroke. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Tuning")
 	float StrokeHoldTime = 0.28f;
@@ -369,6 +415,8 @@ private:
 	void DraughtPressed() { UseDraught(); }
 	void TincturePressed() { UseTincture(); }
 	void DevFillPressed() { DevFill(); }
+	void LightPressed();
+	void MenuClickPressed();
 	void TabLeftPressed();
 	void TabRightPressed();
 	void CursorUpPressed();
@@ -377,7 +425,7 @@ private:
 	FDelegateHandle KeysChangedHandle;
 	void LampOilPressed() { UseLampOil(); }
 	void TickLockOn(float DeltaTime);
-	void ApplyHit(AActor* Target, float Damage, float StaggerDamage, const TCHAR* What);
+	void ApplyHit(AActor* Target, float Damage, float StaggerDamage, const TCHAR* What, int32 ContrastSign = 0);
 
 	UFUNCTION()
 	void HandleDodged(AActor* Attacker);
@@ -390,6 +438,46 @@ private:
 
 	void SprintPressed() { SetSprinting(true); }
 	void SprintReleased() { SetSprinting(false); }
+
+	// Feel.
+	enum class EBuffered : uint8 { None, Light, Heavy, Stroke, Dodge };
+	void Buffer(EBuffered What);
+	void TryBuffered();
+	bool CanCancelInto(EBuffered What) const;
+	void PlayAction(UAnimSequenceBase* Animation, float Duration);
+	void StopActionAnimation();
+	void LoadAnimations();
+	void Deny(bool bGlim);
+	void TickFeel(float DeltaTime);
+	class AUnderpaintingEnemy* FindAimTarget() const;
+
+	UFUNCTION()
+	void HandleDamaged(float Damage, float StaggerDamage, AActor* DamageCauser);
+
+	EBuffered Buffered = EBuffered::None;
+	float BufferedAt = -10.0f;
+	int32 ComboIndex = 0;
+	float LastSwingEndTime = -10.0f;
+	bool bSwingSounded = false;
+	TWeakObjectPtr<class AUnderpaintingEnemy> AimTarget;
+	float FlinchRemaining = 0.0f;
+	float FlinchTotal = 0.0f;
+	float LastGroundedTime = 0.0f;
+	bool bJumpedSinceGround = false;
+	float StepDistance = 0.0f;
+	FVector LastStepLocation = FVector::ZeroVector;
+	float LastDenyTime = -10.0f;
+	FName FootstepSound = TEXT("footstep");
+
+	UPROPERTY(Transient) TArray<TObjectPtr<UAnimSequenceBase>> LightAnims;
+	UPROPERTY(Transient) TArray<TObjectPtr<UAnimSequenceBase>> HitAnimsLight;
+	UPROPERTY(Transient) TArray<TObjectPtr<UAnimSequenceBase>> HitAnimsMedium;
+	UPROPERTY(Transient) TArray<TObjectPtr<UAnimSequenceBase>> DeathAnims;
+	UPROPERTY(Transient) TObjectPtr<UAnimSequenceBase> HeavyAnim;
+	UPROPERTY(Transient) TObjectPtr<UAnimSequenceBase> DashAnim;
+	UPROPERTY(Transient) TObjectPtr<UAnimSequenceBase> HitAnimHeavy;
+	UPROPERTY(Transient) TObjectPtr<UAnimSequenceBase> HitAnimBack;
+	UPROPERTY(Transient) TObjectPtr<UAnimSequenceBase> DeathBackAnim;
 
 	EPlayerAction Action = EPlayerAction::None;
 	FAttackClock AttackClock;

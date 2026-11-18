@@ -1,0 +1,539 @@
+[
+  {
+    "Name": "swing_light",
+    "Assets": [
+      "/Game/Audio/Made/whoosh_light_1.whoosh_light_1",
+      "/Game/Audio/Made/whoosh_light_2.whoosh_light_2",
+      "/Game/Audio/Made/whoosh_light_3.whoosh_light_3"
+    ],
+    "Volume": 0.55,
+    "PitchMin": 0.92,
+    "PitchMax": 1.1,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "swing_heavy",
+    "Assets": [
+      "/Game/Audio/Made/whoosh_heavy_1.whoosh_heavy_1",
+      "/Game/Audio/Made/whoosh_heavy_2.whoosh_heavy_2"
+    ],
+    "Volume": 0.7,
+    "PitchMin": 0.9,
+    "PitchMax": 1.05,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "swing_stroke",
+    "Assets": [
+      "/Game/Audio/Made/whoosh_stroke_1.whoosh_stroke_1",
+      "/Game/Audio/Made/whoosh_stroke_2.whoosh_stroke_2"
+    ],
+    "Volume": 0.75,
+    "PitchMin": 0.95,
+    "PitchMax": 1.05,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "hit_light",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPunch_medium_000.impactPunch_medium_000",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPunch_medium_001.impactPunch_medium_001",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPunch_medium_002.impactPunch_medium_002",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPunch_medium_003.impactPunch_medium_003",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPunch_medium_004.impactPunch_medium_004"
+    ],
+    "Volume": 0.8,
+    "PitchMin": 0.95,
+    "PitchMax": 1.1,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "hit_heavy",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPunch_heavy_000.impactPunch_heavy_000",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPunch_heavy_001.impactPunch_heavy_001",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPunch_heavy_002.impactPunch_heavy_002",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPunch_heavy_003.impactPunch_heavy_003",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPunch_heavy_004.impactPunch_heavy_004"
+    ],
+    "Volume": 1.0,
+    "PitchMin": 0.85,
+    "PitchMax": 1.0,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "hit_stroke",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactSoft_heavy_000.impactSoft_heavy_000",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactSoft_heavy_001.impactSoft_heavy_001",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactSoft_heavy_002.impactSoft_heavy_002",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactSoft_heavy_003.impactSoft_heavy_003",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactSoft_heavy_004.impactSoft_heavy_004"
+    ],
+    "Volume": 1.0,
+    "PitchMin": 0.8,
+    "PitchMax": 0.95,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "hit_contrast",
+    "Assets": [
+      "/Game/Audio/Made/chime_contrast.chime_contrast"
+    ],
+    "Volume": 0.6,
+    "PitchMin": 0.97,
+    "PitchMax": 1.03,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "player_hurt",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPlank_medium_000.impactPlank_medium_000",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPlank_medium_001.impactPlank_medium_001",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPlank_medium_002.impactPlank_medium_002",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPlank_medium_003.impactPlank_medium_003",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPlank_medium_004.impactPlank_medium_004"
+    ],
+    "Volume": 0.9,
+    "PitchMin": 0.7,
+    "PitchMax": 0.85,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "player_death",
+    "Assets": [
+      "/Game/Audio/Made/exhale_low.exhale_low"
+    ],
+    "Volume": 0.9,
+    "PitchMin": 0.9,
+    "PitchMax": 1.0,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "dodge",
+    "Assets": [
+      "/Game/Audio/Made/whoosh_dodge.whoosh_dodge"
+    ],
+    "Volume": 0.6,
+    "PitchMin": 0.95,
+    "PitchMax": 1.1,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "perfect_dodge",
+    "Assets": [
+      "/Game/Audio/Made/chime_perfect.chime_perfect"
+    ],
+    "Volume": 0.6,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "enemy_windup",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/creak1.creak1",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/creak2.creak2",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/creak3.creak3"
+    ],
+    "Volume": 0.7,
+    "PitchMin": 0.7,
+    "PitchMax": 0.9,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "enemy_swing",
+    "Assets": [
+      "/Game/Audio/Made/whoosh_heavy_1.whoosh_heavy_1",
+      "/Game/Audio/Made/whoosh_heavy_2.whoosh_heavy_2"
+    ],
+    "Volume": 0.6,
+    "PitchMin": 0.7,
+    "PitchMax": 0.85,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "enemy_death",
+    "Assets": [
+      "/Game/Audio/Made/exhale_low.exhale_low"
+    ],
+    "Volume": 0.8,
+    "PitchMin": 1.1,
+    "PitchMax": 1.3,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "stagger",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPlate_medium_000.impactPlate_medium_000",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPlate_medium_001.impactPlate_medium_001",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPlate_medium_002.impactPlate_medium_002",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPlate_medium_003.impactPlate_medium_003",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactPlate_medium_004.impactPlate_medium_004"
+    ],
+    "Volume": 0.7,
+    "PitchMin": 0.8,
+    "PitchMax": 0.95,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "heartbeat",
+    "Assets": [
+      "/Game/Audio/Made/heartbeat.heartbeat"
+    ],
+    "Volume": 1.0,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "rumble_turning",
+    "Assets": [
+      "/Game/Audio/Made/rumble_turning.rumble_turning"
+    ],
+    "Volume": 1.0,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "footstep",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/footstep00.footstep00",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/footstep01.footstep01",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/footstep02.footstep02",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/footstep03.footstep03",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/footstep04.footstep04",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/footstep05.footstep05",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/footstep06.footstep06",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/footstep07.footstep07",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/footstep08.footstep08",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/footstep09.footstep09"
+    ],
+    "Volume": 0.5,
+    "PitchMin": 0.92,
+    "PitchMax": 1.08,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "footstep_VarnishVillage",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_concrete_000.footstep_concrete_000",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_concrete_001.footstep_concrete_001",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_concrete_002.footstep_concrete_002",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_concrete_003.footstep_concrete_003",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_concrete_004.footstep_concrete_004"
+    ],
+    "Volume": 0.45,
+    "PitchMin": 0.92,
+    "PitchMax": 1.08,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "footstep_Scumblewood",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_grass_000.footstep_grass_000",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_grass_001.footstep_grass_001",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_grass_002.footstep_grass_002",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_grass_003.footstep_grass_003",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_grass_004.footstep_grass_004"
+    ],
+    "Volume": 0.5,
+    "PitchMin": 0.92,
+    "PitchMax": 1.08,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "footstep_GrisailleVault",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_carpet_000.footstep_carpet_000",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_carpet_001.footstep_carpet_001",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_carpet_002.footstep_carpet_002",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_carpet_003.footstep_carpet_003",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/footstep_carpet_004.footstep_carpet_004"
+    ],
+    "Volume": 0.55,
+    "PitchMin": 0.85,
+    "PitchMax": 1.0,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "jump",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/cloth1.cloth1",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/cloth2.cloth2"
+    ],
+    "Volume": 0.5,
+    "PitchMin": 1.0,
+    "PitchMax": 1.15,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "land",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactSoft_medium_000.impactSoft_medium_000",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactSoft_medium_001.impactSoft_medium_001",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactSoft_medium_002.impactSoft_medium_002",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactSoft_medium_003.impactSoft_medium_003",
+      "/Game/ThirdParty/Audio/Kenney/ImpactSounds/impactSoft_medium_004.impactSoft_medium_004"
+    ],
+    "Volume": 0.6,
+    "PitchMin": 0.9,
+    "PitchMax": 1.05,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "harvest",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/knifeSlice.knifeSlice",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/knifeSlice2.knifeSlice2",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/chop.chop"
+    ],
+    "Volume": 0.7,
+    "PitchMin": 0.95,
+    "PitchMax": 1.1,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "pickup",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/handleSmallLeather.handleSmallLeather",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/handleSmallLeather2.handleSmallLeather2",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/dropLeather.dropLeather"
+    ],
+    "Volume": 0.7,
+    "PitchMin": 0.95,
+    "PitchMax": 1.1,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "craft",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/metalPot1.metalPot1",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/metalPot2.metalPot2",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/metalPot3.metalPot3"
+    ],
+    "Volume": 0.7,
+    "PitchMin": 0.95,
+    "PitchMax": 1.05,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "read",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/bookFlip1.bookFlip1",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/bookFlip2.bookFlip2",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/bookFlip3.bookFlip3"
+    ],
+    "Volume": 0.7,
+    "PitchMin": 0.95,
+    "PitchMax": 1.05,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "door",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/doorOpen_1.doorOpen_1",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/doorOpen_2.doorOpen_2"
+    ],
+    "Volume": 0.7,
+    "PitchMin": 0.9,
+    "PitchMax": 1.0,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "rest",
+    "Assets": [
+      "/Game/Audio/Made/chime_rest.chime_rest"
+    ],
+    "Volume": 0.6,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "flare",
+    "Assets": [
+      "/Game/Audio/Made/flare_ignite.flare_ignite"
+    ],
+    "Volume": 0.8,
+    "PitchMin": 0.97,
+    "PitchMax": 1.03,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "attune",
+    "Assets": [
+      "/Game/Audio/Made/chime_attune.chime_attune"
+    ],
+    "Volume": 0.6,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "glim_gain",
+    "Assets": [
+      "/Game/Audio/Made/chime_glim.chime_glim"
+    ],
+    "Volume": 0.4,
+    "PitchMin": 0.95,
+    "PitchMax": 1.1,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "quest_new",
+    "Assets": [
+      "/Game/Audio/Made/chime_quest_new.chime_quest_new"
+    ],
+    "Volume": 0.55,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "quest_done",
+    "Assets": [
+      "/Game/Audio/Made/chime_quest_done.chime_quest_done"
+    ],
+    "Volume": 0.6,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "choice",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/bong_001.bong_001"
+    ],
+    "Volume": 0.7,
+    "PitchMin": 0.8,
+    "PitchMax": 0.8,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "ui_open",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/open_001.open_001",
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/open_002.open_002",
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/open_003.open_003",
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/open_004.open_004"
+    ],
+    "Volume": 0.5,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "ui_close",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/close_001.close_001",
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/close_002.close_002",
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/close_003.close_003",
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/close_004.close_004"
+    ],
+    "Volume": 0.45,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "ui_select",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/click_001.click_001",
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/click_002.click_002",
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/click_003.click_003",
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/click_004.click_004",
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/click_005.click_005"
+    ],
+    "Volume": 0.5,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "ui_move",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/tick_001.tick_001",
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/tick_002.tick_002"
+    ],
+    "Volume": 0.4,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "ui_deny",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/error_001.error_001",
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/error_002.error_002",
+      "/Game/ThirdParty/Audio/Kenney/InterfaceSounds/error_003.error_003"
+    ],
+    "Volume": 0.4,
+    "PitchMin": 0.9,
+    "PitchMax": 1.0,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "ui_page",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/bookFlip1.bookFlip1",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/bookFlip2.bookFlip2",
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/bookFlip3.bookFlip3"
+    ],
+    "Volume": 0.6,
+    "PitchMin": 1.0,
+    "PitchMax": 1.1,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "ui_satchel",
+    "Assets": [
+      "/Game/ThirdParty/Audio/Kenney/RPGAudio/bookOpen.bookOpen"
+    ],
+    "Volume": 0.6,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Kenney (kenney.nl), CC0"
+  },
+  {
+    "Name": "amb_VarnishVillage",
+    "Assets": [
+      "/Game/Audio/Made/amb_village.amb_village"
+    ],
+    "Volume": 0.35,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "amb_Scumblewood",
+    "Assets": [
+      "/Game/Audio/Made/amb_forest.amb_forest"
+    ],
+    "Volume": 0.4,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "amb_GrisailleVault",
+    "Assets": [
+      "/Game/Audio/Made/amb_vault.amb_vault"
+    ],
+    "Volume": 0.45,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Made by tools/audio/make_sounds.py"
+  },
+  {
+    "Name": "amb_Room",
+    "Assets": [
+      "/Game/Audio/Made/amb_village.amb_village"
+    ],
+    "Volume": 0.3,
+    "PitchMin": 1.0,
+    "PitchMax": 1.0,
+    "Source": "Made by tools/audio/make_sounds.py"
+  }
+]

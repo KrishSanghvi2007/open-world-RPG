@@ -222,3 +222,18 @@ When adding rows, keep these true (a validation script should check them):
 - No recipe may have a `Stretch` quest as its `UnlockId`.
 - `pigments.CraftingUses` must list exactly the items whose recipe has that pigment as an input.
 - `regions.HarvestNodeCounts` must be the same length as `regions.Pigments`.
+
+## sounds.json
+
+What each thing that happens sounds like. Code asks for a row by name (`swing_light`, `footstep_Scumblewood`, `amb_GrisailleVault`); the row says which files, how loud, and how much the pitch may wander.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `Name` | FName | What code asks for. `footstep_<Zone>` and `amb_<Zone>` are looked up by zone; `amb_` rows loop. |
+| `Assets` | FString[] | Object paths of sound assets. One is picked at random each time. Under `/Game/ThirdParty/Audio/` (free packs, not in git) or `/Game/Audio/Made/` (ours). |
+| `Volume` | float | 0 to 1.5. |
+| `PitchMin`, `PitchMax` | float | The pitch is random between these. |
+| `Source` | FString | Where it came from and its licence. Must not be empty. |
+
+A missing file is not an error: the sound is skipped and the log says so.
+

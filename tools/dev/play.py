@@ -215,6 +215,9 @@ def main(args):
         goto(world, pawn, "Choice", "SQ_AFairGrind"); pawn.interact(); say(pawn, "at the wall")
         pawn.menu_number(int(args[1]) if len(args) > 1 else 2); pawn.menu_number(1); say(pawn, "decided")
         goto(world, pawn, "NPC", "BartramSedge"); talk(pawn, 4); say(pawn, "what Bartram says now")
+    elif command == "click":
+        # click <u> <v>: a mouse click at a fraction of the screen (0..1 across, 0..1 down), for testing menus.
+        pawn.dev_click_at(float(args[1]), float(args[2]))
     elif command == "count":
         cls = getattr(unreal, args[1])
         print(args[1], len(unreal.GameplayStatics.get_all_actors_of_class(world, cls)))

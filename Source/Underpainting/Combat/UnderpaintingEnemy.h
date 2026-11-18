@@ -99,6 +99,13 @@ public:
 	/** Extra damage fraction from being glazed, if any. */
 	float GetVulnerability() const { return VulnerableRemaining > 0.0f ? VulnerableFraction : 0.0f; }
 
+	/** A blow landed from there: flinch away from it, flash, and (unless too heavy or mid-strike) be knocked back. */
+	void ReceiveImpact(const FVector& From, float Knockback);
+
+	/** The colour of the paint a blow knocks off it. */
+	FLinearColor GetPaintColour() const { return GetBodyColour(); }
+	float GetPaintPurity() const { return GetBodyPurity(); }
+
 	/** Row in data/enemies.json. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
 	FName EnemyId = TEXT("Blotter");
@@ -140,6 +147,9 @@ protected:
 	/** Called when a two-phase enemy enters its second phase. */
 	virtual void OnPhaseTwo() {}
 
+	/** How far a blow moves it: 1 for something person-sized, less for something heavy. Bosses are never moved. */
+	virtual float GetKnockbackScale() const { return 1.0f; }
+
 	/** Size of the placeholder body relative to a person. */
 	virtual FVector GetBodyScale() const { return FVector(0.7f, 0.7f, 2.2f); }
 
@@ -168,6 +178,10 @@ protected:
 	/** The warm rim telegraph: lit during a wind-up. A small light, so it casts no shadow. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UPointLightComponent> TelegraphLight;
+
+	/** The mark on the ground that shows where an attack will land. It grows through the wind-up and is full when the hit comes. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UStaticMeshComponent> TelegraphGround;
 
 	/** Seconds a staggered enemy is helpless. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy|Tuning")
@@ -211,6 +225,7 @@ private:
 	void HitTest(const FEnemyAttack& Attack);
 	void SetState(EEnemyState NewState);
 	void UpdateTelegraph();
+	void UpdateBody();
 
 	EEnemyState State = EEnemyState::Idle;
 	FAttackClock AttackClock;
@@ -236,6 +251,22 @@ private:
 	float CooldownRemaining = 0.0f;
 	FVector HomeLocation = FVector::ZeroVector;
 
+	// How it moves and reacts (a stand-in for animation until it has a model).
+	float FlinchRemaining = 0.0f;
+	FVector FlinchLocal = FVector::ZeroVector;
+	float FlashRemaining = 0.0f;
+	float BreathOffset = 0.0f;
+	bool bSwingSounded = false;
+
 	UPROPERTY(Transient)
 	TObjectPtr<UMaterialInstanceDynamic> BodyMaterial;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UMaterialInstanceDynamic> GroundMaterial;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UStaticMesh> DiscMesh;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UStaticMesh> BarMesh;
 };

@@ -1,6 +1,6 @@
 import json,sys,re
 D={}
-for f in "pigments recipes items attunements enemies quests regions dialogue lore".split():
+for f in "pigments recipes items attunements enemies quests regions dialogue lore sounds".split():
     D[f]=json.load(open(f"data/{f}.json"))
     names=[r["Name"] for r in D[f]]
     assert len(names)==len(set(names)),f
@@ -84,6 +84,13 @@ for d in D["dialogue"]:
     if len(d["Choices"])>6: err.append(("dialogue-too-many-choices",d["Name"]))
 for npc in {d["Npc"] for d in D["dialogue"]}:
     if not entries.get(npc): err.append(("dialogue-no-entry",npc))
+for snd in D["sounds"]:
+    if not snd["Assets"]: err.append(("sound-no-assets",snd["Name"]))
+    if not (0.0 < snd["Volume"] <= 1.5) or snd["PitchMin"] > snd["PitchMax"] or snd["PitchMin"] <= 0: err.append(("sound-numbers",snd["Name"]))
+    if not snd["Source"].strip(): err.append(("sound-no-source",snd["Name"]))
+    for asset in snd["Assets"]:
+        if not (asset.startswith("/Game/ThirdParty/Audio/") or asset.startswith("/Game/Audio/Made/")): err.append(("sound-path",snd["Name"]))
+if len({snd["Name"] for snd in D["sounds"]}) != len(D["sounds"]): err.append(("sound-duplicate-name","sounds"))
 for l in D["lore"]:
     if l["Kind"] not in {"Marginalia","FieldNote","Ledger"}: err.append(("lore-kind",l["Name"]))
     chk(l["Zone"],["regions"],"lore-zone")

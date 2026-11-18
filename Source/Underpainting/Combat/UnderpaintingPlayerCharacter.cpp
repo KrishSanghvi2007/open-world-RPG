@@ -1,6 +1,10 @@
 #include "UnderpaintingPlayerCharacter.h"
 #include "UnderpaintingSettings.h"
 #include "UnderpaintingAutopilot.h"
+#include "UnderpaintingFeel.h"
+#include "Animation/AnimSequenceBase.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 #include "Underpainting.h"
 #include "UnderpaintingCombatRules.h"
@@ -49,12 +53,28 @@ void AUnderpaintingPlayerCharacter::BeginPlay()
 	Vitals->Initialise(100.0f, 100.0f, 100.0f);
 	Vitals->OnDeath.AddDynamic(this, &AUnderpaintingPlayerCharacter::HandleDeath);
 	Vitals->OnDodged.AddDynamic(this, &AUnderpaintingPlayerCharacter::HandleDodged);
+	Vitals->OnDamaged.AddDynamic(this, &AUnderpaintingPlayerCharacter::HandleDamaged);
+	LoadAnimations();
+
+	// The camera trails a little and turns a little late, so movement reads as weight and not as a rail.
+	if (USpringArmComponent* Boom = GetCameraBoom())
+	{
+		Boom->bEnableCameraLag = true;
+		Boom->CameraLagSpeed = 11.0f;
+		Boom->CameraLagMaxDistance = 90.0f;
+		Boom->bEnableCameraRotationLag = true;
+		Boom->CameraRotationLagSpeed = 22.0f;
+	}
+	LastStepLocation = GetActorLocation();
 
 	// How much light this zone has decides what Strokes cost here.
 	if (const UUnderpaintingDataSubsystem* ZoneData = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>() : nullptr)
 	{
 		const FRegionRow* Zone = ZoneData->FindRegion(ZoneData->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(this, true)));
 		const UUnderpaintingProgress* World = UUnderpaintingProgressSubsystem::Get(this);
+		const FName ZoneId = ZoneData->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(this, true));
+		const FName ZoneSteps(*FString::Printf(TEXT("footstep_%s"), *ZoneId.ToString()));
+		FootstepSound = ZoneData->FindSound(ZoneSteps) ? ZoneSteps : FName(TEXT("footstep"));
 		ZoneAmbientLight = !Zone ? 1.0f : (World ? World->GetZoneLight(ZoneData->FindZoneForLevel(UGameplayStatics::GetCurrentLevelName(this, true)), Zone->AmbientLight, Zone->AmbientLightAfterShift) : Zone->AmbientLight);
 	}
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
@@ -105,6 +125,10 @@ void AUnderpaintingPlayerCharacter::DevStartTurning()
 		if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 		{
 			DisableInput(PlayerController);
+		}
+		if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+		{
+			Feel->PlayFlat(TEXT("rumble_turning"));
 		}
 		UE_LOG(LogUnderpainting, Log, TEXT("The Turning begins"));
 	}
@@ -165,6 +189,10 @@ bool AUnderpaintingPlayerCharacter::UseFlare()
 		return false;
 	}
 	FlareRemaining = FlareDuration;
+	if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+	{
+		Feel->Play(TEXT("flare"), GetActorLocation());
+	}
 	return true;
 }
 
@@ -298,6 +326,37 @@ void AUnderpaintingPlayerCharacter::DoMove(float Right, float Forward)
 	}
 }
 
+void AUnderpaintingPlayerCharacter::DoLook(float Yaw, float Pitch)
+{
+	// With a menu open the mouse is a pointer, not the camera.
+	if (!IsMenuOpen())
+	{
+		Super::DoLook(Yaw, Pitch);
+	}
+}
+
+void AUnderpaintingPlayerCharacter::LightPressed()
+{
+	// The light-attack key doubles as "press this" when a menu is open and it is a mouse button.
+	if (IsMenuOpen())
+	{
+		MenuClickPressed();
+	}
+	else
+	{
+		StartLightAttack();
+	}
+}
+
+void AUnderpaintingPlayerCharacter::MenuClickPressed()
+{
+	AUnderpaintingHUD* HUD = GetUnderpaintingHUD();
+	if (HUD && HUD->IsMenuOpen())
+	{
+		HUD->Click();
+	}
+}
+
 void AUnderpaintingPlayerCharacter::UpdateFocus()
 {
 	// "Use" goes to what you are looking at. In third person that means: of the usable things in reach of the
@@ -339,6 +398,20 @@ void AUnderpaintingPlayerCharacter::UpdateFocus()
 	Focus = Best;
 }
 
+namespace
+{
+	/** What using a thing sounds like, by what kind of thing it is (rows of data/sounds.json). */
+	FName UseSoundFor(const AUnderpaintingInteractable* Thing)
+	{
+		if (Thing->IsA<AUnderpaintingHarvestNode>()) { return TEXT("harvest"); }
+		if (Thing->IsA<AUnderpaintingPickup>() || Thing->IsA<AUnderpaintingCache>()) { return TEXT("pickup"); }
+		if (Thing->IsA<AUnderpaintingLampstand>()) { return TEXT("rest"); }
+		if (Thing->IsA<AUnderpaintingZoneExit>()) { return TEXT("door"); }
+		if (Thing->IsA<AUnderpaintingLoreNote>() || Thing->IsA<AUnderpaintingInspectable>()) { return TEXT("read"); }
+		return NAME_None;
+	}
+}
+
 void AUnderpaintingPlayerCharacter::Interact()
 {
 	UpdateFocus();
@@ -349,7 +422,12 @@ void AUnderpaintingPlayerCharacter::Interact()
 	}
 	else if (Focus.IsValid() && Action == EPlayerAction::None)
 	{
+		const FName Sound = UseSoundFor(Focus.Get());
 		Focus->Interact(this);
+		if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+		{
+			Feel->PlayFlat(Sound, 0.8f);
+		}
 	}
 }
 
@@ -439,7 +517,11 @@ void AUnderpaintingPlayerCharacter::BindGameKeys()
 	// in the engine's mapping asset and stay on WASD, the mouse and Space for now.
 	const UUnderpaintingSettings* Settings = UUnderpaintingSettings::Get(this);
 	const UUnderpaintingSettingsSave* Keys = Settings ? Settings->Read() : GetDefault<UUnderpaintingSettingsSave>();
-	Input->BindKey(Keys->GetKey(TEXT("LightAttack")), IE_Pressed, this, &ThisClass::StartLightAttack);
+	Input->BindKey(Keys->GetKey(TEXT("LightAttack")), IE_Pressed, this, &ThisClass::LightPressed);
+	if (Keys->GetKey(TEXT("LightAttack")) != EKeys::LeftMouseButton)
+	{
+		Input->BindKey(EKeys::LeftMouseButton, IE_Pressed, this, &ThisClass::MenuClickPressed);        // menus are always clickable
+	}
 	Input->BindKey(Keys->GetKey(TEXT("HeavyAttack")), IE_Pressed, this, &ThisClass::HeavyPressed);
 	Input->BindKey(Keys->GetKey(TEXT("HeavyAttack")), IE_Released, this, &ThisClass::HeavyReleased);
 	Input->BindKey(Keys->GetKey(TEXT("SwapWell")), IE_Pressed, this, &ThisClass::SwapWellPressed);
@@ -537,17 +619,318 @@ bool AUnderpaintingPlayerCharacter::CanStartAction() const
 
 void AUnderpaintingPlayerCharacter::StartLightAttack()
 {
-	if (CanStartAction() && Vitals->TrySpendStamina(WeaponStaminaLight))
+	if (!CanStartAction())
+	{
+		Buffer(EBuffered::Light);
+	}
+	else if (Vitals->TrySpendStamina(WeaponStaminaLight))
 	{
 		StartAttack(EPlayerAction::LightAttack);
+	}
+	else
+	{
+		Deny(false);
 	}
 }
 
 void AUnderpaintingPlayerCharacter::StartHeavyAttack()
 {
-	if (CanStartAction() && Vitals->TrySpendStamina(WeaponStaminaHeavy))
+	if (!CanStartAction())
+	{
+		Buffer(EBuffered::Heavy);
+	}
+	else if (Vitals->TrySpendStamina(WeaponStaminaHeavy))
 	{
 		StartAttack(EPlayerAction::HeavyAttack);
+	}
+	else
+	{
+		Deny(false);
+	}
+}
+
+// --- Feel: buffering, cancel windows, animation, aim ---
+
+void AUnderpaintingPlayerCharacter::Buffer(EBuffered What)
+{
+	// Only a press made while busy with something is worth remembering; a press in a menu or in the air is not.
+	if (Action != EPlayerAction::None && Action != EPlayerAction::Dead && !IsMenuOpen() && TurningTime < 0.0f)
+	{
+		Buffered = What;
+		BufferedAt = GetWorld()->GetTimeSeconds();
+	}
+}
+
+bool AUnderpaintingPlayerCharacter::CanCancelInto(EBuffered What) const
+{
+	if (GetCharacterMovement()->IsFalling() || IsMenuOpen())
+	{
+		return false;
+	}
+	const bool bSwing = Action == EPlayerAction::LightAttack || Action == EPlayerAction::HeavyAttack || Action == EPlayerAction::Stroke;
+	if (bSwing && AttackClock.GetPhase() == EAttackPhase::Recovery)
+	{
+		// Never out of a wind-up or a live swing: you commit to the hit. Only the tail can be cut.
+		const float Through = AttackClock.GetPhaseAlpha();
+		const bool bLight = Action == EPlayerAction::LightAttack;
+		if (What == EBuffered::Dodge)
+		{
+			return Through >= (bLight ? DodgeCancelLight : DodgeCancelHeavy);
+		}
+		return bLight && Through >= (What == EBuffered::Light ? LightChainAt : LightChainAt + 0.1f);
+	}
+	if (Action == EPlayerAction::Dodge)
+	{
+		return What != EBuffered::Dodge && DodgeElapsed >= DodgeDuration - 0.12f;
+	}
+	if (Action == EPlayerAction::Flinch)
+	{
+		return What == EBuffered::Dodge && FlinchRemaining <= FlinchTotal * 0.4f;
+	}
+	return false;
+}
+
+void AUnderpaintingPlayerCharacter::TryBuffered()
+{
+	if (Buffered == EBuffered::None)
+	{
+		return;
+	}
+	if (GetWorld()->GetTimeSeconds() - BufferedAt > InputBufferTime || Action == EPlayerAction::Dead)
+	{
+		Buffered = EBuffered::None;
+		return;
+	}
+	if (Action != EPlayerAction::None && !CanCancelInto(Buffered))
+	{
+		return;
+	}
+	if (Action != EPlayerAction::None)
+	{
+		EndAction();
+	}
+	if (!CanStartAction())
+	{
+		return;
+	}
+	const EBuffered What = Buffered;
+	Buffered = EBuffered::None;
+	switch (What)
+	{
+	case EBuffered::Light: StartLightAttack(); break;
+	case EBuffered::Heavy: StartHeavyAttack(); break;
+	case EBuffered::Stroke: if (!StartStroke()) { StartHeavyAttack(); } break;
+	case EBuffered::Dodge: StartDodge(); break;
+	default: break;
+	}
+}
+
+void AUnderpaintingPlayerCharacter::LoadAnimations()
+{
+	// The mannequin pack that ships with the engine (docs/ASSETS.md). If it is not installed, the rules still work.
+	const auto Load = [](const TCHAR* Path) { return LoadObject<UAnimSequenceBase>(nullptr, Path, nullptr, LOAD_NoWarn | LOAD_Quiet); };
+	const auto Add = [&Load](TArray<TObjectPtr<UAnimSequenceBase>>& List, const TCHAR* Path)
+	{
+		if (UAnimSequenceBase* Animation = Load(Path))
+		{
+			List.Add(Animation);
+		}
+	};
+	Add(LightAnims, TEXT("/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_Attack_01.MM_Attack_01"));
+	Add(LightAnims, TEXT("/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_Attack_02.MM_Attack_02"));
+	Add(LightAnims, TEXT("/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_Attack_03.MM_Attack_03"));
+	HeavyAnim = Load(TEXT("/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_ChargedAttack.MM_ChargedAttack"));
+	DashAnim = Load(TEXT("/Game/Characters/Mannequins/Anims/Unarmed/Jump/MM_Dash.MM_Dash"));
+	for (const TCHAR* Path : { TEXT("/Game/Characters/Mannequins/Anims/Rifle/HitReact/MM_HitReact_Front_Lgt_01.MM_HitReact_Front_Lgt_01"), TEXT("/Game/Characters/Mannequins/Anims/Rifle/HitReact/MM_HitReact_Front_Lgt_02.MM_HitReact_Front_Lgt_02"),
+		TEXT("/Game/Characters/Mannequins/Anims/Rifle/HitReact/MM_HitReact_Front_Lgt_03.MM_HitReact_Front_Lgt_03"), TEXT("/Game/Characters/Mannequins/Anims/Rifle/HitReact/MM_HitReact_Front_Lgt_04.MM_HitReact_Front_Lgt_04") })
+	{
+		Add(HitAnimsLight, Path);
+	}
+	Add(HitAnimsMedium, TEXT("/Game/Characters/Mannequins/Anims/Rifle/HitReact/MM_HitReact_Front_Med_01.MM_HitReact_Front_Med_01"));
+	Add(HitAnimsMedium, TEXT("/Game/Characters/Mannequins/Anims/Rifle/HitReact/MM_HitReact_Front_Med_02.MM_HitReact_Front_Med_02"));
+	HitAnimHeavy = Load(TEXT("/Game/Characters/Mannequins/Anims/Rifle/HitReact/MM_HitReact_Front_Hvy_01.MM_HitReact_Front_Hvy_01"));
+	HitAnimBack = Load(TEXT("/Game/Characters/Mannequins/Anims/Rifle/HitReact/MM_HitReact_Back_Med_01.MM_HitReact_Back_Med_01"));
+	for (const TCHAR* Path : { TEXT("/Game/Characters/Mannequins/Anims/Death/MM_Death_Front_01.MM_Death_Front_01"), TEXT("/Game/Characters/Mannequins/Anims/Death/MM_Death_Front_02.MM_Death_Front_02"),
+		TEXT("/Game/Characters/Mannequins/Anims/Death/MM_Death_Front_03.MM_Death_Front_03") })
+	{
+		Add(DeathAnims, Path);
+	}
+	DeathBackAnim = Load(TEXT("/Game/Characters/Mannequins/Anims/Death/MM_Death_Back_01.MM_Death_Back_01"));
+}
+
+void AUnderpaintingPlayerCharacter::PlayAction(UAnimSequenceBase* Animation, float Duration)
+{
+	// The animation is stretched or squeezed to the action's real length, so the picture and the rule agree.
+	UAnimInstance* Anim = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
+	if (Animation && Anim)
+	{
+		Anim->PlaySlotAnimationAsDynamicMontage(Animation, TEXT("DefaultSlot"), 0.07f, 0.16f, Animation->GetPlayLength() / FMath::Max(Duration, 0.1f));
+	}
+}
+
+void AUnderpaintingPlayerCharacter::StopActionAnimation()
+{
+	if (UAnimInstance* Anim = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr)
+	{
+		Anim->Montage_Stop(0.12f);
+	}
+}
+
+void AUnderpaintingPlayerCharacter::Deny(bool bGlim)
+{
+	// Not enough breath, or not enough light: the bar says so, and so does a small sound.
+	const float Now = GetWorld()->GetTimeSeconds();
+	(bGlim ? Vitals->GlimDeniedAt : Vitals->StaminaDeniedAt) = Now;
+	if (Now - LastDenyTime > 0.35f)
+	{
+		LastDenyTime = Now;
+		if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+		{
+			Feel->PlayFlat(TEXT("ui_deny"), 0.6f);
+		}
+	}
+}
+
+AUnderpaintingEnemy* AUnderpaintingPlayerCharacter::FindAimTarget() const
+{
+	// Where the player is pushing, or failing that where the Limner faces.
+	FVector Wanted = GetLastMovementInputVector();
+	Wanted.Z = 0.0f;
+	Wanted = Wanted.IsNearlyZero() ? GetActorForwardVector() : Wanted.GetSafeNormal();
+
+	AUnderpaintingEnemy* Best = nullptr;
+	float BestScore = TNumericLimits<float>::Max();
+	for (TActorIterator<AUnderpaintingEnemy> It(GetWorld()); It; ++It)
+	{
+		FVector To = It->GetActorLocation() - GetActorLocation();
+		To.Z = 0.0f;
+		const float Distance = To.Size();
+		if (It->GetVitals()->IsDead() || It->IsHidden() || Distance > AimAssistRange)
+		{
+			continue;
+		}
+		const float Angle = FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(Wanted, To.GetSafeNormal()), -1.0f, 1.0f)));
+		if (Angle <= AimAssistAngle && Distance + Angle * 3.0f < BestScore)
+		{
+			Best = *It;
+			BestScore = Distance + Angle * 3.0f;
+		}
+	}
+	return Best;
+}
+
+void AUnderpaintingPlayerCharacter::HandleDamaged(float Damage, float StaggerDamage, AActor* DamageCauser)
+{
+	const FVector From = DamageCauser ? DamageCauser->GetActorLocation() : GetActorLocation() - GetActorForwardVector() * 100.0f;
+	if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+	{
+		Feel->NotePlayerHit(From, Damage);
+		Feel->Shake(0.28f + Damage / 70.0f);
+		Feel->HitStop(this, DamageCauser, 0.07f);
+		Feel->Play(TEXT("player_hurt"), GetActorLocation(), FMath::Clamp(0.6f + Damage / 60.0f, 0.6f, 1.2f));
+	}
+	if (Vitals->GetHealth() <= 0.0f || Damage < 8.0f)
+	{
+		return;
+	}
+
+	// A hit knocks you out of what you were doing, unless you are mid-dodge or braced inside an Impasto (Lamp-Black Weight).
+	const UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
+	const bool bBraced = Action == EPlayerAction::Stroke && StrokeName == TEXT("Impasto") && Progress && Progress->HasAttunement(TEXT("BoneBlack_T2"));
+	if (Action == EPlayerAction::Dodge || bBraced)
+	{
+		return;
+	}
+	const bool bHard = Damage >= 22.0f;
+	AttackClock.Stop();
+	Action = EPlayerAction::Flinch;
+	FlinchTotal = FlinchRemaining = bHard ? FlinchHeavy : FlinchLight;
+	Buffered = EBuffered::None;
+	Vitals->bInvulnerable = bDevInvulnerable;
+	GetCharacterMovement()->MaxWalkSpeed = AttackMoveSpeed;
+
+	FVector Away = GetActorLocation() - From;
+	Away.Z = 0.0f;
+	Away = Away.GetSafeNormal();
+	const bool bFromBehind = FVector::DotProduct(GetActorForwardVector(), -Away) < -0.3f;
+	UAnimSequenceBase* Animation = bFromBehind ? HitAnimBack.Get() : nullptr;
+	if (!Animation)
+	{
+		const TArray<TObjectPtr<UAnimSequenceBase>>& List = bHard ? HitAnimsMedium : HitAnimsLight;
+		Animation = bHard && Damage >= 28.0f && HitAnimHeavy ? HitAnimHeavy.Get() : (List.Num() > 0 ? List[FMath::RandRange(0, List.Num() - 1)].Get() : nullptr);
+	}
+	PlayAction(Animation, FlinchTotal + 0.2f);
+	LaunchCharacter(Away * (bHard ? 420.0f : 240.0f) + FVector(0.0f, 0.0f, 40.0f), true, false);
+}
+
+void AUnderpaintingPlayerCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+	if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+	{
+		const float Fall = -GetCharacterMovement()->Velocity.Z;
+		Feel->Play(TEXT("land"), GetActorLocation(), FMath::Clamp(Fall / 900.0f, 0.4f, 1.2f));
+		if (Fall > 900.0f)
+		{
+			Feel->Shake(0.22f);
+		}
+	}
+}
+
+void AUnderpaintingPlayerCharacter::OnJumped_Implementation()
+{
+	Super::OnJumped_Implementation();
+	bJumpedSinceGround = true;
+	if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+	{
+		Feel->Play(TEXT("jump"), GetActorLocation(), 0.7f);
+	}
+}
+
+void AUnderpaintingPlayerCharacter::TickFeel(float DeltaTime)
+{
+	const float Now = GetWorld()->GetTimeSeconds();
+	UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this);
+	UCharacterMovementComponent* Movement = GetCharacterMovement();
+
+	// Ledge grace: for a moment after walking off an edge, a jump still works.
+	if (Movement->IsMovingOnGround())
+	{
+		LastGroundedTime = Now;
+		bJumpedSinceGround = false;
+	}
+	JumpMaxCount = (!Movement->IsMovingOnGround() && !bJumpedSinceGround && Now - LastGroundedTime <= LedgeGraceTime) ? 2 : 1;
+
+	// Footsteps, by distance covered on the ground.
+	const float Moved = FVector::Dist2D(GetActorLocation(), LastStepLocation);
+	LastStepLocation = GetActorLocation();
+	if (Movement->IsMovingOnGround() && Action != EPlayerAction::Dodge && Moved < 200.0f)
+	{
+		StepDistance += Moved;
+		const float Stride = Movement->MaxWalkSpeed > WalkSpeed + 10.0f ? 215.0f : 165.0f;
+		if (StepDistance >= Stride)
+		{
+			StepDistance = 0.0f;
+			if (Feel)
+			{
+				Feel->Play(FootstepSound, GetActorLocation() - FVector(0.0f, 0.0f, 85.0f), Movement->MaxWalkSpeed > WalkSpeed + 10.0f ? 0.85f : 0.6f);
+			}
+		}
+	}
+
+	// Locked on, the camera steps out over the shoulder and back a little, so the Limner does not stand in front of
+	// what she is fighting. It eases there and eases home.
+	if (USpringArmComponent* Boom = GetCameraBoom())
+	{
+		const bool bLocked = LockTarget.IsValid();
+		Boom->SocketOffset = FMath::VInterpTo(Boom->SocketOffset, bLocked ? FVector(0.0f, 110.0f, 45.0f) : FVector::ZeroVector, DeltaTime, 4.0f);
+		Boom->TargetArmLength = FMath::FInterpTo(Boom->TargetArmLength, bLocked ? 470.0f : 400.0f, DeltaTime, 4.0f);
+	}
+
+	// Camera shake rides on the camera itself, so the boom's lag does not smear it.
+	if (UCameraComponent* Camera = GetFollowCamera())
+	{
+		Camera->SetRelativeLocationAndRotation(Feel ? Feel->GetShakeOffset() : FVector::ZeroVector, Feel ? Feel->GetShakeRotation() : FRotator::ZeroRotator);
 	}
 }
 
@@ -561,19 +944,24 @@ void AUnderpaintingPlayerCharacter::StartAttack(EPlayerAction NewAction)
 	// Every swing commits you: you can shuffle, not run.
 	GetCharacterMovement()->MaxWalkSpeed = AttackMoveSpeed;
 
-	if (UAnimMontage* Montage = bHeavy ? HeavyAttackMontage : LightAttackMontage)
-	{
-		if (UAnimInstance* Anim = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr)
-		{
-			Anim->Montage_Play(Montage, Montage->GetPlayLength() / FMath::Max(AttackClock.Timing.Total(), 0.1f));
-		}
-	}
+	// Three lights in a row are three different swings.
+	ComboIndex = (!bHeavy && GetWorld()->GetTimeSeconds() - LastSwingEndTime < 0.7f) ? ComboIndex + 1 : 0;
+	UAnimSequenceBase* Animation = bHeavy ? HeavyAnim.Get() : (LightAnims.Num() > 0 ? LightAnims[ComboIndex % LightAnims.Num()].Get() : nullptr);
+	PlayAction(Animation, AttackClock.Timing.Total());
+	bSwingSounded = false;
+	AimTarget = LockTarget.IsValid() ? LockTarget.Get() : FindAimTarget();
 }
 
 void AUnderpaintingPlayerCharacter::StartDodge()
 {
-	if (!CanStartAction() || !Vitals->TrySpendStamina(DodgeStaminaCost))
+	if (!CanStartAction())
 	{
+		Buffer(EBuffered::Dodge);
+		return;
+	}
+	if (!Vitals->TrySpendStamina(DodgeStaminaCost))
+	{
+		Deny(false);
 		return;
 	}
 
@@ -588,12 +976,15 @@ void AUnderpaintingPlayerCharacter::StartDodge()
 	bDodgeRewarded = false;
 	Vitals->bInvulnerable = true;
 
-	if (DodgeMontage)
+	// Without lock-on the Limner turns into the dodge; locked on, she keeps facing what she is fighting.
+	if (!LockTarget.IsValid())
 	{
-		if (UAnimInstance* Anim = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr)
-		{
-			Anim->Montage_Play(DodgeMontage, DodgeMontage->GetPlayLength() / FMath::Max(DodgeDuration, 0.1f));
-		}
+		SetActorRotation(FRotator(0.0f, DodgeDirection.Rotation().Yaw, 0.0f));
+	}
+	PlayAction(DashAnim, DodgeDuration);
+	if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+	{
+		Feel->Play(TEXT("dodge"), GetActorLocation(), 0.8f);
 	}
 }
 
@@ -602,6 +993,14 @@ void AUnderpaintingPlayerCharacter::StartDodgeInDirection(FVector Direction)
 	ForcedDodgeDirection = Direction;
 	StartDodge();
 	ForcedDodgeDirection = FVector::ZeroVector;
+}
+
+void AUnderpaintingPlayerCharacter::DevClickAt(float U, float V)
+{
+	if (AUnderpaintingHUD* HUD = GetUnderpaintingHUD())
+	{
+		HUD->DebugClick(U, V);
+	}
 }
 
 void AUnderpaintingPlayerCharacter::DevAutopilot(const FString& Script)
@@ -635,6 +1034,10 @@ void AUnderpaintingPlayerCharacter::Tick(float DeltaTime)
 		if (AController* PlayerController = GetController())
 		{
 			const float Shake = FMath::Clamp(TurningTime / 1.5f, 0.0f, 1.0f) * 2.2f;
+			if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+			{
+				Feel->Shake(0.05f);        // topped up every frame: the ground does not stop
+			}
 			const float T = TurningTime * 23.0f;
 			PlayerController->SetControlRotation(TurningBaseRotation + FRotator(FMath::Sin(T) * Shake, FMath::Sin(T * 0.7f + 1.3f) * Shake, 0.0f));
 		}
@@ -664,6 +1067,7 @@ void AUnderpaintingPlayerCharacter::Tick(float DeltaTime)
 	}
 	UpdateFocus();
 	TickLockOn(DeltaTime);
+	TickFeel(DeltaTime);
 
 	// Holding the heavy button turns the swing into the active well's Stroke.
 	if (HeavyHeldSince >= 0.0f && GetWorld()->GetTimeSeconds() - HeavyHeldSince >= StrokeHoldTime)
@@ -694,6 +1098,14 @@ void AUnderpaintingPlayerCharacter::Tick(float DeltaTime)
 		TickDodge(DeltaTime);
 		break;
 
+	case EPlayerAction::Flinch:
+		FlinchRemaining -= DeltaTime;
+		if (FlinchRemaining <= 0.0f)
+		{
+			EndAction();
+		}
+		break;
+
 	case EPlayerAction::None:
 	{
 		const bool bMoving = !GetVelocity().IsNearlyZero(10.0f) && !GetLastMovementInputVector().IsNearlyZero();
@@ -705,10 +1117,45 @@ void AUnderpaintingPlayerCharacter::Tick(float DeltaTime)
 	default:
 		break;
 	}
+
+	TryBuffered();
 }
 
 void AUnderpaintingPlayerCharacter::TickAttack(float DeltaTime)
 {
+	// Through the wind-up the swing turns onto its target and, if it is just out of reach, steps in.
+	if (AttackClock.GetPhase() == EAttackPhase::Windup)
+	{
+		if (const AUnderpaintingEnemy* Aim = AimTarget.Get())
+		{
+			FVector To = Aim->GetActorLocation() - GetActorLocation();
+			To.Z = 0.0f;
+			if (!LockTarget.IsValid())
+			{
+				SetActorRotation(FMath::RInterpTo(GetActorRotation(), FRotator(0.0f, To.Rotation().Yaw, 0.0f), DeltaTime, 16.0f));
+			}
+			const bool bStepIn = To.Size() > WeaponReach * 0.9f && To.Size() < WeaponReach + 170.0f;
+			GetCharacterMovement()->MaxWalkSpeed = bStepIn ? 340.0f : AttackMoveSpeed;
+			if (bStepIn)
+			{
+				AddMovementInput(To.GetSafeNormal(), 1.0f);
+			}
+		}
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = AttackMoveSpeed;
+	}
+
+	if (AttackClock.GetPhase() == EAttackPhase::Active && !bSwingSounded)
+	{
+		bSwingSounded = true;
+		if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+		{
+			Feel->Play(Action == EPlayerAction::Stroke ? TEXT("swing_stroke") : (Action == EPlayerAction::HeavyAttack ? TEXT("swing_heavy") : TEXT("swing_light")), GetActorLocation());
+		}
+	}
+
 	if (AttackClock.GetPhase() == EAttackPhase::Active)
 	{
 		// Sfumato is a blurred dash, 4 m, through whatever is in front.
@@ -757,15 +1204,18 @@ void AUnderpaintingPlayerCharacter::HitTest()
 	GetWorld()->SweepMultiByChannel(Hits, Start, End, FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(Radius), Params);
 
 #if ENABLE_DRAW_DEBUG
-	FColor SwingColour = bHeavy ? FColor(232, 146, 58) : FColor(242, 227, 192);
-	if (bStroke)
+	if (UUnderpaintingFeel::bShowHitboxes)
 	{
-		const UUnderpaintingDataSubsystem* ColourData = GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>();
-		const FPigmentRow* Pigment = ColourData ? ColourData->FindPigment(StrokePigment) : nullptr;
-		SwingColour = Pigment ? FColor::FromHex(Pigment->ColourHex) : SwingColour;
+		FColor SwingColour = bHeavy ? FColor(232, 146, 58) : FColor(242, 227, 192);
+		if (bStroke)
+		{
+			const UUnderpaintingDataSubsystem* ColourData = GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>();
+			const FPigmentRow* Pigment = ColourData ? ColourData->FindPigment(StrokePigment) : nullptr;
+			SwingColour = Pigment ? FColor::FromHex(Pigment->ColourHex) : SwingColour;
+		}
+		DrawDebugCapsule(GetWorld(), (Start + End) * 0.5f, (End - Start).Size() * 0.5f + Radius, Radius,
+			FRotationMatrix::MakeFromZ(End - Start).ToQuat(), SwingColour, false, 0.05f, 0, bStroke ? 4.0f : 1.0f);
 	}
-	DrawDebugCapsule(GetWorld(), (Start + End) * 0.5f, (End - Start).Size() * 0.5f + Radius, Radius,
-		FRotationMatrix::MakeFromZ(End - Start).ToQuat(), SwingColour, false, 0.05f, 0, bStroke ? 4.0f : 1.0f);
 #endif
 
 	for (const FHitResult& Hit : Hits)
@@ -821,7 +1271,7 @@ void AUnderpaintingPlayerCharacter::HitTest()
 			if (Progress) { Vitals->AddGlim(Progress->GetAttunementValue(TEXT("EraseGlimRefund"))); }
 		}
 
-		ApplyHit(Target, Damage, Stagger, *FString::Printf(TEXT("%s%s"), *StrokeName.ToString(), Contrast.Sign > 0 ? TEXT(" (contrast)") : (Contrast.Sign < 0 ? TEXT(" (muddy)") : TEXT(""))));
+		ApplyHit(Target, Damage, Stagger, *FString::Printf(TEXT("%s%s"), *StrokeName.ToString(), Contrast.Sign > 0 ? TEXT(" (contrast)") : (Contrast.Sign < 0 ? TEXT(" (muddy)") : TEXT(""))), Contrast.Sign);
 		// Wet-on-Wet (Sanguine tier 2): a kill with Alla Prima gives its light back.
 		const UUnderpaintingVitalsComponent* HitVitals = Target->FindComponentByClass<UUnderpaintingVitalsComponent>();
 		if (StrokeName == TEXT("AllaPrima") && Progress && Progress->HasAttunement(TEXT("Sanguine_T2")) && HitVitals && HitVitals->IsDead())
@@ -835,7 +1285,7 @@ void AUnderpaintingPlayerCharacter::HitTest()
 	}
 }
 
-void AUnderpaintingPlayerCharacter::ApplyHit(AActor* Target, float Damage, float StaggerDamage, const TCHAR* What)
+void AUnderpaintingPlayerCharacter::ApplyHit(AActor* Target, float Damage, float StaggerDamage, const TCHAR* What, int32 ContrastSign)
 {
 	UUnderpaintingVitalsComponent* TargetVitals = Target->FindComponentByClass<UUnderpaintingVitalsComponent>();
 	const UUnderpaintingProgress* Progress = UUnderpaintingProgressSubsystem::Get(this);
@@ -855,6 +1305,50 @@ void AUnderpaintingPlayerCharacter::ApplyHit(AActor* Target, float Damage, float
 	const float Taken = TargetVitals->ApplyDamage(Damage, StaggerDamage, this);
 	UE_LOG(LogUnderpainting, Log, TEXT("Player %s hit %s for %.1f (stagger %.1f)"), What, *Target->GetName(), Taken, StaggerDamage);
 
+	// How the blow feels: a freeze, a shake, paint off the target, a number, a sound, and the target knocked back.
+	if (Taken > 0.0f)
+	{
+		const bool bStrokeBlow = Action == EPlayerAction::Stroke;
+		const bool bHeavyBlow = Action == EPlayerAction::HeavyAttack;
+		AUnderpaintingEnemy* Struck = Cast<AUnderpaintingEnemy>(Target);
+		FVector Away = Target->GetActorLocation() - GetActorLocation();
+		Away.Z = 0.0f;
+		Away = Away.GetSafeNormal();
+		const FVector At = Target->GetActorLocation() - Away * 35.0f + FVector(0.0f, 0.0f, 25.0f);
+		if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+		{
+			Feel->HitStop(this, Target, (bStrokeBlow ? 0.11f : (bHeavyBlow ? 0.09f : 0.05f)) + (ContrastSign > 0 ? 0.04f : 0.0f));
+			Feel->Shake(bStrokeBlow ? 0.38f : (bHeavyBlow ? 0.30f : 0.16f));
+
+			// A plain blow knocks the target's own paint off it. A Stroke lays yours on.
+			FLinearColor Paint = Struck ? Struck->GetPaintColour() : FLinearColor(0.9f, 0.85f, 0.7f);
+			float Purity = Struck ? Struck->GetPaintPurity() : 0.0f;
+			if (bStrokeBlow)
+			{
+				const UUnderpaintingDataSubsystem* Data = GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>();
+				if (const FPigmentRow* Pigment = Data ? Data->FindPigment(StrokePigment) : nullptr)
+				{
+					Paint = UUnderpaintingDataSubsystem::HexToColour(Pigment->ColourHex);
+					Purity = 0.0f;
+				}
+			}
+			// It sprays back off the struck side and up, where it can be seen, not through the body.
+			Feel->Splash(At - Away * 20.0f, (-Away * 0.7f + FVector(0.0f, 0.0f, 0.7f)).GetSafeNormal(), Paint, bStrokeBlow ? 20 : (bHeavyBlow ? 14 : 9), bStrokeBlow ? 460.0f : 380.0f, Purity);
+			Feel->Number(At + FVector(0.0f, 0.0f, 70.0f), FString::FromInt(FMath::RoundToInt(Taken)),
+				ContrastSign > 0 ? FLinearColor(1.0f, 0.72f, 0.2f) : (ContrastSign < 0 ? FLinearColor(0.5f, 0.48f, 0.46f) : FLinearColor(0.95f, 0.9f, 0.78f)),
+				ContrastSign > 0 ? 1.5f : (bStrokeBlow || bHeavyBlow ? 1.2f : 1.0f));
+			Feel->Play(bStrokeBlow ? TEXT("hit_stroke") : (bHeavyBlow ? TEXT("hit_heavy") : TEXT("hit_light")), At);
+			if (ContrastSign > 0)
+			{
+				Feel->Play(TEXT("hit_contrast"), At);
+			}
+		}
+		if (Struck)
+		{
+			Struck->ReceiveImpact(GetActorLocation(), bStrokeBlow ? 520.0f : (bHeavyBlow ? 420.0f : 240.0f));
+		}
+	}
+
 	if (TargetVitals->IsDead() && Progress)
 	{
 		Vitals->Heal(Progress->GetAttunementValue(TEXT("HealOnKill")));
@@ -867,20 +1361,27 @@ bool AUnderpaintingPlayerCharacter::StartStroke()
 	const UUnderpaintingDataSubsystem* Data = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>() : nullptr;
 	const FName Pigment = Progress ? Progress->GetActivePigment() : NAME_None;
 	const FPigmentRow* Row = Data ? Data->FindPigment(Pigment) : nullptr;
-	if (!Row || !CanStartAction())
+	if (!Row)
 	{
 		return false;
+	}
+	if (!CanStartAction())
+	{
+		Buffer(EBuffered::Stroke);
+		return Action != EPlayerAction::None;        // remembered: the caller should not fall back to a plain heavy
 	}
 
 	const int32 GlimCost = GetStrokeGlimCost();
 	if (Vitals->GetGlim() < GlimCost)
 	{
 		Progress->OnNotice.Broadcast(TEXT("Not enough light for that Stroke."));
+		Deny(true);
 		return false;
 	}
 	if (!Vitals->TrySpendStamina(WeaponStaminaHeavy))
 	{
-		return false;
+		Deny(false);
+		return true;        // out of breath: a plain heavy would fail the same way
 	}
 	Vitals->TrySpendGlim(GlimCost);
 
@@ -896,6 +1397,16 @@ bool AUnderpaintingPlayerCharacter::StartStroke()
 	const float Recovery = StrokeName == TEXT("Impasto") ? 0.8f : (StrokeName == TEXT("Erase") ? 0.3f : 0.5f);
 	AttackClock.Start(FAttackTiming(Row->StrokeWindup, Active, Recovery).Scaled(WeaponSpeed));
 	GetCharacterMovement()->MaxWalkSpeed = AttackMoveSpeed;
+
+	// Each Stroke borrows the swing that suits it: the slam, the flurry, the dash, the wipe.
+	UAnimSequenceBase* Animation = HeavyAnim.Get();
+	if (StrokeName == TEXT("Sfumato")) { Animation = DashAnim.Get(); }
+	else if (StrokeName == TEXT("AllaPrima") && LightAnims.Num() > 0) { Animation = LightAnims[0].Get(); }
+	else if (StrokeName == TEXT("Erase") && LightAnims.Num() > 1) { Animation = LightAnims[1].Get(); }
+	else if ((StrokeName == TEXT("Glaze") || StrokeName == TEXT("Scumble")) && LightAnims.Num() > 2) { Animation = LightAnims[2].Get(); }
+	PlayAction(Animation, AttackClock.Timing.Total());
+	bSwingSounded = false;
+	AimTarget = LockTarget.IsValid() ? LockTarget.Get() : FindAimTarget();
 	UE_LOG(LogUnderpainting, Log, TEXT("Player Stroke %s for %d Glim (light here %.2f)"), *StrokeName.ToString(), GlimCost, GetLightHere());
 	return true;
 }
@@ -1048,6 +1559,12 @@ void AUnderpaintingPlayerCharacter::HandleDodged(AActor* Attacker)
 		{
 			Progress->OnNotice.Broadcast(TEXT("Perfect dodge."));
 		}
+		// The attacker hangs for a beat: the moment you slipped it should be felt.
+		if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+		{
+			Feel->HitStop(Attacker, nullptr, 0.14f);
+			Feel->PlayFlat(TEXT("perfect_dodge"), 0.8f);
+		}
 	}
 }
 
@@ -1102,18 +1619,29 @@ void AUnderpaintingPlayerCharacter::TickLockOn(float DeltaTime)
 	const FVector To = Target->GetActorLocation() - GetActorLocation();
 	if (Target->GetVitals()->IsDead() || To.Size() > LockOnRange * 1.4f || Action == EPlayerAction::Dead)
 	{
+		// When the one you were fighting falls, the lock moves to the next one in view, if there is one.
+		const bool bFell = Target->GetVitals()->IsDead();
 		LockTarget = nullptr;
+		if (bFell && Action != EPlayerAction::Dead)
+		{
+			ToggleLockOn();
+		}
 		return;
 	}
 
 	// The camera settles on the target, and (unless dodging) so does the Limner, so swings go where you are looking.
 	if (AController* PlayerController = GetController())
 	{
-		FRotator Wanted = To.Rotation();
-		Wanted.Pitch = FMath::Clamp(Wanted.Pitch - 12.0f, -35.0f, 20.0f);
-		PlayerController->SetControlRotation(FMath::RInterpTo(PlayerController->GetControlRotation(), Wanted, DeltaTime, 8.0f));
+		// Aim from where the camera is (over the shoulder), not from the Limner, so the target sits in the open
+		// middle of the view and she stands to one side of it.
+		const UCameraComponent* Camera = GetFollowCamera();
+		FRotator Wanted = Camera ? (Target->GetActorLocation() - Camera->GetComponentLocation()).Rotation() : To.Rotation();
+		Wanted.Pitch = FMath::Clamp(To.Rotation().Pitch - 12.0f, -35.0f, 20.0f);
+		// Quick when the target is well off-centre, gentle when it is nearly centred, so the view settles and does not twitch.
+		const float Off = FMath::Abs(FRotator::NormalizeAxis(Wanted.Yaw - PlayerController->GetControlRotation().Yaw));
+		PlayerController->SetControlRotation(FMath::RInterpTo(PlayerController->GetControlRotation(), Wanted, DeltaTime, FMath::GetMappedRangeValueClamped(FVector2D(2.0f, 40.0f), FVector2D(3.5f, 9.0f), Off)));
 	}
-	if (Action != EPlayerAction::Dodge && !IsMenuOpen())
+	if (Action != EPlayerAction::Dodge && Action != EPlayerAction::Flinch && !IsMenuOpen())
 	{
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), FRotator(0.0f, To.Rotation().Yaw, 0.0f), DeltaTime, 12.0f));
 	}
@@ -1144,8 +1672,18 @@ void AUnderpaintingPlayerCharacter::EndAction()
 		return;
 	}
 
+	if (Action == EPlayerAction::LightAttack || Action == EPlayerAction::HeavyAttack || Action == EPlayerAction::Stroke)
+	{
+		LastSwingEndTime = GetWorld()->GetTimeSeconds();
+		// Cut short (a cancel), the swing's animation is cut with it.
+		if (AttackClock.bRunning)
+		{
+			StopActionAnimation();
+		}
+	}
 	Action = EPlayerAction::None;
 	AttackClock.Stop();
+	AimTarget = nullptr;
 	Vitals->bInvulnerable = bDevInvulnerable;
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
@@ -1154,7 +1692,21 @@ void AUnderpaintingPlayerCharacter::HandleDeath(AActor* Killer)
 {
 	Action = EPlayerAction::Dead;
 	AttackClock.Stop();
+	Buffered = EBuffered::None;
 	GetCharacterMovement()->DisableMovement();
+
+	// Fall the way the blow sent you, and stay down.
+	const bool bFromBehind = Killer && FVector::DotProduct(GetActorForwardVector(), (Killer->GetActorLocation() - GetActorLocation()).GetSafeNormal2D()) < -0.3f;
+	UAnimSequenceBase* Fall = bFromBehind && DeathBackAnim ? DeathBackAnim.Get() : (DeathAnims.Num() > 0 ? DeathAnims[FMath::RandRange(0, DeathAnims.Num() - 1)].Get() : nullptr);
+	if (Fall && GetMesh())
+	{
+		GetMesh()->PlayAnimation(Fall, false);
+	}
+	if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+	{
+		Feel->Shake(0.6f);
+		Feel->PlayFlat(TEXT("player_death"), 0.9f);
+	}
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		DisableInput(PlayerController);

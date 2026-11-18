@@ -18,6 +18,9 @@ Code, architecture, tools, file layout, bug fixes, balance within GDD ranges, as
 ## Log
 Newest first. Format: `date: decision (who): why`
 
+- 2026-11-18: Game feel lives in one subsystem (`UUnderpaintingFeel`) that gameplay code calls with what happened; it never changes a rule or a number. Sounds are data (`data/sounds.json`). Enemies have no models, so their animation is their placeholder moving on the same clock as the rules (Claude).
+- 2026-11-18: A hit now knocks the player out of a swing for 0.3 s (0.5 s for 22 damage or more); a dodge can cut that short. This is a rule change made for feel: without it, being hit had no cost but health (Claude; owner to judge in the playtest).
+
 - 2026-11-18: **Free assets only, never anything paid. Permanent.** Prefer CC0 or similarly permissive licences; list every source and licence in `docs/ASSETS.md`; keep re-downloadable packs in `Content/ThirdParty/` (owner): the project spends no money on assets, and every outside file must be traceable to a licence.
 
 - 2026-11-18: The owner delegated the six open GDD decisions to Claude and Fable. Settled as follows (details in `docs/GDD.md` §13):

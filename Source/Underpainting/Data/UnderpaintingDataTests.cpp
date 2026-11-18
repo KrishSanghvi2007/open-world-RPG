@@ -29,6 +29,7 @@ bool FUnderpaintingDataLoadTest::RunTest(const FString& Parameters)
 		{ TEXT("regions"), FRegionRow::StaticStruct() },
 		{ TEXT("dialogue"), FDialogueRow::StaticStruct() },
 		{ TEXT("lore"), FLoreRow::StaticStruct() },
+		{ TEXT("sounds"), FSoundRow::StaticStruct() },
 	};
 
 	TMap<FString, UDataTable*> Tables;

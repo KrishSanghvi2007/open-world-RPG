@@ -74,6 +74,14 @@ public:
 
 	int32 GetSatchelTab() const { return SatchelTab; }
 
+	/** The mouse button, while a menu is open: presses whatever row or button the pointer is on. */
+	void Click();
+
+	/** Development: a click at a fraction of the screen, as if the pointer were there. */
+	void DebugClick(float U, float V);
+	FVector2D DebugPointer = FVector2D(-1.0f, -1.0f);
+	FVector2D LastClip = FVector2D(1280.0f, 720.0f);
+
 	/** The dialogue row on screen, for tests and tools. */
 	FName GetDialogueRow() const { return DialogueRow; }
 
@@ -100,6 +108,29 @@ private:
 	void DrawReading(const UUnderpaintingProgress* Progress);
 	void DrawChoice(const UUnderpaintingProgress* Progress);
 	void DrawTurning(const AUnderpaintingPlayerCharacter* Player, UUnderpaintingProgress* Progress);
+	void DrawFeel(const AUnderpaintingPlayerCharacter* Player);
+	void DrawVital(float X, float Y, float Width, float Height, float Fraction, float& Ghost, const FLinearColor& Fill, const FString& Label, float DeniedAt, bool bLow);
+	void Sound(FName Row, float Volume = 0.7f);
+
+	/** Marks a rectangle as something the mouse can press, and tints it while the pointer is over it. Call before drawing its text. */
+	bool Hot(float X, float Y, float Width, float Height, int32 Number, FName Special = NAME_None);
+
+	struct FHot
+	{
+		float X = 0.0f, Y = 0.0f, Width = 0.0f, Height = 0.0f;
+		int32 Number = 0;
+		FName Special;
+	};
+	TArray<FHot> Hots;
+	FVector2D Pointer = FVector2D(-1.0f, -1.0f);
+	bool bPointerShown = false;
+
+	// Bars: where each was a moment ago, so a loss shows as a pale strip that drains away.
+	float GhostHealth = 1.0f;
+	float GhostStamina = 1.0f;
+	float GhostGlim = 1.0f;
+	float LastGlim = -1.0f;
+	float GlimFlash = 0.0f;
 
 	/** Seconds left of the "she has turned" title card after the changed level opens. */
 	float TurnedCardRemaining = 0.0f;

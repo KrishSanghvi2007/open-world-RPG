@@ -2,6 +2,7 @@
 
 #include "Underpainting.h"
 #include "UnderpaintingDataSubsystem.h"
+#include "UnderpaintingFeel.h"
 #include "UnderpaintingProgressSubsystem.h"
 #include "UnderpaintingStyle.h"
 #include "UnderpaintingVitalsComponent.h"
@@ -49,6 +50,19 @@ AUnderpaintingEnemy::AUnderpaintingEnemy()
 	TelegraphLight->SetLightColor(FLinearColor(1.0f, 0.45f, 0.12f));
 	TelegraphLight->SetIntensity(0.0f);
 	TelegraphLight->bUseInverseSquaredFalloff = false;
+
+	TelegraphGround = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TelegraphGround"));
+	TelegraphGround->SetupAttachment(RootComponent);
+	TelegraphGround->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	TelegraphGround->SetCastShadow(false);
+	TelegraphGround->SetVisibility(false);
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> Cube(TEXT("/Engine/BasicShapes/Cube.Cube"));
+	DiscMesh = Cylinder.Succeeded() ? Cylinder.Object : nullptr;
+	BarMesh = Cube.Succeeded() ? Cube.Object : nullptr;
+	if (DiscMesh)
+	{
+		TelegraphGround->SetStaticMesh(DiscMesh);
+	}
 }
 
 void AUnderpaintingEnemy::BeginPlay()
@@ -82,6 +96,8 @@ void AUnderpaintingEnemy::BeginPlay()
 
 	PlaceholderBody->SetRelativeScale3D(GetBodyScale());
 	BodyMaterial = UnderpaintingStyle::MakeMaterial(PlaceholderBody);
+	GroundMaterial = UnderpaintingStyle::MakeMaterial(TelegraphGround);
+	BreathOffset = FMath::FRandRange(0.0f, 6.0f);
 	UpdateTelegraph();
 }
 
@@ -191,6 +207,12 @@ void AUnderpaintingEnemy::BeginAttack(int32 AttackIndex)
 	const float Active = Attack.Active + (GetHitCount(Attack) - 1) * GetHitInterval(Attack);
 	AttackClock.Start(FAttackTiming(Attack.Windup, Active, Attack.Recovery));
 	SetState(EEnemyState::Attacking);
+	bSwingSounded = false;
+	if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+	{
+		// Bigger things sound lower.
+		Feel->Play(TEXT("enemy_windup"), GetActorLocation(), 0.8f, FMath::Clamp(1.6f / FMath::Max(GetBodyScale().Z, 0.5f), 0.5f, 1.3f));
+	}
 	UE_LOG(LogUnderpainting, Verbose, TEXT("%s winds up %s"), *GetName(), *Attack.AttackName.ToString());
 }
 
@@ -329,6 +351,14 @@ void AUnderpaintingEnemy::TickAttack(float DeltaTime, AActor* Target)
 	}
 	else if (PhaseNow == EAttackPhase::Active)
 	{
+		if (!bSwingSounded)
+		{
+			bSwingSounded = true;
+			if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+			{
+				Feel->Play(TEXT("enemy_swing"), GetActorLocation(), 0.9f, FMath::Clamp(1.6f / FMath::Max(GetBodyScale().Z, 0.5f), 0.5f, 1.3f));
+			}
+		}
 		const float ActiveTime = AttackClock.Timing.Active;
 		const float Lunge = GetAttackLunge(Attack);
 		if (Lunge > 0.0f && ActiveTime > 0.0f)
@@ -384,6 +414,7 @@ void AUnderpaintingEnemy::HitTest(const FEnemyAttack& Attack)
 		// Everything within reach, all the way round.
 		GetWorld()->SweepMultiByChannel(Hits, GetActorLocation(), GetActorLocation() + FVector(0.0f, 0.0f, 1.0f), FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(Reach), Params);
 #if ENABLE_DRAW_DEBUG
+	if (UUnderpaintingFeel::bShowHitboxes)
 		DrawDebugSphere(GetWorld(), GetActorLocation(), Reach, 16, FColor(196, 87, 75), false, 0.05f);
 #endif
 	}
@@ -393,6 +424,7 @@ void AUnderpaintingEnemy::HitTest(const FEnemyAttack& Attack)
 	}
 
 #if ENABLE_DRAW_DEBUG
+	if (UUnderpaintingFeel::bShowHitboxes)
 	DrawDebugCapsule(GetWorld(), (Start + End) * 0.5f, (End - Start).Size() * 0.5f + Radius, Radius,
 		FRotationMatrix::MakeFromZ(End - Start).ToQuat(), FColor(196, 87, 75), false, 0.05f);
 #endif
@@ -438,6 +470,11 @@ void AUnderpaintingEnemy::HandleDamaged(float Damage, float StaggerDamage, AActo
 		AttackClock.Stop();
 		CurrentAttack = INDEX_NONE;
 		SetState(EEnemyState::Staggered);
+		if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+		{
+			Feel->Play(TEXT("stagger"), GetActorLocation());
+			Feel->Shake(0.2f);
+		}
 		UE_LOG(LogUnderpainting, Log, TEXT("%s is staggered"), *GetName());
 	}
 }
@@ -469,6 +506,16 @@ void AUnderpaintingEnemy::HandleDeath(AActor* Killer)
 		Progress->NotifyEvent(TEXT("Kill"), EnemyId, 1);
 	}
 
+	// It comes apart: a burst of its own paint, and what is left sinks.
+	if (UUnderpaintingFeel* Feel = UUnderpaintingFeel::Get(this))
+	{
+		Feel->Splash(GetActorLocation() + FVector(0.0f, 0.0f, 30.0f), FVector::UpVector, GetBodyColour(), Row.Tier == EEnemyTier::Boss ? 36 : 22, 560.0f, GetBodyPurity());
+		Feel->Play(TEXT("enemy_death"), GetActorLocation(), 1.0f, FMath::Clamp(1.6f / FMath::Max(GetBodyScale().Z, 0.5f), 0.5f, 1.3f));
+		Feel->HitStop(this, Killer, 0.12f);
+		Feel->Shake(Row.Tier == EEnemyTier::Boss ? 0.8f : 0.3f);
+	}
+	TelegraphGround->SetVisibility(false);
+	TelegraphLight->SetIntensity(0.0f);
 	UE_LOG(LogUnderpainting, Log, TEXT("%s died"), *GetName());
 	SetLifeSpan(1.5f);
 }
@@ -494,12 +541,143 @@ void AUnderpaintingEnemy::UpdateTelegraph()
 		{
 			Colour = Colour * 0.45f;
 		}
+		// Struck: it blinks pale for an instant.
+		if (FlashRemaining > 0.0f)
+		{
+			Colour = FMath::Lerp(Colour, FLinearColor(1.0f, 0.95f, 0.85f), FMath::Clamp(FlashRemaining / 0.12f, 0.0f, 1.0f) * 0.8f);
+		}
 		UnderpaintingStyle::SetColour(BodyMaterial, Colour, GetBodyPurity());
 	}
 
-	// A staggered or dead enemy slumps.
-	const float Lean = State == EEnemyState::Staggered ? 25.0f : (State == EEnemyState::Dead ? 85.0f : 0.0f);
-	PlaceholderBody->SetRelativeRotation(FRotator(Lean, 0.0f, 0.0f));
+	// The mark on the ground: where the hit will land, growing to full size at the moment it does.
+	const bool bShowGround = (bWindup || bActive) && Row.Attacks.IsValidIndex(CurrentAttack);
+	TelegraphGround->SetVisibility(bShowGround);
+	if (bShowGround)
+	{
+		const FEnemyAttack& Attack = Row.Attacks[CurrentAttack];
+		const float Fill = bActive ? 1.0f : FMath::Lerp(0.2f, 1.0f, FMath::Square(AttackClock.GetPhaseAlpha()));
+		const float Floor = -GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 3.0f;
+		if (IsAreaAttack(Attack))
+		{
+			const float Diameter = 2.0f * GetAttackReach(Attack) * Fill;
+			TelegraphGround->SetStaticMesh(DiscMesh);
+			TelegraphGround->SetRelativeLocation(FVector(0.0f, 0.0f, Floor));
+			TelegraphGround->SetRelativeScale3D(FVector(Diameter / 100.0f, Diameter / 100.0f, 0.02f));
+		}
+		else
+		{
+			const float Length = (GetAttackReach(Attack) + GetAttackLunge(Attack)) * Fill;
+			TelegraphGround->SetStaticMesh(BarMesh);
+			TelegraphGround->SetRelativeLocation(FVector(Length * 0.5f, 0.0f, Floor));
+			TelegraphGround->SetRelativeScale3D(FVector(Length / 100.0f, 1.3f, 0.02f));
+		}
+		if (GroundMaterial)
+		{
+			TelegraphGround->SetMaterial(0, GroundMaterial);
+			const FLinearColor Mark = bWhiteFlash ? FLinearColor(1.0f, 1.0f, 1.0f) : FLinearColor(1.0f, 0.42f, 0.08f);
+			UnderpaintingStyle::SetColour(GroundMaterial, bActive ? Mark : Mark * FMath::Lerp(0.45f, 1.0f, AttackClock.GetPhaseAlpha()), 1.0f);
+		}
+	}
+
+	UpdateBody();
+}
+
+void AUnderpaintingEnemy::UpdateBody()
+{
+	// A stand-in for animation: the placeholder gathers itself before a blow, snaps forward into it, flinches when
+	// struck, sags when staggered and comes apart when it dies. Timing comes from the same clock as the rules.
+	const FVector Base = GetBodyScale();
+	FVector Scale = Base;
+	FRotator Turn = FRotator::ZeroRotator;
+	FVector Offset = FVector::ZeroVector;
+	const float Time = GetWorld()->GetTimeSeconds();
+	const float Delta = GetWorld()->GetDeltaSeconds();
+
+	if (State == EEnemyState::Dead)
+	{
+		const float Through = FMath::Clamp(StateTime / 0.9f, 0.0f, 1.0f);
+		Turn.Pitch = 88.0f * Through * Through;
+		Scale = Base * (1.0f - 0.8f * Through * Through);
+		Offset.Z = -50.0f * Through;
+	}
+	else if (State == EEnemyState::Attacking)
+	{
+		const float Through = AttackClock.GetPhaseAlpha();
+		switch (AttackClock.GetPhase())
+		{
+		case EAttackPhase::Windup:
+			// Gathering: it sinks, swells and leans back, and trembles just before it lets go.
+			Scale = Base * FVector(1.0f + 0.2f * Through, 1.0f + 0.2f * Through, 1.0f - 0.22f * Through);
+			Turn.Pitch = -18.0f * Through;
+			Offset.Z = -Base.Z * 11.0f * Through;
+			if (Through > 0.72f)
+			{
+				Offset.Y = FMath::Sin(Time * 75.0f) * 3.5f;
+			}
+			break;
+		case EAttackPhase::Active:
+			Scale = Base * FVector(0.88f, 0.88f, 1.16f);
+			Turn.Pitch = 19.0f;
+			Offset.X = 30.0f;
+			break;
+		default:
+			// Spent: it eases back upright through the recovery.
+			Scale = Base * FMath::Lerp(FVector(0.88f, 0.88f, 1.16f), FVector::OneVector, FMath::SmoothStep(0.0f, 0.6f, Through));
+			Turn.Pitch = FMath::Lerp(19.0f, 0.0f, FMath::SmoothStep(0.0f, 0.7f, Through));
+			Offset.X = FMath::Lerp(30.0f, 0.0f, FMath::SmoothStep(0.0f, 0.7f, Through));
+			break;
+		}
+	}
+	else if (State == EEnemyState::Staggered || ReelRemaining > 0.0f)
+	{
+		Turn.Pitch = 22.0f + FMath::Sin(Time * 5.0f) * 4.0f;
+		Turn.Roll = FMath::Sin(Time * 3.1f) * 7.0f;
+		Scale = Base * FVector(1.06f, 1.06f, 0.9f);
+	}
+	else
+	{
+		// Alive and unoccupied: a slow breath, and a lean and a bob when it walks.
+		const float Pace = FMath::Clamp(GetVelocity().Size2D() / FMath::Max(1.0f, float(Row.MoveSpeed)), 0.0f, 1.0f);
+		Scale.Z = Base.Z * (1.0f + 0.025f * FMath::Sin(Time * 2.2f + BreathOffset));
+		Turn.Pitch = 9.0f * Pace;
+		Offset.Z = Pace * FMath::Abs(FMath::Sin(Time * 9.0f + BreathOffset)) * 5.0f;
+	}
+
+	// A blow rocks it away from where the blow came from.
+	FlinchRemaining = FMath::Max(0.0f, FlinchRemaining - Delta);
+	FlashRemaining = FMath::Max(0.0f, FlashRemaining - Delta);
+	if (FlinchRemaining > 0.0f && State != EEnemyState::Dead)
+	{
+		const float Kick = FMath::Square(FlinchRemaining / 0.28f);
+		Turn.Pitch -= FlinchLocal.X * 26.0f * Kick;
+		Turn.Roll += FlinchLocal.Y * 26.0f * Kick;
+		Scale *= FVector(1.0f + 0.12f * Kick, 1.0f + 0.12f * Kick, 1.0f - 0.1f * Kick);
+	}
+
+	PlaceholderBody->SetRelativeScale3D(Scale);
+	PlaceholderBody->SetRelativeRotation(Turn);
+	PlaceholderBody->SetRelativeLocation(Offset);
+}
+
+void AUnderpaintingEnemy::ReceiveImpact(const FVector& From, float Knockback)
+{
+	if (State == EEnemyState::Dead)
+	{
+		return;
+	}
+	FVector Away = GetActorLocation() - From;
+	Away.Z = 0.0f;
+	Away = Away.GetSafeNormal();
+	FlinchLocal = GetActorTransform().InverseTransformVectorNoScale(-Away);
+	FlinchRemaining = 0.28f;
+	FlashRemaining = 0.12f;
+
+	// A boss is not moved, and nothing is moved out of a blow it has already let go.
+	const bool bRooted = Row.Tier == EEnemyTier::Boss || (State == EEnemyState::Attacking && AttackClock.GetPhase() == EAttackPhase::Active);
+	if (!bRooted)
+	{
+		LaunchCharacter(Away * Knockback * GetKnockbackScale() + FVector(0.0f, 0.0f, 30.0f), true, false);
+	}
 }
 
 void AUnderpaintingEnemy::ApplySlow(float SpeedMultiplier, float Duration)

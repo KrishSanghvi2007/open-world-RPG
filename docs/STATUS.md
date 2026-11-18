@@ -44,6 +44,27 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - Dying restarts the level.
 - The three zones are separate levels, each with an A (before) and B (after the Turning) version.
 
+## In progress: "feel good and play well" before the owner's playtest (set 2026-11-18)
+Ten steps from the owner, then a devlog with a before/after fight clip, then stop and wait. Tick them off here so work can resume after any break.
+
+**Part A, game feel**
+- [x] 1. Animations: the engine pack's attacks, dash, hit reactions and deaths on the player; enemies gather, strike, flinch and fall by moving their placeholder (`AUnderpaintingEnemy::UpdateBody`).
+- [x] 2. Hit feedback: hit-stop, camera shake, enemy flinch and knockback, paint splashes, floating damage, bar trails and refusals (`Game/UnderpaintingFeel.*`).
+- [x] 3. Sound: 46 events in `data/sounds.json`; three CC0 packs from Kenney plus 22 sounds made by `tools/audio/make_sounds.py`. Sources in `docs/ASSETS.md`.
+- [x] 4. Responsiveness: input buffer, cancel windows, combo chaining, aim assist, ledge grace, camera lag, over-the-shoulder lock-on.
+- [x] 5. Clarity: every menu row can be clicked, ground marks show where enemy attacks land, a hit-direction indicator. (Mouse checked by scripted click only.)
+
+**Part B, playable design**
+- [ ] 6. Onboarding: contextual prompts that teach each rule in play.
+- [ ] 7. Wayfinding: objective marker, landmarks, light, no unrewarded dead ends.
+- [ ] 8. Pacing: the act planned as a sequence; dull stretches cut.
+- [ ] 9. Difficulty and balance: tuned numbers, a simulated pigment economy, written up.
+- [ ] 10. Robustness: fair checkpoints, no soft-locks, a timed scripted run of the golden path.
+
+**Then:** devlog 014 with screenshots and the before/after clip (`docs/devlog/clips/`), update `MORNING.md`, stop the loop.
+
+Tools made for this: the autopilot (`Game/UnderpaintingAutopilot.*`, `tools/dev/pilot.py`), the frame recorder and `tools/dev/make_clip.py`.
+
 ## Next (Claude does these; see `docs/ROADMAP.md`)
 All nine slice milestones are built. No Acts 2-3 and no full art pass until the owner says so. What is left inside the slice, in order:
 1. **Proving by script: done.** Routes traced, Madderback and Pentiment fought, two full runs of the act (green wall; red wall with Corin in Bone Black). `tools/dev/play.py` has `act1a`, `corin <n>`, `act1b`, `act1c <n>` to repeat them. (Done: all main walking routes in the six levels traced with `tools/dev/check_route.py <route>`; it found and fixed a pit ramp in the Vault that ended against a wall.)
