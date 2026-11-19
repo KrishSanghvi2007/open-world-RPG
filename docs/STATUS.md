@@ -5,7 +5,7 @@ Claude keeps this file current. It says what's done, what's next, and what's wai
 Last updated: 2026-11-18
 
 ## Waiting on the owner
-- [ ] **Your first playtest of Act 1.** Everything is ready and the work loop is stopped until you have played. Open `docs/devlog/MORNING.md`: how to start, what changed, the twelve things to judge, about 35 to 60 minutes of play.
+- [ ] **Your first playtest of Act 1** (whenever you like; the art pass is running meanwhile and changes no layouts). Open `docs/devlog/MORNING.md`: how to start, what changed, the twelve things to judge, about 35 to 60 minutes of play.
 - [ ] Optional, one time: to have phone control on in every session, type `/config` in Claude Code and switch on "Enable Remote Control for all sessions". (Claude leaves this switch to you because it opens remote access to this Mac.)
 
 ## Decisions waiting on you
@@ -43,6 +43,24 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - Enemies have no models, animations or path-finding.
 - Dying restarts the level.
 - The three zones are separate levels, each with an A (before) and B (after the Turning) version.
+
+## IN PROGRESS: make Act 1 look and feel finished (set by the owner 2026-11-19)
+The owner's brief, in order. Tick each as it is done; the loop resumes from the first unticked line.
+Ground rules: gameplay layouts are LOCKED (art goes on top; move nothing unless it is broken); 60 fps at 1080p on
+the M2 Pro under the GDD lighting rule, measured after every zone; style B Glaze, wabi-sabi; free assets only.
+
+- [x] 1. **Art bible:** `docs/ART_BIBLE.md`.
+- [ ] 2. **Environment kit:** modular pieces made in Blender by script, Glaze materials, foliage, terrain painting. (`tools/kit/`)
+- [ ] 3. **Zones,** A then B, one at a time, with before/after shots in a devlog each, and a frame-rate check each:
+  - [ ] 3a. Varnish (square, terraces, the Hem, house exteriors)
+  - [ ] 3b. The Scumblewood
+  - [ ] 3c. The Grisaille Vault
+- [ ] 4. **Interiors:** Hesper's lampworks, Bartram's grinding house, Ilka's hide, Corin's hollow; added: the cistern house, the black door.
+- [ ] 5. **Characters:** the Limner, Hesper, Bartram, Corin, Ilka; Blotter, Madderback, Pentiment, Old Palimpsest; Lacuna and the Hatcher in real 3D; then any other Folded the cast puts in Act 1 (Piecemeal; the Vigil waits for the owner).
+- [ ] 6. **Effects and interface:** pigment, Glim, Flare, Strokes, Erasures, hits, harvesting, the Turning; painted HUD, satchel, dialogue, crafting, palette, journal, map; title screen and main menu.
+- [ ] 7. **Audio:** free music per zone, boss and the Turning; ambience; footstep surfaces. All credited.
+- [ ] 8. **Final polish:** a full scripted playthrough of A and B; fix collisions, floating props, seams, stuck spots, frame dips.
+- [ ] **Finish:** devlog with a gallery, a 60 to 90 second showcase video, `MORNING.md`, stop the loop.
 
 ## Done, waiting on the owner: characters from the drawings (set 2026-11-19)
 - [x] 1. Nine figures cast into the game: `docs/story/CAST_IN_GAME.md` (the Folded).

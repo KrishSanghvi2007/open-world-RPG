@@ -18,6 +18,9 @@ Code, architecture, tools, file layout, bug fixes, balance within GDD ranges, as
 ## Log
 Newest first. Format: `date: decision (who): why`
 
+- 2026-11-19: `docs/ART_BIBLE.md` is the reference for how Act 1 looks: palettes per zone and state, architecture, kit lists, interiors, the four kinds of being and how each is painted, effects, interface, the vista, budgets (Claude, from the GDD and the look test; owner asked for it).
+- 2026-11-19: New phase set by the owner: make Act 1 look and feel finished, as a demo. Layouts locked; 60 fps measured after every zone; free assets only. The order of work is in `docs/STATUS.md` (owner).
+
 - 2026-11-19: Characters made from the owners' drawings are built by `/make-character` (`.claude/skills/make-character/`, `tools/characters/`): painted from the ink redraw, inflated offline, rigged from the cast file's pivots, animated from its movement notes. The online image-to-3D service is optional and its result is measured against the drawing before use (Claude): on both pilots it changed the figure.
 - 2026-11-19: Every Folded character keeps the drawn line exactly, has thin Glaze colour inside it and a black edge all round, and glows a little by itself so it does not go black in shade (Claude; owner to judge the look).
 - 2026-11-19: The owner asked for nine of their and Hannah Sanghvi's drawn figures to be cast into the game, credited "Characters by Krish & Hannah Sanghvi". The drawings repository is read-only and only files actually used are copied in (owner).
