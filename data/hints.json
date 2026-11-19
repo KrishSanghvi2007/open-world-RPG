@@ -120,6 +120,12 @@
     "Seconds": 14
   },
   {
+    "Name": "Web",
+    "Trigger": "NearWeb",
+    "Text": "Something is strung across this corner that the half-light does not show. A Flare ({Flare}) would.",
+    "Seconds": 12
+  },
+  {
     "Name": "Canvas",
     "Trigger": "NearCanvas",
     "Text": "Pale cross-hatched canvas is unpainted. Nothing was ever put there. You can walk through it.",

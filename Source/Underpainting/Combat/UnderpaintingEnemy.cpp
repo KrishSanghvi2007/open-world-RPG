@@ -98,6 +98,15 @@ void AUnderpaintingEnemy::BeginPlay()
 	BodyMaterial = UnderpaintingStyle::MakeMaterial(PlaceholderBody);
 	GroundMaterial = UnderpaintingStyle::MakeMaterial(TelegraphGround);
 	BreathOffset = FMath::FRandRange(0.0f, 6.0f);
+
+	// One of the Folded has a real model: show that and hide the stand-in.
+	if (!GetFigureId().IsNone() && Figure.Setup(GetMesh(), GetFigureId()))
+	{
+		PlaceholderBody->SetVisibility(false);
+		GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+		GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));       // made facing -y in Blender; the game faces +x
+		Figure.Play(TEXT("Idle"));
+	}
 	UpdateTelegraph();
 }
 
@@ -596,6 +605,54 @@ void AUnderpaintingEnemy::UpdateTelegraph()
 	}
 
 	UpdateBody();
+	if (Figure.IsValid())
+	{
+		UpdateFigure(GetWorld()->GetDeltaSeconds());
+	}
+}
+
+void AUnderpaintingEnemy::UpdateFigure(float DeltaTime)
+{
+	// What the rules say it is doing is the movement it plays. The wind-up is stretched to last exactly as long as the
+	// rules' wind-up, so the model and the hit agree.
+	switch (State)
+	{
+	case EEnemyState::Dead:
+	case EEnemyState::Staggered:
+		Figure.Play(TEXT("Curl"), false);
+		break;
+
+	case EEnemyState::Attacking:
+		if (AttackClock.GetPhase() == EAttackPhase::Windup)
+		{
+			Figure.Play(TEXT("Windup"), false, Figure.Length(TEXT("Windup")) / FMath::Max(0.1f, AttackClock.Timing.Windup));
+		}
+		else
+		{
+			Figure.Play(TEXT("Strike"), false, Figure.Length(TEXT("Strike")) / FMath::Max(0.1f, AttackClock.Timing.Active + AttackClock.Timing.Recovery));
+		}
+		break;
+
+	case EEnemyState::Chasing:
+	case EEnemyState::Returning:
+		if (TimeSinceHit < 0.3f)
+		{
+			Figure.Play(TEXT("Flinch"), false);
+		}
+		else if (GetVelocity().SizeSquared2D() > FMath::Square(30.0f))
+		{
+			Figure.Play(State == EEnemyState::Chasing ? TEXT("Rush") : TEXT("Walk"), true, State == EEnemyState::Chasing ? 0.55f : 1.0f);
+		}
+		else
+		{
+			Figure.Play(TEXT("Idle"));
+		}
+		break;
+
+	default:
+		Figure.Play(TEXT("Idle"));
+		break;
+	}
 }
 
 void AUnderpaintingEnemy::UpdateBody()

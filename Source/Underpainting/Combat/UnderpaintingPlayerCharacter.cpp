@@ -10,6 +10,7 @@
 #include "UnderpaintingCombatRules.h"
 #include "UnderpaintingDataSubsystem.h"
 #include "UnderpaintingEnemy.h"
+#include "UnderpaintingBestiary.h"
 #include "UnderpaintingHUD.h"
 #include "UnderpaintingProgressSubsystem.h"
 #include "UnderpaintingExploration.h"
@@ -846,7 +847,7 @@ AUnderpaintingEnemy* AUnderpaintingPlayerCharacter::FindAimTarget() const
 		FVector To = It->GetActorLocation() - GetActorLocation();
 		To.Z = 0.0f;
 		const float Distance = To.Size();
-		if (It->GetVitals()->IsDead() || It->IsHidden() || Distance > AimAssistRange)
+		if (It->GetVitals()->IsDead() || It->IsHidden() || !It->IsThreat() || Distance > AimAssistRange)
 		{
 			continue;
 		}
@@ -1217,7 +1218,7 @@ void AUnderpaintingPlayerCharacter::TickHints(float DeltaTime)
 	for (TActorIterator<AUnderpaintingEnemy> It(GetWorld()); It; ++It)
 	{
 		const float Distance = FVector::DistSquared(It->GetActorLocation(), GetActorLocation());
-		if (It->GetState() != EEnemyState::Dead && !It->IsHidden() && Distance < NearEnemyDistance)
+		if (It->GetState() != EEnemyState::Dead && !It->IsHidden() && It->IsThreat() && Distance < NearEnemyDistance)
 		{
 			NearEnemy = *It;
 			NearEnemyDistance = Distance;
@@ -1241,6 +1242,16 @@ void AUnderpaintingPlayerCharacter::TickHints(float DeltaTime)
 		if (NearEnemy->GetPoiseFraction() > 0.3f)
 		{
 			True.Add(TEXT("StaggerBar"));
+		}
+	}
+	for (TActorIterator<AHatcherEnemy> It(GetWorld()); It; ++It)
+	{
+		// Near a web that cannot be seen: say so once, if there is a lantern to do something about it.
+		if (It->IsHanging() && Progress->GetItemCount(TEXT("PilotLantern")) > 0
+			&& FVector::DistSquared2D(It->GetActorLocation(), GetActorLocation()) < FMath::Square(It->GetWebRadius() + 450.0f))
+		{
+			True.Add(TEXT("NearWeb"));
+			break;
 		}
 	}
 	for (TActorIterator<AUnderpaintingPassableBack> It(GetWorld()); It; ++It)
@@ -1288,6 +1299,13 @@ void AUnderpaintingPlayerCharacter::TickHints(float DeltaTime)
 		UE_LOG(LogUnderpainting, Log, TEXT("HINT %s: %s"), *Pair.Key.ToString(), *Text);
 		break;
 	}
+}
+
+void AUnderpaintingPlayerCharacter::Snare(float Seconds, float SpeedFraction)
+{
+	SnareRemaining = FMath::Max(SnareRemaining, Seconds);
+	SnareFraction = FMath::Clamp(SpeedFraction, 0.05f, 1.0f);
+	GetCharacterMovement()->StopMovementImmediately();
 }
 
 void AUnderpaintingPlayerCharacter::Checkpoint()
@@ -1429,6 +1447,7 @@ void AUnderpaintingPlayerCharacter::Tick(float DeltaTime)
 	}
 
 	DraughtRemaining = FMath::Max(0.0f, DraughtRemaining - DeltaTime);
+	SnareRemaining = FMath::Max(0.0f, SnareRemaining - DeltaTime);
 	if (TinctureRemaining > 0.0f)
 	{
 		TinctureRemaining -= DeltaTime;
@@ -1487,7 +1506,7 @@ void AUnderpaintingPlayerCharacter::Tick(float DeltaTime)
 	{
 		const bool bMoving = !GetVelocity().IsNearlyZero(10.0f) && !GetLastMovementInputVector().IsNearlyZero();
 		const bool bSprinting = bWantsSprint && bMoving && Vitals->DrainStamina(SprintStaminaPerSecond * DeltaTime);
-		GetCharacterMovement()->MaxWalkSpeed = bSprinting ? SprintSpeed : WalkSpeed;
+		GetCharacterMovement()->MaxWalkSpeed = (bSprinting ? SprintSpeed : WalkSpeed) * (SnareRemaining > 0.0f ? SnareFraction : 1.0f);
 		break;
 	}
 
@@ -1972,7 +1991,7 @@ void AUnderpaintingPlayerCharacter::ToggleLockOn()
 	for (TActorIterator<AUnderpaintingEnemy> It(GetWorld()); It; ++It)
 	{
 		const FVector To = It->GetActorLocation() - GetActorLocation();
-		if (It->GetVitals()->IsDead() || To.Size() > LockOnRange)
+		if (It->GetVitals()->IsDead() || !It->IsThreat() || To.Size() > LockOnRange)
 		{
 			continue;
 		}

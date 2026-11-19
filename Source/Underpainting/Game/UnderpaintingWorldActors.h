@@ -6,6 +6,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "UnderpaintingDataTypes.h"
+#include "UnderpaintingFigure.h"
 #include "UnderpaintingWorldActors.generated.h"
 
 class AUnderpaintingPlayerCharacter;
@@ -205,7 +206,42 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "NPC")
 	FString DisplayName = TEXT("Hesper Vane");
 
+	/** If this person is one of the Folded and has a made model, its ID (such as "d40"). None keeps the grey-box shape. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "NPC")
+	FName FigureId;
+
+	/** Once this flag is set the person has been set: they stand still (the "Still" movement) and gain a face. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "NPC")
+	FName SetFlag;
+
+	/** Turns to face the player when they come close. Off for someone with a thing fixed in front of them (a choice at their face). */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "NPC")
+	bool bTurnsToPlayer = true;
+
+	/** Movements played now and then while waiting ("Tap", "Face"). */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "NPC")
+	TArray<FName> Gestures;
+
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 
 	virtual void Refresh() override;
+
+	UPROPERTY(Transient)
+	FUnderpaintingFigure Figure;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UStaticMeshComponent> Face;
+
+private:
+
+	bool IsSet() const;
+	void PlaceFigure();
+
+	float NextGestureAt = 6.0f;
+	float GestureEndsAt = -1.0f;
+	float FacingYaw = 0.0f;
+	bool bFacing = false;
 };

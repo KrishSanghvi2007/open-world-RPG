@@ -256,7 +256,7 @@ PIGMENT_COLOURS = {
 STATIONS = {"GrindingSlab": "GRINDING_SLAB", "ArmatureBench": "ARMATURE_BENCH"}
 LIT_FROM_THE_START = {"SunwardClearing", "RibStairHeart", "DevBlotter", "DevMadderback", "DevPentiment", "DevThePalimpsest"}      # wild pilot flames; the others must be relit
 PICKUPS = {"FlaxPress": ("LinseedOil", 2, "the flax press")}
-ENEMY_CLASSES = {"Blotter": ("BlotterEnemy", 1.3), "Madderback": ("MadderbackEnemy", 0.9),
+ENEMY_CLASSES = {"Blotter": ("BlotterEnemy", 1.3), "Madderback": ("MadderbackEnemy", 0.9), "Hatcher": ("HatcherEnemy", 0.7),
                  "Pentiment": ("PentimentEnemy", 1.3), "ThePalimpsest": ("OldPalimpsest", 2.4)}
 
 
@@ -620,6 +620,17 @@ def build_village(shifted=False):
     place("SunwardTerraces", "The Sunward Terraces", (0, 30, 8), half=(30, 11, 3))
     place("TheHem", "The Hem", (0, -24, 0), half=(30, 12, 3))
 
+    # Lacuna, one of the Folded (docs/story/CAST_IN_GAME.md): keeper of the Hem's water, under the wall of the square.
+    # The bare place where a face should be is where "A Face for Lacuna" is decided, so they do not turn away from it.
+    lacuna = marker("NPC", "Lacuna", "Lacuna", (-2, -13, 0), yaw=-90.0)
+    if lacuna and hasattr(lacuna, "figure_id"):
+        lacuna.set_editor_property("figure_id", unreal.Name("d40"))
+        lacuna.set_editor_property("set_flag", unreal.Name("Lacuna_Set"))
+        lacuna.set_editor_property("gestures", [unreal.Name("Tap"), unreal.Name("Face")])
+        lacuna.set_editor_property("turns_to_player", False)
+    face = choice_point("SQ_AFaceForLacuna", "the bare place where a face should be", (-2.025, -13.14, 1.655), yaw=-90.0, size=(0.02, 0.2, 0.2))
+    face.set_editor_property("hidden_by_flag", unreal.Name("Q.SQ_AFaceForLacuna.Done"))
+
     # The far ends of the Hem and of the top terrace are dead ends: each has something small for whoever walks there.
     cache("HemCorner", "Cache", (-30, -14, 0), [("ShedHide", 2)])
     cache("TerraceCorner", "Cache", (31, 39, 8), [("LinseedOil", 2)])
@@ -802,7 +813,13 @@ def build_scumblewood(shifted=False):
     # Things to read, and the named places.
     # In plain sight at the far corner of two clearings: the materials gear is made of. Nobody should have to find
     # a hidden wall to be able to craft at all, and walking to the end of a clearing should be worth it.
-    cache("BendCorner", "Cache", off("Bend", 7, -7), [("RibSplinter", 2)])
+    cache("BendCorner", "Cache", off("Bend", 4.7, -4.7), [("RibSplinter", 2)])
+
+    # The Hatcher (docs/story/CAST_IN_GAME.md) hangs over that corner, and her web is round the cache. She faces the
+    # middle of the clearing, which is where the gap in her web is. The web stops 2 m short of the road.
+    hatcher = marker("Enemy", "Hatcher", "the Hatcher", off("Bend", 5.6, -5.6), yaw=135.0, labelled=False)
+    if hatcher and hasattr(hatcher, "web_radius"):
+        hatcher.set_editor_property("web_radius", 360.0)
     cache("DescentCorner", "Cache", off("Descent", -7, 7), [("ShedHide", 1), ("RibSplinter", 1)])
 
     lore("Odile_02", off("FirstWell", 2, -7), yaw=90.0)
@@ -833,7 +850,7 @@ def build_scumblewood(shifted=False):
     # Enemies: 6 Madderbacks and 6 Blotters. Burning the nest halves the Madderbacks.
     # In the Hollow Vertebra and on the Approach they stand well apart (more than the 10 m at which a Madderback notices
     # you), so a careful player can draw them one at a time and a careless one gets two. Bunched, all three came at once.
-    for i, p in enumerate((off("Bend", 3, -3), off("HollowVertebra", -9, -8), off("HollowVertebra", 2, 9),
+    for i, p in enumerate((off("Bend", -5, 1), off("HollowVertebra", -9, -8), off("HollowVertebra", 2, 9),
                            off("HollowVertebra", 10, -6), off("Approach", -7, -4), off("Approach", 7, 1))):
         tick = enemy("Madderback", p)
         if i % 2 == 1 and isinstance(tick, unreal.UnderpaintingEnemy):

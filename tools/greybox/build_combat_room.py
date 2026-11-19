@@ -22,6 +22,7 @@ ROOMS = [
     ("L_Combat_Greybox", "Blotter", "Blotter: dodge its warm-lit attacks, strike in the recovery", False),
     ("L_Combat_Madderback", "Madderback", "Madderback: stand before a pillar, sidestep the charge, punish while it is stuck", False),
     ("L_Combat_Pentiment", "Pentiment", "Pentiment: flare (F) as it fades and it staggers", True),
+    ("L_Combat_Hatcher", "Hatcher", "The Hatcher: light a Flare (F) to see her web. Touch a strand and she comes down", False),
     ("L_Combat_Boss", "ThePalimpsest", "Old Palimpsest: Bone Black while it is white, Terre Verte once it is red", True),
 ]
 

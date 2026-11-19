@@ -466,5 +466,70 @@
     "RewardItems": [],
     "RewardPigments": [],
     "RewardNotes": "TeachOchreWash grants 2 FixativeFlask. Stretch goal: built only after the four Core quests are finished. Nothing else in the slice depends on it."
+  },
+  {
+    "Name": "SQ_AFaceForLacuna",
+    "DisplayName": "A Face for Lacuna",
+    "QuestType": "Side",
+    "SliceScope": "Stretch",
+    "Act": 1,
+    "Giver": "Lacuna",
+    "Zone": "VarnishVillage",
+    "Summary": "Lacuna keeps the water in the Hem. They are one of the Folded, the Hand's first company, and an Erasure rubbed out their face years ago. A Limner can finish it. Whether a Limner should is the question.",
+    "Steps": [
+      "Speak to Lacuna, who keeps the water in the Hem.",
+      "Decide about the bare place where a face should be."
+    ],
+    "Objectives": [
+      {
+        "Event": "Talk",
+        "Target": "Lacuna",
+        "Count": 1,
+        "Zone": "VarnishVillage"
+      },
+      {
+        "Event": "Choose",
+        "Target": "SQ_AFaceForLacuna",
+        "Count": 1,
+        "Zone": "VarnishVillage"
+      }
+    ],
+    "Prerequisites": [
+      "MQ_DuskOnTheShoulder"
+    ],
+    "Choices": [
+      {
+        "ChoiceId": "SetFace",
+        "Label": "Finish the face",
+        "CostPigment": "Ochre",
+        "CostAmount": 3,
+        "Consequence": "Lacuna is set: one person, for good. A plain warm face, like a small moon. The hands come home to the sleeves and the taps stop. They will never be afraid of the dark, and never again be anyone but this. They press two Lamp Oil on you from the Hem's store.",
+        "WorldFlags": [
+          "Lacuna_Set"
+        ],
+        "RewardItems": [
+          {
+            "Id": "LampOil",
+            "Count": 2
+          }
+        ],
+        "RewardPigments": []
+      },
+      {
+        "ChoiceId": "LeaveOpen",
+        "Label": "Leave it open",
+        "CostPigment": "",
+        "CostAmount": 0,
+        "Consequence": "Nothing is spent and nothing is given. The bare place stays bare. The taps keep dripping. Lacuna is still missing something, and still free: one of the few who could, one day, hold a brush for someone else.",
+        "WorldFlags": [
+          "Lacuna_Open"
+        ],
+        "RewardItems": [],
+        "RewardPigments": []
+      }
+    ],
+    "RewardItems": [],
+    "RewardPigments": [],
+    "RewardNotes": "SetFace costs 3 Ochre and grants 2 LampOil. LeaveOpen costs and grants nothing. Recorded for the Finale (docs/story/CAST_IN_GAME.md): only someone left open can finish the Limner."
   }
 ]

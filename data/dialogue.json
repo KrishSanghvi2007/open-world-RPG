@@ -1175,5 +1175,179 @@
     "ForbidFlags": [],
     "SetFlags": [],
     "Choices": []
+  },
+  {
+    "Name": "Lacuna_Hello",
+    "Npc": "Lacuna",
+    "Speaker": "Lacuna",
+    "Text": "No face turns to you. There is none: only bare canvas, cross-hatched, where one was. A hand drifts up from somewhere near the left sleeve, and opens.",
+    "Next": "",
+    "Entry": 10,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "You keep the water here.",
+        "Next": "Lacuna_Water",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "What happened to your face?",
+        "Next": "Lacuna_Face",
+        "RequireFlags": [
+          "Q.MQ_DuskOnTheShoulder.Done"
+        ],
+        "ForbidFlags": [
+          "Q.SQ_AFaceForLacuna.Active",
+          "Q.SQ_AFaceForLacuna.Done"
+        ],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "(Leave them to their work.)",
+        "Next": "",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Lacuna_Water",
+    "Npc": "Lacuna",
+    "Speaker": "Lacuna",
+    "Text": "The right hand turns a tap a quarter-turn. Water ticks into the dust. The hand turns it back, exactly as far. Whatever else was rubbed out, this was not.",
+    "Next": "Lacuna_Hello",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Lacuna_Face",
+    "Npc": "Lacuna",
+    "Speaker": "Lacuna",
+    "Text": "The left hand goes to the place where a face should be and stops a finger's width short of the bare canvas. It stays there. Then it turns, palm up, toward your lantern, and your knife, and waits.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "I could finish it. Give you a face.",
+        "Next": "Lacuna_Offer",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": "SQ_AFaceForLacuna"
+      },
+      {
+        "Label": "Does it hurt?",
+        "Next": "Lacuna_Hurt",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "(Say nothing.)",
+        "Next": "",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Lacuna_Hurt",
+    "Npc": "Lacuna",
+    "Speaker": "Lacuna",
+    "Text": "A hand rocks, level, like a small boat: so-so. Then it points down at the taps, which are dripping.",
+    "Next": "Lacuna_Face",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Lacuna_Offer",
+    "Npc": "Lacuna",
+    "Speaker": "Lacuna",
+    "Text": "Both hands go still. One rises and touches the cross-hatching, lightly, the way you touch a door before you knock. They are not saying yes. They are not saying no. A finger points at you: Limner. You decide what is finished.",
+    "Next": "",
+    "Entry": 0,
+    "RequireFlags": [],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Lacuna_Waiting",
+    "Npc": "Lacuna",
+    "Speaker": "Lacuna",
+    "Text": "The hand opens toward the bare place again, and waits. There is no hurry in it. Whenever you are ready. Or not at all.",
+    "Next": "",
+    "Entry": 30,
+    "RequireFlags": [
+      "Q.SQ_AFaceForLacuna.Active"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": [
+      {
+        "Label": "(Look at the place where the face was.)",
+        "Next": "",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      },
+      {
+        "Label": "You keep the water here.",
+        "Next": "Lacuna_Water",
+        "RequireFlags": [],
+        "ForbidFlags": [],
+        "SetFlags": [],
+        "StartQuest": ""
+      }
+    ]
+  },
+  {
+    "Name": "Lacuna_Set",
+    "Npc": "Lacuna",
+    "Speaker": "Lacuna",
+    "Text": "They stand very straight. The hands have come home to the sleeves. The face you gave them looks at you, warm and plain and finished, and does not change. The taps are dry.",
+    "Next": "",
+    "Entry": 60,
+    "RequireFlags": [
+      "Lacuna_Set"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
+  },
+  {
+    "Name": "Lacuna_Open",
+    "Npc": "Lacuna",
+    "Speaker": "Lacuna",
+    "Text": "A hand finds yours and closes over it for a moment: cool, a little wet. Then it lets go and drifts back to its work. The taps go on dripping. Nothing here is finished, and nobody minds.",
+    "Next": "",
+    "Entry": 60,
+    "RequireFlags": [
+      "Lacuna_Open"
+    ],
+    "ForbidFlags": [],
+    "SetFlags": [],
+    "Choices": []
   }
 ]

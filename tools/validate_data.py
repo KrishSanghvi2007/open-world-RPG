@@ -61,7 +61,7 @@ for q in D["quests"]:
     if len(ids)!=len(set(ids)): err.append(("choice-ids",q["Name"]))
     if q["Choices"] and not any(o["Event"]=="Choose" for o in q["Objectives"]): err.append(("choices-without-choose-step",q["Name"]))
 EVENTS={"Talk","Have","Craft","Relight","Attune","Kill","Reach","Inspect","Choose"}
-NPCS={"HesperVane","BartramSedge","CorinHalfSeen","IlkaThrum"}
+NPCS={"HesperVane","BartramSedge","CorinHalfSeen","IlkaThrum","Lacuna"}
 for q in D["quests"]:
     if len(q["Objectives"])!=len(q["Steps"]): err.append(("objectives",q["Name"]))
     for o in q["Objectives"]:
@@ -84,7 +84,7 @@ for d in D["dialogue"]:
     if len(d["Choices"])>6: err.append(("dialogue-too-many-choices",d["Name"]))
 for npc in {d["Npc"] for d in D["dialogue"]}:
     if not entries.get(npc): err.append(("dialogue-no-entry",npc))
-HINT_TRIGGERS={"Start","NearUsable","AfterFirstTalk","Walked","NearNode","FirstHarvest","NearStation","NearDarkLamp","LitLamp","FirstWell","DarkZone","EnemyNear","FirstHurt","EnemyStillNear","Weakness","StaggerBar","LowGlim","LowHealth","TwoWells","VaultDark","NearCanvas","AfterDeath"}
+HINT_TRIGGERS={"Start","NearUsable","AfterFirstTalk","Walked","NearNode","FirstHarvest","NearStation","NearDarkLamp","LitLamp","FirstWell","DarkZone","EnemyNear","FirstHurt","EnemyStillNear","Weakness","StaggerBar","LowGlim","LowHealth","TwoWells","VaultDark","NearCanvas","AfterDeath","NearWeb"}
 HINT_TOKENS={"Use","Pack","Sprint","HeavyAttack","LightAttack","Dodge","LockOn","SwapWell","Flare","Poultice","LampOil","Pigment","Stroke","Cost","Enemy","Weakness"}
 import re as _re
 for h in D["hints"]:

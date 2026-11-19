@@ -7,6 +7,7 @@ Reads   <drawings>/drawings/redrawn/<id>/redrawn.png      the clean ink redraw (
         tools/characters/plans/<id>.json                  which parts to keep and what colour each is
 Writes  art_source/characters/<id>/front.png              the painted figure, transparent outside it
         art_source/characters/<id>/front_white.png        the same on white, for the image-to-3D service
+        art_source/characters/<id>/back.png               the figure from behind (same outline, so it lies over the front)
         art_source/characters/<id>/front_ink.png          the ink alone (to draw the lines back onto the model)
         art_source/characters/<id>/source/                the drawings used, copied in (and nothing else)
 
@@ -116,20 +117,37 @@ def main(args):
     rng = np.random.default_rng(7)
     grain = ndimage.gaussian_filter(rng.standard_normal(shape).astype(np.float32), (2.0, 9.0))  # long soft strokes
     grain = 1.0 + 0.06 * grain / max(1e-6, float(np.abs(grain).max()))
-    shaded = colour * (light * round_off * grain)[..., None]
     warm = np.array([1.03, 1.0, 0.94], dtype=np.float32)                                         # the Lamp is low and amber
-    shaded = np.clip(shaded * warm, 0, 255)
+    shaded = np.clip(colour * (light * round_off * grain)[..., None] * warm, 0, 255)
+
+    # The back view: the same figure from behind. Colours as on the front unless the plan says otherwise (the back of
+    # a head is hair, not a face); the drawn lines kept only round the edge and on parts that look the same from behind.
+    back_colour = colour.copy()
+    for region in plan.get("back_regions", []):
+        mask = ellipse_mask(shape, region["box"]) if region.get("ellipse") else box_mask(shape, region["box"])
+        back_colour[mask & figure] = rgb(region["colour"])
+    back_ink = ink & (ndimage.distance_transform_edt(figure) < plan.get("back_edge_px", 7))
+    if plan.get("back_same"):
+        back_ink = ink
+    for name in plan.get("back_keep_ink", []):
+        back_ink |= ink & box_mask(shape, parts[name]["bbox"], plan.get("pad", 0.004))
+    back_depth = ndimage.distance_transform_edt(figure & ~back_ink)
+    back_round = 0.72 + 0.28 * np.clip(back_depth / plan.get("round", 26.0), 0.0, 1.0) ** 0.6
+    back_shaded = np.clip(back_colour * (light[:, ::-1] * back_round * grain)[..., None] * warm, 0, 255)
 
     # 6. Ink on top, exactly as drawn. Black parts (a spider's legs) are simply ink.
     ink_soft = np.array(Image.fromarray((ink * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.6)), dtype=np.float32) / 255.0
     ink_colour = rgb(plan.get("ink", "#1B1512"))
     out = shaded * (1.0 - ink_soft[..., None]) + ink_colour * ink_soft[..., None]
+    back_soft = np.array(Image.fromarray((back_ink * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.6)), dtype=np.float32) / 255.0
+    back_out = back_shaded * (1.0 - back_soft[..., None]) + ink_colour * back_soft[..., None]
     alpha = np.array(Image.fromarray((figure * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.8)), dtype=np.float32)
 
     # Crop to the figure with a margin, square it (the 3D service wants the subject centred).
     margin = int(0.06 * max(y1 - y0, x1 - x0))
     cy0, cy1, cx0, cx1 = max(0, y0 - margin), min(h, y1 + margin), max(0, x0 - margin), min(w, x1 + margin)
     rgba = np.dstack([out, alpha]).astype(np.uint8)[cy0:cy1, cx0:cx1]
+    back_rgba = np.dstack([back_out, alpha]).astype(np.uint8)[cy0:cy1, cx0:cx1]
     ink_rgba = np.dstack([np.zeros(shape + (3,), dtype=np.float32) + ink_colour, ink_soft * 255]).astype(np.uint8)[cy0:cy1, cx0:cx1]
     side = max(rgba.shape[0], rgba.shape[1])
 
@@ -146,6 +164,8 @@ def main(args):
     white = Image.new("RGB", front.size, "white")
     white.paste(front, mask=front.split()[3])
     white.save(os.path.join(out_dir, "front_white.png"))
+    back = square(back_rgba)
+    back.save(os.path.join(out_dir, "back.png"))
     square(ink_rgba).save(os.path.join(out_dir, "front_ink.png"))
 
     # Where the crop sits on the sheet, so the part boxes can be carried onto the model later.

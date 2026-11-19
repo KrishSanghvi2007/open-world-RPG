@@ -173,6 +173,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Exploration")
 	bool IsFlareLighting(const FVector& Location) const;
 
+	/** Held by something (a web): movement is slowed to this fraction for this long. */
+	void Snare(float Seconds, float SpeedFraction);
+
 	UFUNCTION(BlueprintPure, Category = "Exploration")
 	float GetFlareTimeRemaining() const { return FlareRemaining; }
 
@@ -472,6 +475,8 @@ private:
 	float LastHintTime = -100.0f;
 	float WalkedTotal = 0.0f;
 	bool bMenuSeen = false;
+	float SnareRemaining = 0.0f;
+	float SnareFraction = 1.0f;
 	TSet<FName> LearnedByDoing;
 	bool bArrivedThroughExit = false;
 	bool bInZoneLevel = false;

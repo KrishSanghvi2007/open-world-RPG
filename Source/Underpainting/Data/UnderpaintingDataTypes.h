@@ -91,7 +91,9 @@ enum class EEnemyFamily : uint8
 {
 	Erasure,
 	Parasite,
-	Draft
+	Draft,
+	/** One of the Hand's folded-paper figures: ink, not paint (docs/story/CAST_IN_GAME.md). */
+	Folded
 };
 
 UENUM(BlueprintType)

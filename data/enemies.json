@@ -111,5 +111,32 @@
       { "Id": "SlumberBlue", "Count": 2, "Chance": 1.0 }
     ],
     "BehaviourNotes": "An Erasure that has unmade so much it wears the scraps: layers of half-rubbed faces, fields and doorways. It is curled against the Matriarch's heart, drinking the warmth. Phase 1 (100% to 50% HP) its hue is White: weak to Bone Black, resists Ceruse. At 50% it scrapes its own surface away over 2.5 s (it is vulnerable and takes +50% damage during this), exposing an underlayer soaked in her blood. Phase 2 hue is Red: weak to Terre Verte, resists Sanguine. Phase 2 keeps all phase 1 attacks and adds the two phase 2 attacks. Arena rule: the heart beats every 20 s and for 4 s the arena's ambient light is 0.5, halving Stroke costs. The fight is the exam for the Contrast system."
+  },
+  {
+    "Name": "Hatcher",
+    "DisplayName": "the Hatcher",
+    "Family": "Folded",
+    "Tier": "Standard",
+    "Zones": ["Scumblewood"],
+    "Hue": "Black",
+    "MaxHP": 110,
+    "Poise": 45,
+    "MoveSpeed": 360,
+    "AggroRadius": 0.0,
+    "LeashRadius": 16.0,
+    "GlimOnKill": 15,
+    "Weaknesses": ["Ceruse"],
+    "Resistances": ["BoneBlack"],
+    "Phase2HPPercent": 0,
+    "Phase2Hue": "",
+    "Attacks": [
+      { "AttackName": "FangStrike", "Phase": 1, "Windup": 0.7, "Active": 0.2, "Recovery": 0.9, "Damage": 16, "Telegraph": "WarmRim", "Notes": "She rears, front legs high, and comes down. Short reach. The basic exchange once she is on the ground." },
+      { "AttackName": "Rush", "Phase": 1, "Windup": 0.6, "Active": 0.25, "Recovery": 1.2, "Damage": 20, "Telegraph": "WarmRim", "Notes": "The sudden rush from CAST.md: 4 m in a quarter of a second. Used from a little way off, and first, as she lands. Long recovery." }
+    ],
+    "Drops": [
+      { "Id": "BoneBlack", "Count": 2, "Chance": 1.0 },
+      { "Id": "GraphiteShard", "Count": 1, "Chance": 0.5 }
+    ],
+    "BehaviourNotes": "One of the Folded (drawing d28, docs/story/CAST_IN_GAME.md): ink, so black, weak to Ceruse and resistant to Bone Black. She hangs on a thread over her web and notices nothing (AggroRadius 0): she never attacks first. Her web (spokes and a ring with one gap) cannot be seen in half-light; a Flare shows it. Touching a strand holds the player for 2.2 s at a fifth of walking speed, shows the whole web for 5 s, and brings her down the thread in 1.1 s. She gives up 16 m from her web, goes home and climbs back. Killing her is optional. With her dead the web shows and holds nobody."
   }
 ]

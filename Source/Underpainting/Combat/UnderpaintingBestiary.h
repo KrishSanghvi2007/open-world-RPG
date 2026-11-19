@@ -110,3 +110,92 @@ private:
 	float HeartbeatTimer = 0.0f;
 	mutable int32 AttackCounter = 0;
 };
+
+/**
+ * The Hatcher: the great striped spider of the Folded (drawing d28, docs/story/CAST_IN_GAME.md). Teaches looking
+ * before you walk. Her web is strung round where she hangs and cannot be seen in half-light; a Flare shows every
+ * strand. Touch one and you are held, and she comes down her thread. Leave the web alone and she never attacks.
+ */
+UCLASS()
+class AHatcherEnemy : public AUnderpaintingEnemy
+{
+	GENERATED_BODY()
+
+public:
+
+	AHatcherEnemy();
+
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+
+	/** True while she hangs on her thread, out of reach. */
+	UFUNCTION(BlueprintPure, Category = "Enemy")
+	bool IsHanging() const { return Hang > 0.3f; }
+
+	virtual bool IsThreat() const override { return !IsHanging(); }
+
+	/** Metres from her to the nearest point of her web, for the teaching prompt. */
+	float GetWebRadius() const { return WebRadius; }
+
+protected:
+
+	virtual FName GetFigureId() const override { return TEXT("d28"); }
+	virtual float GetAttackReach(const FEnemyAttack& Attack) const override;
+	virtual float GetAttackLunge(const FEnemyAttack& Attack) const override;
+	virtual int32 ChooseAttack(float DistanceToTarget) const override;
+	virtual float GetApproachDistance() const override { return 170.0f; }
+	virtual float GetKnockbackScale() const override { return 0.7f; }
+	virtual FLinearColor GetBodyColour() const override { return FLinearColor(0.02f, 0.016f, 0.014f); }
+	virtual float GetBodyPurity() const override { return 1.0f; }
+	virtual FVector GetBodyScale() const override { return FVector(1.6f, 1.6f, 0.9f); }
+	virtual void UpdateFigure(float DeltaTime) override;
+
+	/** How high she hangs (cm), and how long she takes to come down (s). */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy|Web")
+	float HangHeight = 480.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy|Web")
+	float DescendTime = 1.1f;
+
+	/** The web: spokes out to WebRadius, and a ring at RingFraction of it with one gap, the way in, on the side she faces. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy|Web")
+	int32 Spokes = 5;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy|Web")
+	float WebRadius = 420.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy|Web")
+	float RingFraction = 0.62f;
+
+	/** How close (cm) to a strand counts as touching it, and how long (s) a touch holds you. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy|Web")
+	float TouchDistance = 38.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy|Web")
+	float HoldSeconds = 2.2f;
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	TObjectPtr<UStaticMeshComponent> Thread;
+
+private:
+
+	void BuildWeb();
+	void TickWeb(float DeltaTime);
+
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<UStaticMeshComponent>> StrandMeshes;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UMaterialInstanceDynamic> InkMaterial;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UMaterialInstanceDynamic> SilkMaterial;
+
+	TArray<FVector> StrandStart;
+	TArray<FVector> StrandEnd;
+	float ShowAllUntil = -1.0f;
+	float NextHoldAllowed = 0.0f;
+	float Hang = 1.0f;
+	float HalfHeight = 60.0f;
+};
+

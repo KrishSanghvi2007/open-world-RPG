@@ -816,7 +816,7 @@ void AUnderpaintingHUD::DrawEnemyBars()
 	{
 		const AUnderpaintingEnemy* Enemy = *It;
 		const UUnderpaintingVitalsComponent* Vitals = Enemy->GetVitals();
-		if (!Vitals || Vitals->IsDead())
+		if (!Vitals || Vitals->IsDead() || !It->IsThreat())
 		{
 			continue;
 		}

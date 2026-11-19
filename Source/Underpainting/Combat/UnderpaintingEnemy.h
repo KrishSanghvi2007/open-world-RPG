@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "UnderpaintingCombatTypes.h"
 #include "UnderpaintingDataTypes.h"
+#include "UnderpaintingFigure.h"
 #include "UnderpaintingEnemy.generated.h"
 
 class UUnderpaintingVitalsComponent;
@@ -49,6 +50,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Enemy")
 	FString GetDisplayName() const { return Row.DisplayName; }
+
+	/** False while it is no part of any fight: out of reach and unaware (the Hatcher on her thread). No bar, no lock-on, no prompt. */
+	virtual bool IsThreat() const { return true; }
 
 	/** Seconds until the attack being wound up goes live, or -1 if none is. */
 	float GetTimeUntilHit() const { return State == EEnemyState::Attacking && AttackClock.GetPhase() == EAttackPhase::Windup ? AttackClock.Timing.Windup - AttackClock.Elapsed : -1.0f; }
@@ -225,6 +229,23 @@ protected:
 
 	FEnemyRow Row;
 
+	/** If this enemy has a made model (one of the Folded), its ID, such as "d28". None keeps the grey-box stand-in. */
+	virtual FName GetFigureId() const { return NAME_None; }
+
+	/** Picks the model's movement from what the rules say it is doing. Called every frame once the model is set up. */
+	virtual void UpdateFigure(float DeltaTime);
+
+	UPROPERTY(Transient)
+	FUnderpaintingFigure Figure;
+
+	void SetState(EEnemyState NewState);
+
+	EEnemyState State = EEnemyState::Idle;
+	FAttackClock AttackClock;
+	int32 CurrentAttack = INDEX_NONE;
+	float CooldownRemaining = 0.0f;
+	FVector HomeLocation = FVector::ZeroVector;
+
 private:
 
 	UFUNCTION()
@@ -239,13 +260,9 @@ private:
 	void BeginAttack(int32 AttackIndex);
 	void TickAttack(float DeltaTime, AActor* Target);
 	void HitTest(const FEnemyAttack& Attack);
-	void SetState(EEnemyState NewState);
 	void UpdateTelegraph();
 	void UpdateBody();
 
-	EEnemyState State = EEnemyState::Idle;
-	FAttackClock AttackClock;
-	int32 CurrentAttack = INDEX_NONE;
 	bool bAttackLanded = false;
 	float SlowRemaining = 0.0f;
 	float SlowMultiplier = 1.0f;
@@ -264,8 +281,6 @@ private:
 	float AvoidUntil = -1.0f;
 	float PoiseDamage = 0.0f;
 	float TimeSinceHit = 0.0f;
-	float CooldownRemaining = 0.0f;
-	FVector HomeLocation = FVector::ZeroVector;
 
 	// How it moves and reacts (a stand-in for animation until it has a model).
 	float FlinchRemaining = 0.0f;

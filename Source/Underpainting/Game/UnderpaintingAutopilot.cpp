@@ -112,7 +112,7 @@ AUnderpaintingEnemy* UUnderpaintingAutopilot::NearestEnemy(float Range) const
 	for (TActorIterator<AUnderpaintingEnemy> It(GetWorld()); It; ++It)
 	{
 		const float Distance = FVector::Dist(It->GetActorLocation(), GetOwner()->GetActorLocation());
-		if (!It->GetVitals()->IsDead() && !It->IsHidden() && Distance < BestDistance)
+		if (!It->GetVitals()->IsDead() && !It->IsHidden() && It->IsThreat() && Distance < BestDistance)
 		{
 			Best = *It;
 			BestDistance = Distance;

@@ -2,11 +2,14 @@
 
 #include "Underpainting.h"
 #include "UnderpaintingDataSubsystem.h"
+#include "UnderpaintingExploration.h"
+#include "EngineUtils.h"
 #include "UnderpaintingHUD.h"
 #include "UnderpaintingPlayerCharacter.h"
 #include "UnderpaintingProgressSubsystem.h"
 #include "UnderpaintingStyle.h"
 #include "Components/PointLightComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -306,15 +309,129 @@ void AUnderpaintingLampstand::Tick(float DeltaTime)
 AUnderpaintingNPC::AUnderpaintingNPC()
 {
 	SetShape(CylinderPath, FVector(0.6f, 0.6f, 1.8f), FVector::ZeroVector);
+	PrimaryActorTick.bCanEverTick = true;
+}
+
+void AUnderpaintingNPC::BeginPlay()
+{
+	if (!FigureId.IsNone())
+	{
+		// One of the Folded: a real model stands where the grey shape was. The shape stays, unseen, to be bumped into.
+		USkeletalMeshComponent* Model = NewObject<USkeletalMeshComponent>(this, TEXT("Figure"));
+		Model->SetUsingAbsoluteLocation(true);         // the grey shape is stretched; the model must not be
+		Model->SetUsingAbsoluteRotation(true);
+		Model->SetUsingAbsoluteScale(true);
+		Model->SetupAttachment(GetRootComponent());
+		Model->RegisterComponent();
+		if (Figure.Setup(Model, FigureId))
+		{
+			PlaceFigure();
+			Body->SetVisibility(false);
+			Figure.Play(TEXT("Idle"));
+
+			// The face they are given if they are set: a plain warm disc, like a small moon, where the bare canvas was.
+			Face = NewObject<UStaticMeshComponent>(this, TEXT("Face"));
+			Face->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere.Sphere")));
+			Face->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			Face->SetCastShadow(false);
+			Face->SetUsingAbsoluteLocation(true);          // the model's bones carry a scale of their own: keep the face its own size
+			Face->SetUsingAbsoluteScale(true);
+			Face->SetupAttachment(Model);
+			Face->RegisterComponent();
+			Face->SetWorldScale3D(FVector(0.26f, 0.26f, 0.3f));
+			UnderpaintingStyle::SetColour(UnderpaintingStyle::MakeMaterial(Face), HexColour(TEXT("D9A441")), 0.0f);
+			Face->SetVisibility(false);
+		}
+		else
+		{
+			Model->DestroyComponent();
+		}
+	}
+	FacingYaw = GetActorRotation().Yaw;
+	Super::BeginPlay();
+}
+
+void AUnderpaintingNPC::PlaceFigure()
+{
+	// Feet on the ground under the grey shape (which is 1.8 m tall and centred on the actor), facing the way the actor faces.
+	Figure.Mesh->SetWorldLocation(GetActorLocation() - FVector(0.0f, 0.0f, 90.0f));
+	Figure.Mesh->SetWorldRotation(FRotator(0.0f, GetActorRotation().Yaw - 90.0f, 0.0f));       // made facing -y; faces +x here
+	Figure.Mesh->SetWorldScale3D(FVector::OneVector);
+}
+
+bool AUnderpaintingNPC::IsSet() const
+{
+	const UUnderpaintingProgress* Progress = GetProgress();
+	return !SetFlag.IsNone() && Progress && Progress->HasFlag(SetFlag);
+}
+
+void AUnderpaintingNPC::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	if (!Figure.IsValid())
+	{
+		return;
+	}
+	const float Now = GetWorld()->GetTimeSeconds();
+	if (IsSet())
+	{
+		Figure.Play(TEXT("Still"));            // finished: one thing, for good
+		if (Face)
+		{
+			Face->SetWorldLocation(Figure.Mesh->GetSocketLocation(TEXT("face")) + GetActorForwardVector() * 7.0f);
+		}
+		return;
+	}
+
+	// Turn to whoever is close, slowly, unless told to keep still. Otherwise go back to work.
+	if (bTurnsToPlayer)
+	{
+		const APawn* Player = UGameplayStatics::GetPlayerPawn(this, 0);
+		const bool bNear = Player && FVector::DistSquared2D(Player->GetActorLocation(), GetActorLocation()) < FMath::Square(450.0f);
+		const float Wanted = bNear ? (Player->GetActorLocation() - GetActorLocation()).Rotation().Yaw : FacingYaw;
+		FRotator Turned = GetActorRotation();
+		Turned.Yaw = FMath::FixedTurn(Turned.Yaw, Wanted, 70.0f * DeltaTime);
+		SetActorRotation(Turned);
+		PlaceFigure();
+	}
+
+	// Now and then, one of the things they do with their hands.
+	if (Now < GestureEndsAt)
+	{
+		return;
+	}
+	if (Gestures.Num() > 0 && Now >= NextGestureAt)
+	{
+		const FName Gesture = Gestures[FMath::RandRange(0, Gestures.Num() - 1)];
+		if (Figure.Play(Gesture, false, 1.0f, true))
+		{
+			GestureEndsAt = Now + Figure.Length(Gesture);
+		}
+		NextGestureAt = Now + FMath::FRandRange(9.0f, 16.0f);
+		return;
+	}
+	Figure.Play(TEXT("Idle"));
 }
 
 void AUnderpaintingNPC::Refresh()
 {
 	SetColour(HexColour(TEXT("2E5E6E")));
+	if (Face)
+	{
+		Face->SetVisibility(IsSet());
+	}
 }
 
 FString AUnderpaintingNPC::GetPrompt() const
 {
+	// While a decision is waiting on this very person (a choice set at their face), that is what you reach for, not talk.
+	for (TActorIterator<AUnderpaintingChoicePoint> It(GetWorld()); It; ++It)
+	{
+		if (!It->GetUsablePrompt().IsEmpty() && FVector::DistSquared(It->GetActorLocation(), GetActorLocation()) < FMath::Square(170.0f))
+		{
+			return FString();
+		}
+	}
 	return FString::Printf(TEXT("Talk to %s"), *DisplayName);
 }
 

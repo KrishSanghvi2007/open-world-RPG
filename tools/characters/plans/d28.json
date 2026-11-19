@@ -62,5 +62,36 @@
     "head": "#C4574B"
   },
   "regions": [],
-  "round": 30
+  "round": 30,
+  "shape": "inflate",
+  "pose": "lying",
+  "head_dir": "down",
+  "size_m": 2.4,
+  "tris": 7000,
+  "outline_m": 0.014,
+  "root_part": "abdomen",
+  "depth": {
+    "default": 1.35,
+    "abdomen": 1.7,
+    "head": 1.3
+  },
+  "back_same": true,
+  "ink_parts": [
+    "L1_femur",
+    "L1_tibia",
+    "L2_femur",
+    "L2_tibia",
+    "L3_femur",
+    "L3_tibia",
+    "L4_femur",
+    "L4_tibia",
+    "R1_femur",
+    "R1_tibia",
+    "R2_femur",
+    "R2_tibia",
+    "R3_femur",
+    "R3_tibia",
+    "R4_femur",
+    "R4_tibia"
+  ]
 }
