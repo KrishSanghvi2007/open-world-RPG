@@ -1,8 +1,44 @@
 # Status
 
+## PAUSED by owner on 2026-11-19
+
+The owner has put Underpainting on hold. Nothing was deleted. Everything is committed and pushed to `main`.
+No loop is running and the Mac is no longer kept awake. Unreal and Blender were closed.
+
+**Where things stand.** Act 1 (the Sleeping Matriarch) is fully playable end to end, from the first quest to the
+Turning, in a grey-box layout with the style kit's painted materials. The "make Act 1 look finished" pass had begun:
+
+- Done: step 1, the art bible (`docs/ART_BIBLE.md`); step 2, the environment kit (116 scripted pieces, `tools/kit/`);
+  step 3a, **Varnish dressed**, both A and B (devlog 016). The dressed village plays through by autopilot to the
+  Furrow, 12 of 12 automated tests pass, and the data validates.
+- Found and fixed on the way: the engine's default rendering settings held even the bare grey box to 47 frames a
+  second at 1080p. Now 120 (`docs/devlog/016-varnish-dressed.md`, Frame rate).
+- Not done: 3b the Scumblewood, 3c the Grisaille Vault, 4 interiors, 5 characters, 6 effects and interface, 7 audio,
+  8 final polish, and the finish (gallery, showcase video, MORNING.md). The checklist is below, unchanged.
+- One measurement is owed: the dressed village in the standalone game under the new settings (only the bare
+  grey box was measured there before the pause).
+- The owner has not yet playtested anything. `docs/devlog/MORNING.md` covers the game-feel pass and the characters;
+  it does not yet mention the village's new look.
+
+**How to resume.**
+1. Open Claude Code in this folder and say what you want, for example "Resume Underpainting where you paused."
+   Typing `/ready` first opens Unreal and Blender, connects them, and keeps the Mac awake while you are away.
+2. Claude will: pull `main`; reopen Unreal; run `run_script("dev/unthrottle.py", [])` (the editor otherwise idles
+   when it is not the front window); measure the dressed village with `tools/dev/bench.sh` (Unreal must be closed
+   for that); then pick up the first unticked line below, **3b. The Scumblewood**, with
+   `tools/kit/dress.py` (add a `dress_forest`, the way `dress_village` is written) and the same before/after
+   viewpoints, devlog and frame-rate check.
+3. To work autonomously again, ask for the loop: "Continue the finishing pass with /loop, usual rules."
+4. To play the game as it is: open Unreal, open `Maps/Matriarch/L_Matriarch_Village_A`, press Play.
+
+If a decision should change first, `docs/QUESTIONS.md` 69 to 83 lists every choice made in this pass, each with
+the alternatives.
+
+---
+
 Claude keeps this file current. It says what's done, what's next, and what's waiting on the owner.
 
-Last updated: 2026-11-18
+Last updated: 2026-11-19
 
 ## Waiting on the owner
 - [ ] **Your first playtest of Act 1** (whenever you like; the art pass is running meanwhile and changes no layouts). Open `docs/devlog/MORNING.md`: how to start, what changed, the twelve things to judge, about 35 to 60 minutes of play.
@@ -52,7 +88,7 @@ the M2 Pro under the GDD lighting rule, measured after every zone; style B Glaze
 - [x] 1. **Art bible:** `docs/ART_BIBLE.md`.
 - [x] 2. **Environment kit:** 113 pieces made in Blender by script and painted in Unreal by zone palette (`tools/kit/README.md`). To look: open `Maps/Dev/L_Kit_Varnish`, `L_Kit_Scumblewood` or `L_Kit_Vault`. Each zone's ground and cliffs are shaped when that zone is dressed (step 3).
 - [ ] 3. **Zones,** A then B, one at a time, with before/after shots in a devlog each, and a frame-rate check each:
-  - [ ] 3a. Varnish (square, terraces, the Hem, house exteriors)
+  - [x] 3a. Varnish (square, terraces, the Hem, house exteriors): devlog 016. Owed: a standalone frame-rate measurement of the dressed level.
   - [ ] 3b. The Scumblewood
   - [ ] 3c. The Grisaille Vault
 - [ ] 4. **Interiors:** Hesper's lampworks, Bartram's grinding house, Ilka's hide, Corin's hollow; added: the cistern house, the black door.

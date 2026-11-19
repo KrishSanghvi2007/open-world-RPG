@@ -11,6 +11,9 @@ bought or downloaded.
 | `blender_vault.py` | Blender | The Vault: ribs, paper, drawn lines, the heart, the studies (22 pieces). |
 | `unreal_kit.py` | Unreal | Brings a zone's pieces in as `/Game/Kit/<Zone>/SM_*` and paints them. |
 | `showroom.py` | Unreal | Lays a zone's kit out under its own light: `/Game/Maps/Dev/L_Kit_<Zone>`. |
+| `blender_vista.py` | Blender | What lies round the village: her shoulder as ground, the far colossi, the Lamp. |
+| `dress.py` | Unreal | **Dresses a zone:** stands the kit over the grey-box layout. Run by the level builder. |
+| `shots.json` | | The fixed viewpoints used for before-and-after pictures. |
 
 ## To change a piece
 
@@ -34,8 +37,23 @@ palette from `docs/ART_BIBLE.md`. To recolour a zone, change `PALETTES` there an
 ## Things to know
 
 - A piece's front faces **+Y in Unreal** (it is -Y in Blender; the export mirrors it). To face the Lamp in the west, turn it 180.
-- Pieces have **no collision**. The grey-box shapes underneath are what the player touches, so dressing a zone
-  cannot change where anyone can walk. The three houses with a way in are the exception: their walls are solid.
+- Most pieces have **no collision**. The grey-box shapes underneath are what the player touches, so dressing a
+  zone cannot change where anyone can walk. Two exceptions, listed at the top of `unreal_kit.py`: furniture-sized
+  props (stalls, barrels, benches, trees) are solid, because walking through them looks broken, and are only ever
+  placed off the routes; and the houses with a way in, whose walls are solid.
 - Foliage is solid shapes (blades, lumps), not see-through cards: the Glaze material is opaque, and it keeps the
   kit to a handful of materials.
 - Budget (art bible, section 11): 300 to 1,500 triangles a piece. The largest is 1,068.
+
+## Dressing a zone
+
+`tools/greybox/build_matriarch_greybox.py` builds each level's layout and gameplay, then calls `dress.py`, which:
+
+1. hides how the grey-box shapes look (they stay solid),
+2. stands kit pieces over them (houses over house blocks, stone over terrace edges, and so on),
+3. gives the things the player uses their finished look (a "skin" on the Lampstand, nodes, stations, notes, caches, doors),
+4. adds the ground's detail, the props, the far view and the ambient life.
+
+It never moves anything that is played. To see a level without its dressing, build it with `"grey"`:
+`run_script("greybox/build_matriarch_greybox.py", ["village", "A", "grey"])`. To build one zone only, name it
+(`village`, `forest`, `vault`) and the version (`A`, `B`).

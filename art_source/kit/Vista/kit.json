@@ -1,0 +1,74 @@
+[
+ {
+  "name": "SM_Terrain_Varnish",
+  "triangles": 12612,
+  "size_m": [
+   2200.0,
+   2200.0,
+   950.27
+  ],
+  "slots": [
+   "Hide"
+  ]
+ },
+ {
+  "name": "SM_Vista_Sleeper",
+  "triangles": 60,
+  "size_m": [
+   5200.0,
+   0.0,
+   713.0
+  ],
+  "slots": [
+   "Silhouette"
+  ]
+ },
+ {
+  "name": "SM_Vista_Kneeler",
+  "triangles": 56,
+  "size_m": [
+   2600.0,
+   0.0,
+   1012.0
+  ],
+  "slots": [
+   "Silhouette"
+  ]
+ },
+ {
+  "name": "SM_Vista_Wader",
+  "triangles": 60,
+  "size_m": [
+   1500.0,
+   0.0,
+   1552.5
+  ],
+  "slots": [
+   "Silhouette"
+  ]
+ },
+ {
+  "name": "SM_Vista_Lamp",
+  "triangles": 76,
+  "size_m": [
+   2.0,
+   0.0,
+   2.0
+  ],
+  "slots": [
+   "Lamp"
+  ]
+ },
+ {
+  "name": "SM_Vista_Plain",
+  "triangles": 46,
+  "size_m": [
+   2.0,
+   2.0,
+   0.0
+  ],
+  "slots": [
+   "Plain"
+  ]
+ }
+]

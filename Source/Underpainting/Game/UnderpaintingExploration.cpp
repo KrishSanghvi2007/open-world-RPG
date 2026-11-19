@@ -250,7 +250,7 @@ void AUnderpaintingLoreNote::Refresh()
 	const UUnderpaintingProgress* Progress = GetProgress();
 	const FLoreRow* Row = Progress ? Progress->GetLore(LoreId) : nullptr;
 	const bool bRevealed = IsRevealed();
-	Body->SetVisibility(bRevealed);
+	SetShown(bRevealed);
 
 	// Read notes fade; unread ones are warm paper (Odile), grey ledger, or the Hand's blue.
 	FLinearColor Colour = Hex(TEXT("F2E3C0"));
@@ -291,6 +291,7 @@ void AUnderpaintingCache::Refresh()
 	const bool bOpened = Progress && Progress->IsCacheOpened(GetCacheKey());
 	SetColour(bOpened ? Hex(TEXT("3A3A3A")) : Hex(TEXT("C4574B")));
 	Body->SetRelativeScale3D(bOpened ? FVector(0.8f, 0.8f, 0.2f) : FVector(0.8f, 0.8f, 0.6f));
+	SetSkinSize(bOpened ? 0.6f : 1.0f);        // an opened bundle has been gone through
 }
 
 // --- Inspectable ---

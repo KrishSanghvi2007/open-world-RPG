@@ -30,6 +30,15 @@
 #include "InputCoreTypes.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
+#include "UnrealClient.h"
+#include "HAL/PlatformMisc.h"
+#include "Misc/App.h"
+#include "Misc/CommandLine.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Parse.h"
+#include "Misc/Paths.h"
 
 AUnderpaintingPlayerCharacter::AUnderpaintingPlayerCharacter()
 {
@@ -67,6 +76,17 @@ void AUnderpaintingPlayerCharacter::BeginPlay()
 		Boom->CameraRotationLagSpeed = 22.0f;
 	}
 	LastStepLocation = GetActorLocation();
+
+	// Development: play a script and time the frames, when asked to on the command line.
+	FString BenchScript;
+	if (FParse::Value(FCommandLine::Get(), TEXT("-Autopilot="), BenchScript, false) && !BenchScript.IsEmpty())
+	{
+		DevAutopilot(BenchScript);
+	}
+	if (FParse::Value(FCommandLine::Get(), TEXT("-Bench="), BenchSeconds) && BenchSeconds > 0.0f)
+	{
+		BenchWarmUp = 8.0f;        // shaders and textures are still arriving in the first seconds
+	}
 
 	// How much light this zone has decides what Strokes cost here.
 	if (const UUnderpaintingDataSubsystem* ZoneData = GetGameInstance() ? GetGameInstance()->GetSubsystem<UUnderpaintingDataSubsystem>() : nullptr)
@@ -1414,9 +1434,52 @@ void AUnderpaintingPlayerCharacter::ReturnToSafeGround(bool bByChoice)
 	UE_LOG(LogUnderpainting, Log, TEXT("Returned to safe ground (%s) at %s"), bByChoice ? TEXT("by choice") : TEXT("after a fall"), *Where.ToCompactString());
 }
 
+void AUnderpaintingPlayerCharacter::TickBench()
+{
+	const float Real = static_cast<float>(FApp::GetDeltaTime());
+	if (BenchWarmUp > 0.0f)
+	{
+		BenchWarmUp -= Real;
+		return;
+	}
+	BenchFrames.Add(Real);
+	BenchSeconds -= Real;
+	if (BenchSeconds > 0.0f)
+	{
+		return;
+	}
+
+	BenchFrames.Sort();
+	const int32 Count = BenchFrames.Num();
+	float Total = 0.0f;
+	float SlowTotal = 0.0f;
+	const int32 SlowFrom = FMath::Min(Count - 1, FMath::FloorToInt32(Count * 0.9f));
+	for (int32 Index = 0; Index < Count; ++Index)
+	{
+		Total += BenchFrames[Index];
+		if (Index >= SlowFrom)
+		{
+			SlowTotal += BenchFrames[Index];
+		}
+	}
+	const FIntPoint Size = GEngine && GEngine->GameViewport ? GEngine->GameViewport->Viewport->GetSizeXY() : FIntPoint::ZeroValue;
+	const FString Level = UGameplayStatics::GetCurrentLevelName(this, true);
+	const FString Result = FString::Printf(
+		TEXT("{\"level\": \"%s\", \"width\": %d, \"height\": %d, \"seconds\": %.1f, \"frames\": %d, \"average\": %.1f, \"median\": %.1f, \"slowest_tenth\": %.1f, \"worst_ms\": %.1f}\n"),
+		*Level, Size.X, Size.Y, Total, Count, Count / FMath::Max(Total, 0.001f), 1.0f / FMath::Max(BenchFrames[Count / 2], 0.0001f),
+		(Count - SlowFrom) / FMath::Max(SlowTotal, 0.001f), BenchFrames.Last() * 1000.0f);
+	FFileHelper::SaveStringToFile(Result, *FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Bench"), Level + TEXT(".json")));
+	FPlatformMisc::RequestExit(false);
+}
+
 void AUnderpaintingPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (BenchSeconds > 0.0f)
+	{
+		TickBench();
+	}
 
 	if (TurningTime >= 0.0f)
 	{

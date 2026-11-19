@@ -471,6 +471,7 @@ def fill_light(*_args, **_kwargs):
 # --------------------------------------------------------------------------------------
 
 def begin_level(name):
+    Zone.level = name
     path = "%s/%s" % (MAP_DIR, name)
     if eal.does_asset_exist(path):
         levels.load_level(path)
@@ -512,6 +513,19 @@ def end_level(zone_id):
     for (kind, data_id) in _counts:
         if kind == "Enemy" and data_id not in row["Enemies"] + row["EnemiesAfterShift"]:
             problems.append("%s: enemy %s is not listed for this zone" % (zone_id, data_id))
+
+    # The art: kit pieces stood over the grey box (tools/kit/dress.py). It moves nothing that is played.
+    # Pass "grey" to build without it.
+    if "grey" not in sys.argv:
+        kit_dir = os.path.join(unreal.Paths.project_dir(), "tools", "kit")
+        if kit_dir not in sys.path:
+            sys.path.insert(0, kit_dir)
+        import importlib
+        import unreal_kit
+        import dress
+        importlib.reload(unreal_kit)
+        importlib.reload(dress)
+        dress.dress_level(Zone.level)
 
     world_settings = editor.get_editor_world().get_world_settings()
     if row["GravityScale"] != 1.0:
@@ -1015,11 +1029,14 @@ def build_vault(shifted=False):
 def build_all():
     problems = []
     wanted = [a for a in sys.argv[1:] if a in ("A", "B")] or ["B", "A"]      # "A" last, so the village is left open
+    only = [a for a in sys.argv[1:] if a in ("forest", "vault", "village")]   # none named: all three
     with unreal.ScopedSlowTask(3 * len(wanted), "Building the Sleeping Matriarch grey-box") as task:
         task.make_dialog(True)
         for version in wanted:
-            for build in (build_scumblewood, build_vault, build_village):
+            for zone, build in (("forest", build_scumblewood), ("vault", build_vault), ("village", build_village)):
                 task.enter_progress_frame(1)
+                if only and zone not in only:
+                    continue
                 problems += build(shifted=(version == "B"))
     eal.save_directory("/Game/Greybox")
     eal.save_directory("/Game/StyleKit")

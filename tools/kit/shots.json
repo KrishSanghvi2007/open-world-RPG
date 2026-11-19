@@ -1,0 +1,9 @@
+{
+ "_comment": "Fixed viewpoints for before/after pictures of each zone. Positions in centimetres, as Unreal has them.",
+ "Village": {
+  "square":   {"location": {"x": -1500, "y": -700, "z": 600}, "rotation": {"pitch": -3, "yaw": 48, "roll": 0}},
+  "overview": {"location": {"x": -5200, "y": -5600, "z": 2400}, "rotation": {"pitch": -17, "yaw": 47, "roll": 0}},
+  "hem":      {"location": {"x": 2000, "y": -1700, "z": 190}, "rotation": {"pitch": 2, "yaw": 196, "roll": 0}},
+  "terraces": {"location": {"x": 3000, "y": 2150, "z": 990}, "rotation": {"pitch": -4, "yaw": 172, "roll": 0}}
+ }
+}

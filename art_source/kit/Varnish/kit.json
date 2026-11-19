@@ -250,24 +250,63 @@
   "name": "SM_Paving_Patch",
   "triangles": 168,
   "size_m": [
-   5.58,
-   6.57,
-   0.08
+   5.57,
+   6.56,
+   0.05
   ],
   "slots": [
-   "Stone"
+   "Paving"
   ]
  },
  {
   "name": "SM_Paving_Ring",
   "triangles": 264,
   "size_m": [
-   6.97,
-   7.05,
-   0.08
+   6.98,
+   7.06,
+   0.05
   ],
   "slots": [
-   "Stone"
+   "Paving"
+  ]
+ },
+ {
+  "name": "SM_PathWorn_A",
+  "triangles": 260,
+  "size_m": [
+   6.92,
+   2.24,
+   0.1
+  ],
+  "slots": [
+   "Path",
+   "Paving"
+  ]
+ },
+ {
+  "name": "SM_PathWorn_B",
+  "triangles": 260,
+  "size_m": [
+   5.98,
+   1.96,
+   0.09
+  ],
+  "slots": [
+   "Path",
+   "Paving"
+  ]
+ },
+ {
+  "name": "SM_Woodpile",
+  "triangles": 904,
+  "size_m": [
+   2.26,
+   0.92,
+   1.32
+  ],
+  "slots": [
+   "Wood",
+   "Canvas"
   ]
  },
  {
@@ -620,6 +659,18 @@
    "Stone",
    "Wood",
    "Dark"
+  ]
+ },
+ {
+  "name": "SM_RampSide",
+  "triangles": 384,
+  "size_m": [
+   12.16,
+   0.52,
+   4.04
+  ],
+  "slots": [
+   "Stone"
   ]
  },
  {

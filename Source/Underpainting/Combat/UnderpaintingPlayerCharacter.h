@@ -381,6 +381,14 @@ protected:
 
 private:
 
+	// Development: "-Autopilot=..." and "-Bench=<seconds>" on the command line play a script and time every frame,
+	// so the frame rate can be measured in the game on its own, away from the editor (tools/dev/bench.sh).
+	void TickBench();
+	float BenchSeconds = 0.0f;
+	float BenchWarmUp = 0.0f;
+	TArray<float> BenchFrames;
+
+
 	bool CanStartAction() const;
 	void StartAttack(EPlayerAction NewAction);
 	void TickAttack(float DeltaTime);

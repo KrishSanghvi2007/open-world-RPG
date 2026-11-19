@@ -34,12 +34,23 @@ COMMON = {
 }
 PALETTES = {
     "Varnish": dict(COMMON, Plaster=("#F2E3C0", "Plaster"), Roof=("#C4574B", "Roof"), Stone=("#8F86A6", "Stone"), Ground=("#E3C39A", "Ground"),
-                    Foliage=("#6B8F71", "Dab"), FoliageLight=("#9DB28A", "Dab"), Moss=("#9DB28A", "Dab")),
+                    Foliage=("#6B8F71", "Dab"), FoliageLight=("#9DB28A", "Dab"), Moss=("#9DB28A", "Dab"),
+                    Paving=("#CDBBB2", "Stone"), Path=("#F3DAB4", "Ground")),
     "Scumblewood": dict(COMMON, Plaster=("#D8CBB0", "Plaster"), Roof=("#6B4F3A", "Roof"), Stone=("#7A6A58", "Stone"), Ground=("#7E8A66", "Ground"),
                         Foliage=("#6B8F71", "Dab"), FoliageLight=("#9DB28A", "Dab"), Moss=("#9DB28A", "Dab")),
     "Vault": dict(COMMON, Plaster=("#E6E1D6", "Plaster"), Stone=("#8C8A85", "Stone"), Ground=("#E6E1D6", "Ground")),
 }
-SHADOW = {"Varnish": "#4A3558", "Scumblewood": "#2E5E6E", "Vault": "#4B4A48"}
+PALETTES["Vista"] = dict(COMMON, Hide=("#B4905F", "Ground"))
+SHADOW = {"Varnish": "#4A3558", "Scumblewood": "#2E5E6E", "Vault": "#4B4A48", "Vista": "#4A3558"}
+
+# How each piece meets the player. Most scenery is not solid: the grey-box shapes underneath are what is touched, so
+# dressing a zone cannot change where anyone can walk. Furniture-sized things are the exception: walking through a
+# barrel looks broken, so these are solid, and the dressing pass keeps them off the routes (checked by a playthrough).
+SOLID_BOX = ("SM_Stall_Madder", "SM_Stall_Ochre", "SM_Crates", "SM_Barrel", "SM_Sacks", "SM_Bench", "SM_Handcart", "SM_Trough", "SM_DryingRack",
+             "SM_Cistern", "SM_FlaxPress", "SM_Rocks_B", "SM_Boulder_M", "SM_Boulder_L", "SM_Boulder_Moss", "SM_Stump", "SM_FallenTrunk",
+             "SM_TallyStone", "SM_LeanTo", "SM_RibPost", "SM_Woodpile")
+SOLID_EXACT = ("SM_Tree_A", "SM_Tree_B", "SM_DyeLine", "SM_Fence", "SM_ForestTree_A", "SM_ForestTree_B", "SM_ForestTree_C", "SM_RootArch",
+               "SM_RootArch_Wide", "SM_RibGate", "SM_RibArch", "SM_RibArch_Wide")
 WALK_IN = ("SM_House_Lampworks", "SM_House_Grinding", "SM_House_Cistern")
 
 
@@ -83,7 +94,7 @@ def glow(name, hex_colour, strength):
 # and wrong for ink, iron and shadow: these keep their lights close to their own colour.
 INKY = ("Dark", "Black", "Line", "Graphite", "Charcoal", "Metal", "PigmentBlack", "Scab", "BlueLine")
 # Slots on very large forms get broader brushwork, or the strokes read as a pattern of dots: (mask, cm per repeat, light).
-BROAD = {"Cliff": ("T_Stroke_Stone", 1500.0, 0.22)}
+BROAD = {"Cliff": ("T_Stroke_Stone", 1500.0, 0.22), "Hide": ("T_Stroke_Ground", 3200.0, 0.2)}
 
 
 def _lift(hex_colour, amount, toward="#F2E3C0"):
@@ -112,6 +123,8 @@ def glaze_tuned(colour, surface, shadow, light_lift, tiling=None, mask=None):
 
 def paint(zone, slot, palette=None):
     palette = palette or PALETTES[zone]
+    if slot == "Glow" and "Glow" in palette and palette["Glow"] is None:
+        return glaze_tuned("#3A3344", "Plaster", SHADOW[zone], 0.06)      # a window with nobody behind it
     if slot in BROAD and slot in palette:
         mask, tiling, lift = BROAD[slot]
         return glaze_tuned(palette[slot][0], palette[slot][1], SHADOW[zone], lift, tiling, mask)
@@ -121,6 +134,14 @@ def paint(zone, slot, palette=None):
         return stylekit.sketch(palette[slot][0], "Plaster")          # drawn lines do not take light: they are on the paper
     if slot == "Glow":
         return glow_material()
+    if slot == "Silhouette":
+        if palette.get("SilhouetteNear"):
+            return glow("MI_KitGlow_SilhouetteNear", "#8E6F7C", 1.25)   # the Wader, after the Turning: closer, and darker for it
+        return glow("MI_KitGlow_Silhouette", "#C7A2A6", 1.5)        # a far colossus: paler than anything near, a little cooler than the sky
+    if slot == "Plain":
+        return glow("MI_KitGlow_Plain", "#D9B99C", 1.7)             # the land far below: all haze
+    if slot == "Lamp":
+        return glow("MI_KitGlow_Lamp", "#FFF0CC", 7.0)
     if slot == "Heart":
         return glow("MI_KitGlow_Heart", "#E8923A", 1.6)
     if slot == "Erasure":
@@ -160,8 +181,11 @@ def main(args):
         for index, slot in enumerate(mesh.get_editor_property("static_materials")):
             mesh.set_material(index, paint(zone, str(slot.get_editor_property("material_slot_name"))))
         body = mesh.get_editor_property("body_setup")
-        if body and piece["name"] in WALK_IN:
+        if body and piece["name"] in WALK_IN + SOLID_EXACT:
             body.set_editor_property("collision_trace_flag", unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
+        elif piece["name"] in SOLID_BOX:
+            unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem).remove_collisions(mesh)
+            unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem).add_simple_collisions(mesh, unreal.ScriptingCollisionShapeType.BOX)
         eal.save_loaded_asset(mesh)
         painted += 1
     print("KIT IMPORTED", zone, painted, "of", len(listing), "pieces into", folder)

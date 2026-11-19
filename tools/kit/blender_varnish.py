@@ -144,7 +144,36 @@ def paving(name, seed, radius=3.2, ring=False):
         a = r.uniform(0, math.tau)
         d = r.uniform(1.3, radius) if ring else radius * math.sqrt(r.random())
         w, l = r.uniform(0.6, 1.2), r.uniform(0.6, 1.3)
-        b.block((math.cos(a) * d, math.sin(a) * d, 0.02), (w, l, 0.06), "Stone", rot=(0, 0, r.uniform(0, 3.1)), wobble=0.012, taper=0.06)
+        b.block((math.cos(a) * d, math.sin(a) * d, 0.008), (w, l, 0.03), "Paving", rot=(0, 0, r.uniform(0, 3.1)), wobble=0.008, taper=0.06)
+    return b.build()
+
+
+def worn_path(name, seed, length=6.0, width=1.7):
+    """Ground trodden pale by two hundred years of feet: a ragged strip to lay along the ways people walk. Along X."""
+    b = Builder(name, seed)
+    r = b.rng
+    for i in range(10):
+        x = -length / 2.0 + (i + 0.5) * length / 10.0 + r.uniform(-0.25, 0.25)
+        b.block((x, r.uniform(-0.18, 0.18), 0.006 + (i % 3) * 0.002), (r.uniform(0.9, 1.5), width * r.uniform(0.7, 1.05), 0.012), "Path",
+                rot=(0, 0, r.uniform(-0.35, 0.35)), wobble=0.0, taper=0.0)
+    for i in range(7):                                                                                           # pebbles kicked to the edges
+        side = r.choice((-1, 1))
+        b.blob((r.uniform(-length / 2, length / 2), side * width * r.uniform(0.5, 0.62), 0.02), r.uniform(0.05, 0.1), "Paving", squash=(1.2, 1.0, 0.5), detail=1, wobble=0.2)
+    return b.build()
+
+
+def woodpile(name="SM_Woodpile", seed=57):
+    """Split logs stacked against a wall, between two stakes. The stack runs along X; the wall is behind it (+Y)."""
+    b = Builder(name, seed)
+    r = b.rng
+    for row in range(4):
+        n = 6 - (row % 2)
+        for i in range(n):
+            x = -0.85 + (i + (row % 2) * 0.5) * 0.31
+            b.cylinder((x, -0.45, 0.15 + row * 0.26), r.uniform(0.11, 0.15), 0.9, "Wood", segments=6, wobble=0.012, rot=(-math.pi / 2, 0, 0))
+            b.cylinder((x, -0.455, 0.15 + row * 0.26), 0.09, 0.012, "Canvas", segments=6, wobble=0.0, rot=(-math.pi / 2, 0, 0))    # pale cut ends
+    for x in (-1.1, 1.05):
+        b.block((x, 0.0, 0.65), (0.07, 0.07, 1.3), "Wood", wobble=0.01, lean=(0.03, 0))
     return b.build()
 
 
@@ -386,6 +415,23 @@ def ramp_skin(name="SM_RampSkin", seed=53, length=12.65, width=4.0):
     return b.build()
 
 
+def ramp_side(name="SM_RampSide", seed=55, run=12.0, rise=4.0):
+    """The stone that holds a ramp up: courses stepping back under the slope. Lies along X, low end at x = 0,
+    rising toward +X; its outer face is -Y. Set one each side of a ramp."""
+    b = Builder(name, seed)
+    r = b.rng
+    courses = 6
+    h = rise / courses
+    for c in range(courses):
+        x0 = (c * h) / rise * run - 0.15                      # where the slope passes this course's foot
+        x = x0
+        while x < run - 0.05:
+            w = min(r.uniform(1.0, 1.9), run - x)
+            b.block((x + w / 2.0, 0.0, c * h + h / 2.0), (w - 0.03, 0.45, h - 0.02), "Stone", wobble=0.035, taper=0.02)
+            x += w
+    return b.build()
+
+
 def yard_wall(name, seed, length=4.0, door=False, window=False):
     """A freestanding plaster wall on a stone footing: yards, and rooms inside houses."""
     b = Builder(name, seed)
@@ -475,6 +521,7 @@ pieces = [
     retaining_wall("SM_RetainingWall_A", 71), retaining_wall("SM_RetainingWall_B", 73),
     parapet("SM_Parapet_A", 75), parapet("SM_Parapet_B", 77),
     paving("SM_Paving_Patch", 79), paving("SM_Paving_Ring", 81, radius=3.4, ring=True),
+    worn_path("SM_PathWorn_A", 111), worn_path("SM_PathWorn_B", 113, length=5.0, width=1.5), woodpile(),
     lampstand(), grinding_slab(), armature_bench(), flax_press(), cistern(),
     stall("SM_Stall_Madder", 83, "Cloth"), stall("SM_Stall_Ochre", 85, "ClothOchre"),
     drying_rack(), dye_line(),
@@ -483,7 +530,7 @@ pieces = [
     small("SM_Handcart", 95, "handcart"), small("SM_Fence", 96, "fence"), small("SM_PotPlant", 97, "pot_plant"),
     tree("SM_Tree_A", 31), tree("SM_Tree_B", 35, height=3.8, spread=0.8),
     tuft("SM_Tuft_A", 101), tuft("SM_Tuft_B", 103, "FoliageLight"),
-    ramp_skin(), yard_wall("SM_Wall_4m", 105), yard_wall("SM_Wall_2m", 106, length=2.0), yard_wall("SM_Wall_Door", 107, door=True),
+    ramp_skin(), ramp_side(), yard_wall("SM_Wall_4m", 105), yard_wall("SM_Wall_2m", 106, length=2.0), yard_wall("SM_Wall_Door", 107, door=True),
     yard_wall("SM_Wall_Window", 108, window=True), rocks("SM_Rocks_A", 109, 0.8), rocks("SM_Rocks_B", 110, 1.3, moss=True),
 ] + gameplay_skins()
 KIT = kit_finish(ZONE, pieces)

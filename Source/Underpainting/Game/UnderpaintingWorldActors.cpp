@@ -43,6 +43,76 @@ AUnderpaintingInteractable::AUnderpaintingInteractable()
 	PrimaryActorTick.bCanEverTick = false;
 	Body = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Body"));
 	SetRootComponent(Body);
+
+	// The skin ignores the placeholder's stretch, so it is placed in world terms (see PlaceSkin).
+	Skin = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Skin"));
+	Skin->SetupAttachment(Body);
+	Skin->SetUsingAbsoluteLocation(true);
+	Skin->SetUsingAbsoluteRotation(true);
+	Skin->SetUsingAbsoluteScale(true);
+	Skin->SetCollisionProfileName(TEXT("NoCollision"));
+	Skin->SetMobility(EComponentMobility::Movable);
+}
+
+void AUnderpaintingInteractable::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+	PlaceSkin();
+}
+
+void AUnderpaintingInteractable::PlaceSkin()
+{
+	Skin->SetStaticMesh(SkinMesh);
+	if (!SkinMesh)
+	{
+		return;
+	}
+	const FRotator Turn(0.0f, GetActorRotation().Yaw + SkinYaw, 0.0f);
+	Skin->SetWorldLocationAndRotation(GetActorLocation() + FRotator(0.0f, GetActorRotation().Yaw, 0.0f).RotateVector(SkinOffset), Turn);
+	Skin->SetWorldScale3D(FVector::OneVector);
+	Body->SetVisibility(false, false);       // still there to be touched; no longer seen
+	Body->SetCastShadow(false);
+}
+
+void AUnderpaintingInteractable::SetShown(bool bShown)
+{
+	if (HasSkin())
+	{
+		Skin->SetVisibility(bShown, false);
+	}
+	else
+	{
+		Body->SetVisibility(bShown, false);
+	}
+}
+
+void AUnderpaintingInteractable::SetSkinSize(float Fraction)
+{
+	if (HasSkin())
+	{
+		Skin->SetWorldScale3D(FVector(Fraction));
+	}
+}
+
+void AUnderpaintingInteractable::SetSkinGlow(float Strength)
+{
+	if (!HasSkin())
+	{
+		return;
+	}
+	if (!SkinGlowMaterial)
+	{
+		const int32 Index = Skin->GetMaterialIndex(TEXT("Glow"));
+		if (Index == INDEX_NONE)
+		{
+			return;
+		}
+		SkinGlowMaterial = Skin->CreateDynamicMaterialInstance(Index);
+	}
+	if (SkinGlowMaterial)
+	{
+		SkinGlowMaterial->SetScalarParameterValue(TEXT("Strength"), Strength);
+	}
 }
 
 void AUnderpaintingInteractable::SetShape(const TCHAR* MeshPath, const FVector& Scale, const FVector& Offset)
@@ -73,6 +143,7 @@ UUnderpaintingProgress* AUnderpaintingInteractable::GetProgress() const
 void AUnderpaintingInteractable::BeginPlay()
 {
 	Super::BeginPlay();
+	PlaceSkin();
 	if (UUnderpaintingProgress* Progress = GetProgress())
 	{
 		ChangedHandle = Progress->OnChanged.AddUObject(this, &AUnderpaintingInteractable::HandleProgressChanged);
@@ -156,6 +227,7 @@ void AUnderpaintingHarvestNode::Refresh()
 	// An empty node is a faded stub of itself.
 	SetColour(bEmpty ? Colour * 0.25f + FLinearColor(0.2f, 0.2f, 0.2f) : Colour);
 	Body->SetRelativeScale3D(FVector(bEmpty ? 0.35f : 0.8f));
+	SetSkinSize(bEmpty ? 0.45f : 1.0f);
 }
 
 // --- Pickup ---
@@ -286,6 +358,7 @@ void AUnderpaintingLampstand::Refresh()
 	Flame->SetAttenuationRadius(bLit ? 2600.0f : 1200.0f);
 	Flame->SetIntensity(bLit ? 22.0f : 1.5f);
 	SetColour(bLit ? HexColour(TEXT("E8923A")) : HexColour(TEXT("4B4A48")));
+	SetSkinGlow(bLit ? 3.2f : 0.1f);          // the lantern glass: bright when lit, a dull ember when not
 }
 
 void AUnderpaintingLampstand::Tick(float DeltaTime)

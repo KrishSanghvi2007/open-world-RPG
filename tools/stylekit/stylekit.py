@@ -322,6 +322,7 @@ def apply_look(preset):
     setting("auto_exposure_min_brightness", look["ev"])      # fixed exposure: a painting does not re-expose itself
     setting("auto_exposure_max_brightness", look["ev"])
     setting("auto_exposure_bias", 0.0)
+    setting("motion_blur_amount", 0.0)                        # paint does not smear when you turn your head
     setting("bloom_intensity", look["bloom"])
     setting("vignette_intensity", look["vignette"])
     setting("color_saturation", unreal.Vector4(look["saturation"], look["saturation"], look["saturation"], 1.0))

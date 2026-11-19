@@ -47,7 +47,39 @@ public:
 
 	virtual void Interact(AUnderpaintingPlayerCharacter* Player) {}
 
+	virtual void OnConstruction(const FTransform& Transform) override;
+
+	/** The finished look: a kit mesh shown in place of the placeholder shape. The placeholder stays as the thing
+	 *  that is touched and used, so giving something a skin never changes how it plays. Set by tools/kit. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Look")
+	TObjectPtr<UStaticMesh> SkinMesh;
+
+	/** Where the skin stands, measured from this actor in centimetres (usually straight down, to the ground). */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Look")
+	FVector SkinOffset = FVector::ZeroVector;
+
+	/** Turn of the skin about the upright, in degrees, on top of the actor's own. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Look")
+	float SkinYaw = 0.0f;
+
 protected:
+
+	bool HasSkin() const { return SkinMesh != nullptr; }
+
+	/** Shows or hides whichever is the visible body: the skin if there is one, the placeholder if not. */
+	void SetShown(bool bShown);
+
+	/** Shrinks the skin (an emptied node, an opened cache) or restores it at 1. */
+	void SetSkinSize(float Fraction);
+
+	/** How strongly the part of the skin named "Glow" shines: a lit lantern or a dark one. */
+	void SetSkinGlow(float Strength);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UStaticMeshComponent> Skin;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UMaterialInstanceDynamic> SkinGlowMaterial;
 
 	/** Called at start and whenever the player's progress changes (harvest, rest, load). */
 	virtual void Refresh() {}
@@ -64,6 +96,7 @@ protected:
 
 private:
 
+	void PlaceSkin();
 	void HandleProgressChanged();
 
 	FDelegateHandle ChangedHandle;
