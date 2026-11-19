@@ -1,0 +1,765 @@
+[
+ {
+  "name": "SM_House_V1",
+  "triangles": 360,
+  "size_m": [
+   9.01,
+   7.07,
+   6.46
+  ],
+  "slots": [
+   "Stone",
+   "Plaster",
+   "Wood",
+   "Dark",
+   "Teal",
+   "Glow",
+   "Roof"
+  ]
+ },
+ {
+  "name": "SM_House_V2",
+  "triangles": 312,
+  "size_m": [
+   6.84,
+   6.72,
+   6.16
+  ],
+  "slots": [
+   "Stone",
+   "Plaster",
+   "Wood",
+   "Dark",
+   "Glow",
+   "Roof"
+  ]
+ },
+ {
+  "name": "SM_House_V3",
+  "triangles": 372,
+  "size_m": [
+   7.65,
+   7.09,
+   6.8
+  ],
+  "slots": [
+   "Stone",
+   "Plaster",
+   "Wood",
+   "Dark",
+   "Glow",
+   "Roof"
+  ]
+ },
+ {
+  "name": "SM_House_V4",
+  "triangles": 420,
+  "size_m": [
+   8.58,
+   7.32,
+   6.26
+  ],
+  "slots": [
+   "Stone",
+   "Plaster",
+   "Wood",
+   "Dark",
+   "Teal",
+   "Glow",
+   "Roof"
+  ]
+ },
+ {
+  "name": "SM_House_V5",
+  "triangles": 288,
+  "size_m": [
+   7.23,
+   6.71,
+   5.89
+  ],
+  "slots": [
+   "Stone",
+   "Plaster",
+   "Wood",
+   "Dark",
+   "Roof",
+   "Glow"
+  ]
+ },
+ {
+  "name": "SM_House_BlackDoor",
+  "triangles": 312,
+  "size_m": [
+   7.45,
+   7.05,
+   6.42
+  ],
+  "slots": [
+   "Stone",
+   "Plaster",
+   "Wood",
+   "Dark",
+   "Black",
+   "Glow",
+   "Roof"
+  ]
+ },
+ {
+  "name": "SM_House_FairGrind",
+  "triangles": 312,
+  "size_m": [
+   7.23,
+   7.28,
+   6.42
+  ],
+  "slots": [
+   "Stone",
+   "Plaster",
+   "Wood",
+   "Dark",
+   "Glow",
+   "Roof"
+  ]
+ },
+ {
+  "name": "SM_House_Lampworks",
+  "triangles": 672,
+  "size_m": [
+   7.45,
+   7.22,
+   6.41
+  ],
+  "slots": [
+   "Stone",
+   "Plaster",
+   "Wood",
+   "Glow",
+   "Roof"
+  ]
+ },
+ {
+  "name": "SM_House_Grinding",
+  "triangles": 576,
+  "size_m": [
+   7.42,
+   7.27,
+   6.58
+  ],
+  "slots": [
+   "Stone",
+   "Plaster",
+   "Wood",
+   "Glow",
+   "Roof"
+  ]
+ },
+ {
+  "name": "SM_House_Cistern",
+  "triangles": 432,
+  "size_m": [
+   7.22,
+   7.09,
+   5.7
+  ],
+  "slots": [
+   "Stone",
+   "Plaster",
+   "Wood",
+   "Glow",
+   "Roof"
+  ]
+ },
+ {
+  "name": "SM_Door_Teal",
+  "triangles": 96,
+  "size_m": [
+   1.0,
+   0.16,
+   2.03
+  ],
+  "slots": [
+   "Teal",
+   "Wood",
+   "Metal"
+  ]
+ },
+ {
+  "name": "SM_Door_Wood",
+  "triangles": 96,
+  "size_m": [
+   1.0,
+   0.15,
+   2.04
+  ],
+  "slots": [
+   "Wood",
+   "Metal"
+  ]
+ },
+ {
+  "name": "SM_RetainingWall_A",
+  "triangles": 260,
+  "size_m": [
+   4.03,
+   0.97,
+   4.4
+  ],
+  "slots": [
+   "Stone",
+   "Moss"
+  ]
+ },
+ {
+  "name": "SM_RetainingWall_B",
+  "triangles": 272,
+  "size_m": [
+   4.04,
+   0.95,
+   4.4
+  ],
+  "slots": [
+   "Stone",
+   "Moss"
+  ]
+ },
+ {
+  "name": "SM_Parapet_A",
+  "triangles": 120,
+  "size_m": [
+   4.09,
+   0.75,
+   1.2
+  ],
+  "slots": [
+   "Stone"
+  ]
+ },
+ {
+  "name": "SM_Parapet_B",
+  "triangles": 96,
+  "size_m": [
+   4.06,
+   0.76,
+   1.12
+  ],
+  "slots": [
+   "Stone"
+  ]
+ },
+ {
+  "name": "SM_Paving_Patch",
+  "triangles": 168,
+  "size_m": [
+   5.58,
+   6.57,
+   0.08
+  ],
+  "slots": [
+   "Stone"
+  ]
+ },
+ {
+  "name": "SM_Paving_Ring",
+  "triangles": 264,
+  "size_m": [
+   6.97,
+   7.05,
+   0.08
+  ],
+  "slots": [
+   "Stone"
+  ]
+ },
+ {
+  "name": "SM_Lampstand",
+  "triangles": 352,
+  "size_m": [
+   2.16,
+   1.9,
+   3.18
+  ],
+  "slots": [
+   "Stone",
+   "Wood",
+   "Metal",
+   "Glow",
+   "PigmentOchre"
+  ]
+ },
+ {
+  "name": "SM_GrindingSlab",
+  "triangles": 320,
+  "size_m": [
+   3.82,
+   1.18,
+   1.13
+  ],
+  "slots": [
+   "Stone",
+   "PigmentOchre",
+   "Wood",
+   "PigmentGreen",
+   "PigmentRed"
+  ]
+ },
+ {
+  "name": "SM_ArmatureBench",
+  "triangles": 240,
+  "size_m": [
+   3.0,
+   1.13,
+   2.1
+  ],
+  "slots": [
+   "Wood",
+   "Metal",
+   "Bone",
+   "ClothOchre"
+  ]
+ },
+ {
+  "name": "SM_FlaxPress",
+  "triangles": 216,
+  "size_m": [
+   2.06,
+   1.73,
+   2.2
+  ],
+  "slots": [
+   "Stone",
+   "Wood",
+   "PigmentOchre",
+   "ClothOchre"
+  ]
+ },
+ {
+  "name": "SM_Cistern",
+  "triangles": 228,
+  "size_m": [
+   2.43,
+   2.61,
+   2.03
+  ],
+  "slots": [
+   "Stone",
+   "Metal",
+   "Wood",
+   "PigmentOchre"
+  ]
+ },
+ {
+  "name": "SM_Stall_Madder",
+  "triangles": 244,
+  "size_m": [
+   2.72,
+   1.98,
+   2.22
+  ],
+  "slots": [
+   "Wood",
+   "Cloth",
+   "Stone",
+   "ClothOchre",
+   "PigmentOchre",
+   "PigmentRed",
+   "PigmentGreen"
+  ]
+ },
+ {
+  "name": "SM_Stall_Ochre",
+  "triangles": 244,
+  "size_m": [
+   2.74,
+   1.98,
+   2.22
+  ],
+  "slots": [
+   "Wood",
+   "ClothOchre",
+   "PigmentOchre",
+   "PigmentRed",
+   "PigmentGreen",
+   "Stone"
+  ]
+ },
+ {
+  "name": "SM_DryingRack",
+  "triangles": 264,
+  "size_m": [
+   1.82,
+   0.74,
+   1.54
+  ],
+  "slots": [
+   "Wood",
+   "PigmentOchre"
+  ]
+ },
+ {
+  "name": "SM_DyeLine",
+  "triangles": 188,
+  "size_m": [
+   4.3,
+   0.15,
+   2.41
+  ],
+  "slots": [
+   "Wood",
+   "ClothOchre",
+   "ClothTeal",
+   "Cloth"
+  ]
+ },
+ {
+  "name": "SM_Crates",
+  "triangles": 36,
+  "size_m": [
+   1.38,
+   0.75,
+   1.06
+  ],
+  "slots": [
+   "Wood"
+  ]
+ },
+ {
+  "name": "SM_Barrel",
+  "triangles": 128,
+  "size_m": [
+   0.71,
+   0.7,
+   0.86
+  ],
+  "slots": [
+   "Wood",
+   "Metal"
+  ]
+ },
+ {
+  "name": "SM_Sacks",
+  "triangles": 60,
+  "size_m": [
+   1.1,
+   0.8,
+   0.78
+  ],
+  "slots": [
+   "ClothOchre",
+   "Canvas"
+  ]
+ },
+ {
+  "name": "SM_Jars",
+  "triangles": 280,
+  "size_m": [
+   1.19,
+   0.9,
+   0.52
+  ],
+  "slots": [
+   "PigmentRed",
+   "Wood",
+   "PigmentOchre",
+   "Stone",
+   "PigmentGreen",
+   "Teal"
+  ]
+ },
+ {
+  "name": "SM_Basket",
+  "triangles": 52,
+  "size_m": [
+   0.71,
+   0.7,
+   0.48
+  ],
+  "slots": [
+   "ClothOchre",
+   "PigmentOchre"
+  ]
+ },
+ {
+  "name": "SM_Bench",
+  "triangles": 36,
+  "size_m": [
+   1.72,
+   0.37,
+   0.54
+  ],
+  "slots": [
+   "Wood"
+  ]
+ },
+ {
+  "name": "SM_Trough",
+  "triangles": 24,
+  "size_m": [
+   2.06,
+   0.83,
+   0.63
+  ],
+  "slots": [
+   "Stone",
+   "Water"
+  ]
+ },
+ {
+  "name": "SM_Ladder",
+  "triangles": 120,
+  "size_m": [
+   0.52,
+   0.08,
+   3.01
+  ],
+  "slots": [
+   "Wood"
+  ]
+ },
+ {
+  "name": "SM_Handcart",
+  "triangles": 152,
+  "size_m": [
+   2.66,
+   1.2,
+   1.14
+  ],
+  "slots": [
+   "Wood",
+   "ClothOchre"
+  ]
+ },
+ {
+  "name": "SM_Fence",
+  "triangles": 108,
+  "size_m": [
+   2.12,
+   0.11,
+   1.12
+  ],
+  "slots": [
+   "Wood"
+  ]
+ },
+ {
+  "name": "SM_PotPlant",
+  "triangles": 68,
+  "size_m": [
+   0.57,
+   0.59,
+   0.81
+  ],
+  "slots": [
+   "Roof",
+   "Foliage",
+   "FoliageLight"
+  ]
+ },
+ {
+  "name": "SM_Tree_A",
+  "triangles": 632,
+  "size_m": [
+   3.5,
+   3.87,
+   4.89
+  ],
+  "slots": [
+   "Bark",
+   "FoliageLight",
+   "Foliage"
+  ]
+ },
+ {
+  "name": "SM_Tree_B",
+  "triangles": 632,
+  "size_m": [
+   3.05,
+   2.82,
+   4.28
+  ],
+  "slots": [
+   "Bark",
+   "FoliageLight",
+   "Foliage"
+  ]
+ },
+ {
+  "name": "SM_Tuft_A",
+  "triangles": 84,
+  "size_m": [
+   0.22,
+   0.35,
+   0.54
+  ],
+  "slots": [
+   "FoliageLight",
+   "Foliage"
+  ]
+ },
+ {
+  "name": "SM_Tuft_B",
+  "triangles": 84,
+  "size_m": [
+   0.34,
+   0.36,
+   0.54
+  ],
+  "slots": [
+   "FoliageLight"
+  ]
+ },
+ {
+  "name": "SM_RampSkin",
+  "triangles": 408,
+  "size_m": [
+   12.69,
+   4.1,
+   0.55
+  ],
+  "slots": [
+   "Ground",
+   "Stone",
+   "Wood",
+   "Dark"
+  ]
+ },
+ {
+  "name": "SM_Wall_4m",
+  "triangles": 36,
+  "size_m": [
+   4.15,
+   0.55,
+   3.24
+  ],
+  "slots": [
+   "Stone",
+   "Plaster",
+   "Roof"
+  ]
+ },
+ {
+  "name": "SM_Wall_2m",
+  "triangles": 36,
+  "size_m": [
+   2.14,
+   0.51,
+   3.24
+  ],
+  "slots": [
+   "Stone",
+   "Plaster",
+   "Roof"
+  ]
+ },
+ {
+  "name": "SM_Wall_Door",
+  "triangles": 96,
+  "size_m": [
+   4.16,
+   0.55,
+   3.21
+  ],
+  "slots": [
+   "Stone",
+   "Plaster",
+   "Wood",
+   "Roof"
+  ]
+ },
+ {
+  "name": "SM_Wall_Window",
+  "triangles": 120,
+  "size_m": [
+   4.16,
+   0.58,
+   3.24
+  ],
+  "slots": [
+   "Stone",
+   "Plaster",
+   "Wood",
+   "Roof"
+  ]
+ },
+ {
+  "name": "SM_Rocks_A",
+  "triangles": 120,
+  "size_m": [
+   1.37,
+   1.09,
+   0.72
+  ],
+  "slots": [
+   "Stone"
+  ]
+ },
+ {
+  "name": "SM_Rocks_B",
+  "triangles": 140,
+  "size_m": [
+   2.23,
+   1.53,
+   1.27
+  ],
+  "slots": [
+   "Stone",
+   "Moss"
+  ]
+ },
+ {
+  "name": "SM_Node_Ochre",
+  "triangles": 128,
+  "size_m": [
+   1.37,
+   1.36,
+   0.42
+  ],
+  "slots": [
+   "PigmentOchre",
+   "Ground"
+  ]
+ },
+ {
+  "name": "SM_Cache",
+  "triangles": 64,
+  "size_m": [
+   0.94,
+   0.69,
+   0.61
+  ],
+  "slots": [
+   "ClothTeal",
+   "Wood",
+   "Stone"
+  ]
+ },
+ {
+  "name": "SM_LoreNote",
+  "triangles": 40,
+  "size_m": [
+   0.35,
+   0.13,
+   1.28
+  ],
+  "slots": [
+   "Wood",
+   "Paper",
+   "Metal"
+  ]
+ },
+ {
+  "name": "SM_ExitArch",
+  "triangles": 124,
+  "size_m": [
+   3.63,
+   0.64,
+   3.48
+  ],
+  "slots": [
+   "Wood",
+   "Stone",
+   "Cloth",
+   "ClothOchre",
+   "ClothTeal"
+  ]
+ }
+]

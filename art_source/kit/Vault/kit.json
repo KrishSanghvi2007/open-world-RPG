@@ -1,0 +1,288 @@
+[
+ {
+  "name": "SM_RibArch",
+  "triangles": 1068,
+  "size_m": [
+   11.26,
+   1.26,
+   8.45
+  ],
+  "slots": [
+   "Bone",
+   "Line"
+  ]
+ },
+ {
+  "name": "SM_RibArch_Wide",
+  "triangles": 1068,
+  "size_m": [
+   17.64,
+   1.66,
+   11.59
+  ],
+  "slots": [
+   "Bone",
+   "Line"
+  ]
+ },
+ {
+  "name": "SM_RibPost",
+  "triangles": 192,
+  "size_m": [
+   1.15,
+   1.1,
+   6.27
+  ],
+  "slots": [
+   "Bone",
+   "Line"
+  ]
+ },
+ {
+  "name": "SM_RibSpan",
+  "triangles": 108,
+  "size_m": [
+   8.32,
+   0.64,
+   0.94
+  ],
+  "slots": [
+   "Bone",
+   "Line"
+  ]
+ },
+ {
+  "name": "SM_PaperFloor",
+  "triangles": 48,
+  "size_m": [
+   4.01,
+   4.01,
+   0.12
+  ],
+  "slots": [
+   "Paper",
+   "BlueLine"
+  ]
+ },
+ {
+  "name": "SM_PaperWall",
+  "triangles": 132,
+  "size_m": [
+   4.03,
+   0.17,
+   6.02
+  ],
+  "slots": [
+   "Paper",
+   "Line"
+  ]
+ },
+ {
+  "name": "SM_TornEdge",
+  "triangles": 120,
+  "size_m": [
+   4.03,
+   0.63,
+   0.1
+  ],
+  "slots": [
+   "Paper"
+  ]
+ },
+ {
+  "name": "SM_ConstructionLine",
+  "triangles": 36,
+  "size_m": [
+   12.0,
+   0.02,
+   0.3
+  ],
+  "slots": [
+   "Line"
+  ]
+ },
+ {
+  "name": "SM_VanishingFan",
+  "triangles": 136,
+  "size_m": [
+   14.07,
+   0.07,
+   14.85
+  ],
+  "slots": [
+   "Line",
+   "BlueLine"
+  ]
+ },
+ {
+  "name": "SM_MeasuringTicks",
+  "triangles": 216,
+  "size_m": [
+   8.02,
+   0.02,
+   0.25
+  ],
+  "slots": [
+   "Line"
+  ]
+ },
+ {
+  "name": "SM_TripleCircle",
+  "triangles": 1008,
+  "size_m": [
+   6.31,
+   6.31,
+   0.04
+  ],
+  "slots": [
+   "Line",
+   "BlueLine"
+  ]
+ },
+ {
+  "name": "SM_SketchPlatformLines",
+  "triangles": 168,
+  "size_m": [
+   4.5,
+   4.5,
+   0.7
+  ],
+  "slots": [
+   "BlueLine"
+  ]
+ },
+ {
+  "name": "SM_MarginNote",
+  "triangles": 84,
+  "size_m": [
+   0.9,
+   0.11,
+   0.79
+  ],
+  "slots": [
+   "Paper",
+   "Line",
+   "BlueLine"
+  ]
+ },
+ {
+  "name": "SM_EraserCrumbs",
+  "triangles": 192,
+  "size_m": [
+   0.88,
+   0.9,
+   0.04
+  ],
+  "slots": [
+   "Graphite",
+   "Paper"
+  ]
+ },
+ {
+  "name": "SM_Smudge",
+  "triangles": 72,
+  "size_m": [
+   2.18,
+   0.86,
+   0.01
+  ],
+  "slots": [
+   "Graphite"
+  ]
+ },
+ {
+  "name": "SM_Heart",
+  "triangles": 672,
+  "size_m": [
+   3.03,
+   2.85,
+   6.48
+  ],
+  "slots": [
+   "Heart",
+   "Bone"
+  ]
+ },
+ {
+  "name": "SM_Hollow",
+  "triangles": 564,
+  "size_m": [
+   3.12,
+   1.68,
+   0.26
+  ],
+  "slots": [
+   "Paper",
+   "Graphite",
+   "Line"
+  ]
+ },
+ {
+  "name": "SM_Study_A",
+  "triangles": 372,
+  "size_m": [
+   1.61,
+   0.12,
+   3.0
+  ],
+  "slots": [
+   "Paper",
+   "BlueLine",
+   "Line"
+  ]
+ },
+ {
+  "name": "SM_Study_B",
+  "triangles": 372,
+  "size_m": [
+   1.61,
+   0.13,
+   3.01
+  ],
+  "slots": [
+   "Paper",
+   "BlueLine",
+   "Line"
+  ]
+ },
+ {
+  "name": "SM_Study_Blank",
+  "triangles": 84,
+  "size_m": [
+   1.6,
+   0.13,
+   3.01
+  ],
+  "slots": [
+   "Paper",
+   "BlueLine"
+  ]
+ },
+ {
+  "name": "SM_Node_Blue",
+  "triangles": 60,
+  "size_m": [
+   1.16,
+   0.88,
+   0.43
+  ],
+  "slots": [
+   "PigmentBlue"
+  ]
+ },
+ {
+  "name": "SM_VaultLamp",
+  "triangles": 268,
+  "size_m": [
+   1.77,
+   1.0,
+   3.57
+  ],
+  "slots": [
+   "Bone",
+   "Line",
+   "Graphite",
+   "Glow"
+  ]
+ }
+]

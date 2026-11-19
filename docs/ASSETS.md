@@ -41,6 +41,13 @@ Free tools used to turn a drawing into a model (nothing paid, no account):
 | 22 sounds: swings, the Flare, chimes, the heartbeat, the Turning's rumble, the air of each zone | `tools/audio/make_sounds.py` (noise and sine waves; needs numpy) | `art_source/audio/*.wav`, imported to `Content/Audio/Made/` (both in git) | Everything no free pack had |
 | Item icons, brush textures, painted skies, props | `tools/stylekit/`, `tools/looktest/` | `art_source/`, `Content/StyleKit/`, `Content/LookTest/` | The Glaze look and the style probes |
 
+### The environment kit (made 2026-11-19)
+
+All 113 scenery pieces (village, forest, Vault) are made by script, with no outside models or textures:
+`tools/kit/blender_varnish.py`, `blender_scumblewood.py`, `blender_vault.py` (shapes, in Blender) and
+`tools/kit/unreal_kit.py` (paint, in Unreal). Sources are in `art_source/kit/`; the game's copies in `Content/Kit/`.
+How to remake them: `tools/kit/README.md`.
+
 ## Restoring the sound packs on another machine
 
 1. `python3 tools/audio/fetch_kenney.py` downloads the three Kenney packs into `Saved/ThirdParty/kenney/` (it stops if a page no longer says CC0).

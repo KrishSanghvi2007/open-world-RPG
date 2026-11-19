@@ -50,7 +50,7 @@ Ground rules: gameplay layouts are LOCKED (art goes on top; move nothing unless 
 the M2 Pro under the GDD lighting rule, measured after every zone; style B Glaze, wabi-sabi; free assets only.
 
 - [x] 1. **Art bible:** `docs/ART_BIBLE.md`.
-- [ ] 2. **Environment kit:** modular pieces made in Blender by script, Glaze materials, foliage, terrain painting. (`tools/kit/`)
+- [x] 2. **Environment kit:** 113 pieces made in Blender by script and painted in Unreal by zone palette (`tools/kit/README.md`). To look: open `Maps/Dev/L_Kit_Varnish`, `L_Kit_Scumblewood` or `L_Kit_Vault`. Each zone's ground and cliffs are shaped when that zone is dressed (step 3).
 - [ ] 3. **Zones,** A then B, one at a time, with before/after shots in a devlog each, and a frame-rate check each:
   - [ ] 3a. Varnish (square, terraces, the Hem, house exteriors)
   - [ ] 3b. The Scumblewood

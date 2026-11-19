@@ -1,0 +1,503 @@
+[
+ {
+  "name": "SM_Vertebra_S",
+  "triangles": 900,
+  "size_m": [
+   24.93,
+   9.58,
+   23.18
+  ],
+  "slots": [
+   "Cliff",
+   "Moss",
+   "Line"
+  ]
+ },
+ {
+  "name": "SM_Vertebra_M",
+  "triangles": 900,
+  "size_m": [
+   29.27,
+   10.03,
+   23.54
+  ],
+  "slots": [
+   "Cliff",
+   "Moss",
+   "Line"
+  ]
+ },
+ {
+  "name": "SM_Vertebra_L",
+  "triangles": 900,
+  "size_m": [
+   39.25,
+   9.99,
+   23.28
+  ],
+  "slots": [
+   "Cliff",
+   "Moss",
+   "Line"
+  ]
+ },
+ {
+  "name": "SM_ForestTree_A",
+  "triangles": 672,
+  "size_m": [
+   8.51,
+   9.46,
+   12.26
+  ],
+  "slots": [
+   "Bark",
+   "Foliage",
+   "FoliageLight"
+  ]
+ },
+ {
+  "name": "SM_ForestTree_B",
+  "triangles": 804,
+  "size_m": [
+   10.33,
+   8.82,
+   13.65
+  ],
+  "slots": [
+   "Bark",
+   "Foliage",
+   "FoliageLight"
+  ]
+ },
+ {
+  "name": "SM_ForestTree_C",
+  "triangles": 540,
+  "size_m": [
+   8.22,
+   8.37,
+   10.36
+  ],
+  "slots": [
+   "Bark",
+   "Foliage",
+   "FoliageLight"
+  ]
+ },
+ {
+  "name": "SM_Sapling",
+  "triangles": 92,
+  "size_m": [
+   1.48,
+   1.15,
+   2.98
+  ],
+  "slots": [
+   "Bark",
+   "FoliageLight"
+  ]
+ },
+ {
+  "name": "SM_Stump",
+  "triangles": 132,
+  "size_m": [
+   2.21,
+   2.06,
+   0.88
+  ],
+  "slots": [
+   "Bark",
+   "Canvas",
+   "Moss"
+  ]
+ },
+ {
+  "name": "SM_FallenTrunk",
+  "triangles": 272,
+  "size_m": [
+   6.89,
+   1.9,
+   1.92
+  ],
+  "slots": [
+   "Bark",
+   "Moss",
+   "ClothOchre"
+  ]
+ },
+ {
+  "name": "SM_RootArch",
+  "triangles": 344,
+  "size_m": [
+   5.99,
+   2.04,
+   3.42
+  ],
+  "slots": [
+   "Bark",
+   "Moss"
+  ]
+ },
+ {
+  "name": "SM_RootArch_Wide",
+  "triangles": 344,
+  "size_m": [
+   8.65,
+   2.04,
+   4.1
+  ],
+  "slots": [
+   "Bark",
+   "Moss"
+  ]
+ },
+ {
+  "name": "SM_RootStep",
+  "triangles": 92,
+  "size_m": [
+   4.69,
+   1.88,
+   0.62
+  ],
+  "slots": [
+   "Bark"
+  ]
+ },
+ {
+  "name": "SM_RootRail",
+  "triangles": 132,
+  "size_m": [
+   5.13,
+   0.47,
+   1.46
+  ],
+  "slots": [
+   "Bark"
+  ]
+ },
+ {
+  "name": "SM_Boulder_XS",
+  "triangles": 80,
+  "size_m": [
+   0.68,
+   0.54,
+   0.41
+  ],
+  "slots": [
+   "Stone"
+  ]
+ },
+ {
+  "name": "SM_Boulder_S",
+  "triangles": 80,
+  "size_m": [
+   1.43,
+   0.88,
+   0.97
+  ],
+  "slots": [
+   "Stone"
+  ]
+ },
+ {
+  "name": "SM_Boulder_M",
+  "triangles": 100,
+  "size_m": [
+   2.39,
+   1.9,
+   1.43
+  ],
+  "slots": [
+   "Stone"
+  ]
+ },
+ {
+  "name": "SM_Boulder_L",
+  "triangles": 100,
+  "size_m": [
+   4.56,
+   3.35,
+   2.79
+  ],
+  "slots": [
+   "Stone"
+  ]
+ },
+ {
+  "name": "SM_Boulder_Moss",
+  "triangles": 120,
+  "size_m": [
+   2.28,
+   1.72,
+   1.43
+  ],
+  "slots": [
+   "Stone",
+   "Moss"
+  ]
+ },
+ {
+  "name": "SM_Fern",
+  "triangles": 288,
+  "size_m": [
+   1.71,
+   1.64,
+   0.54
+  ],
+  "slots": [
+   "FoliageLight",
+   "Foliage"
+  ]
+ },
+ {
+  "name": "SM_Fern_B",
+  "triangles": 288,
+  "size_m": [
+   1.47,
+   1.74,
+   0.55
+  ],
+  "slots": [
+   "FoliageLight",
+   "Foliage"
+  ]
+ },
+ {
+  "name": "SM_GrassTuft",
+  "triangles": 84,
+  "size_m": [
+   0.24,
+   0.27,
+   0.48
+  ],
+  "slots": [
+   "FoliageLight",
+   "Foliage"
+  ]
+ },
+ {
+  "name": "SM_GrassTuft_Tall",
+  "triangles": 84,
+  "size_m": [
+   0.42,
+   0.48,
+   0.89
+  ],
+  "slots": [
+   "FoliageLight"
+  ]
+ },
+ {
+  "name": "SM_MossPatch",
+  "triangles": 80,
+  "size_m": [
+   2.49,
+   2.48,
+   0.22
+  ],
+  "slots": [
+   "Moss"
+  ]
+ },
+ {
+  "name": "SM_Reeds",
+  "triangles": 144,
+  "size_m": [
+   0.63,
+   0.72,
+   1.55
+  ],
+  "slots": [
+   "FoliageLight",
+   "Bark"
+  ]
+ },
+ {
+  "name": "SM_MushroomShelf",
+  "triangles": 96,
+  "size_m": [
+   0.84,
+   0.6,
+   0.59
+  ],
+  "slots": [
+   "ClothOchre"
+  ]
+ },
+ {
+  "name": "SM_HangingMoss",
+  "triangles": 72,
+  "size_m": [
+   1.36,
+   0.11,
+   1.92
+  ],
+  "slots": [
+   "Moss"
+  ]
+ },
+ {
+  "name": "SM_BloodWell",
+  "triangles": 368,
+  "size_m": [
+   4.05,
+   3.12,
+   0.98
+  ],
+  "slots": [
+   "Sanguine",
+   "Scab",
+   "Stone",
+   "Paper",
+   "PigmentRed"
+  ]
+ },
+ {
+  "name": "SM_TallyStone",
+  "triangles": 260,
+  "size_m": [
+   1.06,
+   0.61,
+   1.5
+  ],
+  "slots": [
+   "Stone",
+   "Paper"
+  ]
+ },
+ {
+  "name": "SM_LeanTo",
+  "triangles": 132,
+  "size_m": [
+   3.26,
+   2.43,
+   1.66
+  ],
+  "slots": [
+   "Wood",
+   "ClothOchre",
+   "Cloth",
+   "Canvas"
+  ]
+ },
+ {
+  "name": "SM_CookRing",
+  "triangles": 292,
+  "size_m": [
+   1.32,
+   1.44,
+   1.12
+  ],
+  "slots": [
+   "Stone",
+   "Charcoal",
+   "Glow",
+   "Wood",
+   "Metal"
+  ]
+ },
+ {
+  "name": "SM_RopeLine",
+  "triangles": 120,
+  "size_m": [
+   6.12,
+   0.34,
+   2.06
+  ],
+  "slots": [
+   "Wood",
+   "Canvas"
+  ]
+ },
+ {
+  "name": "SM_RibGate",
+  "triangles": 476,
+  "size_m": [
+   8.65,
+   1.7,
+   9.7
+  ],
+  "slots": [
+   "Bone",
+   "Moss",
+   "Dark"
+  ]
+ },
+ {
+  "name": "SM_SpineStep",
+  "triangles": 176,
+  "size_m": [
+   6.4,
+   5.97,
+   4.85
+  ],
+  "slots": [
+   "Bone"
+  ]
+ },
+ {
+  "name": "SM_CanvasEdge",
+  "triangles": 156,
+  "size_m": [
+   2.8,
+   3.91,
+   0.03
+  ],
+  "slots": [
+   "Canvas",
+   "Line"
+  ]
+ },
+ {
+  "name": "SM_Node_Green",
+  "triangles": 80,
+  "size_m": [
+   1.37,
+   1.29,
+   0.56
+  ],
+  "slots": [
+   "PigmentGreen"
+  ]
+ },
+ {
+  "name": "SM_Node_Black",
+  "triangles": 60,
+  "size_m": [
+   1.38,
+   0.72,
+   1.03
+  ],
+  "slots": [
+   "PigmentBlack",
+   "Bone"
+  ]
+ },
+ {
+  "name": "SM_Node_Red",
+  "triangles": 152,
+  "size_m": [
+   1.51,
+   1.34,
+   0.24
+  ],
+  "slots": [
+   "Sanguine",
+   "Scab"
+  ]
+ },
+ {
+  "name": "SM_ForestLamp",
+  "triangles": 284,
+  "size_m": [
+   2.02,
+   1.64,
+   3.8
+  ],
+  "slots": [
+   "Bark",
+   "Stone",
+   "Metal",
+   "Glow"
+  ]
+ }
+]
