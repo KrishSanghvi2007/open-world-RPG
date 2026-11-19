@@ -250,3 +250,11 @@ The teaching prompts: one short line that appears when the thing it teaches firs
 
 Quest objectives also carry a `Zone` (a zone row in regions.json): where that step happens, so the objective marker can point at the right door when it is somewhere else.
 
+## The Folded (characters with a made model)
+
+Some rows now belong to characters built from the owners' drawings by `/make-character` (docs/story/CAST_IN_GAME.md).
+
+- **enemies.json:** `Family` may be `Folded`. Such an enemy's class names its model (`GetFigureId()`), which is looked for at `/Game/Folded/<id>/`. Its numbers and attacks work like any other enemy's.
+- **dialogue.json:** a person with no voice (Lacuna) still has rows; the `Text` says what their hands do.
+- **hints.json:** trigger `NearWeb` fires near a web that cannot be seen yet.
+

@@ -44,6 +44,13 @@ None right now. The six GDD decisions are settled (see `docs/DECISIONS.md`).
 - Dying restarts the level.
 - The three zones are separate levels, each with an A (before) and B (after the Turning) version.
 
+## Done, waiting on the owner: characters from the drawings (set 2026-11-19)
+- [x] 1. Nine figures cast into the game: `docs/story/CAST_IN_GAME.md` (the Folded).
+- [x] 2. Two pilots made end to end and placed: the Hatcher (d28) at the Bend, and Lacuna (d40) in the Hem with her side story. Test room `Maps/Dev/L_Combat_Hatcher`.
+- [x] 3. Each beside its drawing, and what worked and what did not: devlog 015.
+- [x] 4. The pipeline as a skill: `/make-character <id>`.
+- Not done: Stipple (the small spider); the Vigil (waits for the owner's say on the drawing's nudity); the other six are on paper only.
+
 ## Done, waiting on the owner: "feel good and play well" before the playtest (set 2026-11-18)
 Ten steps from the owner, then a devlog with a before/after fight clip, then stop and wait. Tick them off here so work can resume after any break.
 

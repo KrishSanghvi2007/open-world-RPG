@@ -62,9 +62,10 @@ speak, having nothing to speak with. They answer with their hands, and the game 
 **What you do.** A side story, *A Face for Lacuna*, open after the first quest. You find them by the wall in
 the Hem. One hand goes to the place where the face was, and stops. You can:
 
-- **Finish the face.** It costs pigment, and the colour you spend is the face they get. They are set: one
-  person, for good. The taps stop. They stand straighter and the hands come home to the sleeves. They will
-  never be afraid of the dark again, and they will never again be anyone but this.
+- **Finish the face.** It costs 3 Hide Ochre, and gives them a plain warm face, like a small moon. They are set:
+  one person, for good. The taps stop. They stand straighter and the hands come home to the sleeves. They will
+  never be afraid of the dark again, and they will never again be anyone but this. (As built, one colour. Letting
+  the colour you spend decide the face is the natural next step.)
 - **Leave it open.** Nothing is spent. A hand closes over yours for a moment. The taps keep dripping. They
   are still missing something, and still free.
 - Walk away, and come back.
@@ -78,6 +79,9 @@ left open, and kept in the light, Lacuna is one of the people who can finish you
 will only stand and look, with the face you gave them.
 
 **Changed from the advisor's idea:** kept whole. Added the name, the job, the hands that talk, and the Finale.
+
+**Built (devlog 015):** in the Hem under the wall of the square, in both versions of the village. Side story
+`SQ_AFaceForLacuna`, eight lines in `data/dialogue.json`, decided at the bare place itself.
 
 **Moves like (from CAST.md):** glides upright while the pipe frame shuffles like a parallelogram on curl-toed
 slippers; the hands drift round like satellites; slow, deliberate, dripping.
@@ -100,6 +104,9 @@ So she is a trap you can read, not an ambush: the first place outside the Vault 
 Glim, and a reason to look before you walk. Killing her is possible and pays in Bone Black; it is not required.
 
 **Hue.** Black. Ink is weak to its opposite, white: Ceruse hurts her most, Bone Black least.
+
+**Built (devlog 015):** over the corner cache at the Bend, in both versions of the forest, and alone in the test
+room `Maps/Dev/L_Combat_Hatcher`. Enemy row `Hatcher`. Stipple is not made yet.
 
 **Changed from the advisor's idea:** a creature with one place and one rule, not a mini-boss. A boss here
 would have been the forest's third peak in a row. Stipple is saved for later: if the Hatcher dies, the small

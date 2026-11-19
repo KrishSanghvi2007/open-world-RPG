@@ -18,6 +18,10 @@ Code, architecture, tools, file layout, bug fixes, balance within GDD ranges, as
 ## Log
 Newest first. Format: `date: decision (who): why`
 
+- 2026-11-19: Characters made from the owners' drawings are built by `/make-character` (`.claude/skills/make-character/`, `tools/characters/`): painted from the ink redraw, inflated offline, rigged from the cast file's pivots, animated from its movement notes. The online image-to-3D service is optional and its result is measured against the drawing before use (Claude): on both pilots it changed the figure.
+- 2026-11-19: Every Folded character keeps the drawn line exactly, has thin Glaze colour inside it and a black edge all round, and glows a little by itself so it does not go black in shade (Claude; owner to judge the look).
+- 2026-11-19: The owner asked for nine of their and Hannah Sanghvi's drawn figures to be cast into the game, credited "Characters by Krish & Hannah Sanghvi". The drawings repository is read-only and only files actually used are copied in (owner).
+
 - 2026-11-18: Balance is measured, not guessed: the autopilot fights each enemy repeatedly at a set skill (`golden_path.py trials`), plays the main path (`golden_path.py village` and so on), and `tools/sim/economy.py` plays the pigment economy. `docs/BALANCE.md` holds the results. Any change to enemy numbers or placement should be followed by a run (Claude).
 - 2026-11-18: A place you can wake must be safe: nothing hostile within 15 m of a Lampstand or a zone door. The level builder checks this and reports a problem otherwise (Claude): the autopilot was killed in a loop at two of them.
 - 2026-11-18: Rule changes made for fairness, each found by the game playing itself: a dodged blow is spent; a Flare can be renewed in its last 3 s and sketched platforms hold 1.2 s after the light goes; groups take turns (two attacking, 0.7 s apart); enemies ignore a target a storey away; waking after a death tops poultices up to two (Claude; owner to judge in the playtest, `docs/QUESTIONS.md` 45 to 49).

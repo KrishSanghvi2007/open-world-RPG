@@ -1,13 +1,32 @@
 # Before you play
 
-Last updated: 2026-11-18, night. This is the page for your first playtest. The loop is stopped; nothing more will change until you say.
+Last updated: 2026-11-19, early morning. This is the page for your first playtest. The loop is stopped; nothing more will change until you say.
 
 **The short version:** Act 1 now has animation, hit feedback, sound, a camera that behaves, prompts that teach
 each rule when it first matters, a marker for the next goal, fair checkpoints, and numbers that were measured
 by the game playing itself. That last part found faults that would have spoiled your playtest (the main one: the
-Cartoon Gallery could not really be crossed) and they are fixed. **No person has played it yet. You are the first.**
+Cartoon Gallery could not really be crossed) and they are fixed. **No person has played it yet. You are the first.** Overnight, two of your and Hannah's drawn characters were also built and placed (next section).
 
 Devlog: `docs/devlog/014-feel-and-play.md`. The 24-second before/after fight: `docs/devlog/clips/014-fight-before-after.mp4`.
+
+## New since the feel pass: two of your drawings are in the game
+
+Devlog: `docs/devlog/015-the-folded.md`. The casting of all nine: `docs/story/CAST_IN_GAME.md`.
+
+- **Lacuna** (d40, the Faceless One) keeps the water in the **Hem**, the lowest terrace of Varnish, under the wall
+  of the square. Go down the ramp after the first quest. Ask about the face.
+- **The Hatcher** (d28, the Spider) hangs over the far corner of **the Bend**, the second clearing in the forest.
+  There is a cache under her. Light a Flare (F) before you walk in. Or do not, and find out.
+- To see the Hatcher on her own: Content Drawer → Maps → Dev → **L_Combat_Hatcher** → Play.
+- Neither is on the main path. If you want to judge the game first and the characters second, you can walk past both.
+- More of them can be made with **`/make-character <id>`**.
+
+**What to judge about them**
+1. Do they look like your drawings? Is the line still yours?
+2. They are as deep as a cushion, with a black edge. Is that the look, or do they need real depth?
+3. Lacuna's hands: do they read as a person, with no face and no voice?
+4. The Hatcher: is the web fair? Did you understand why you were caught?
+5. "The Folded" as what they are in this world (the Hand's folded-paper game). Right, or wrong?
 
 ## How to play it
 
@@ -105,6 +124,8 @@ Only hands can judge these. The question to answer is in italics.
 
 ## What is rough or unproven
 
+**The two characters** (devlog 015 has the full list): played by script only; "leave it open" for Lacuna was not played; the Hatcher was fought only in her test room; both are thin from the side; one of the Hatcher's legs kinks.
+
 **Unproven**
 - **Everything by hand.** All of it has been played only by script.
 - **The sound.** Never heard.
@@ -130,7 +151,7 @@ Only hands can judge these. The question to answer is in italics.
 
 ## Decisions I made that you may want to undo
 
-All are in `docs/QUESTIONS.md` (40 to 58 are from this pass). The ones that change a rule:
+All are in `docs/QUESTIONS.md` (40 to 58 are from the feel pass, 59 to 68 from the characters). The ones that change a rule:
 
 - **45. A dodged blow is spent.** The alternative was to shorten every long attack instead.
 - **46. Being hit knocks you out of your swing** for 0.3 to 0.5 seconds.

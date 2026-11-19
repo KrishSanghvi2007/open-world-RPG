@@ -23,13 +23,15 @@ actually built from are copied in, under `art_source/characters/<id>/source/`.
 |---|---|---|---|---|
 | d28, the Spider: ink redraw, original and painted sheet | The owners' drawings repository (`drawings/redrawn/d28`, `originals`, `painted`) | The owners' own work | `art_source/characters/d28/source/` | The Hatcher |
 | d40, the Faceless One: ink redraw, original and painted sheet | The same (`d40`) | The owners' own work | `art_source/characters/d40/source/` | Lacuna |
+| The models, materials and movements made from them | `tools/characters/` (our scripts) | Ours, from the owners' drawings | `art_source/characters/<id>/`, `Content/Folded/<id>/` | The Hatcher and Lacuna in the game |
 | Part boxes, pivots and movement notes for both | The same (`docs/CAST.md`, `tools/film/cast.json`) | The owners' own work | read in place, not copied | Rigging and animation |
 
 Free tools used to turn a drawing into a model (nothing paid, no account):
 
 | Tool | From | Licence or terms | Used for |
 |---|---|---|---|
-| Hunyuan3D-2.1, through its public demo | https://huggingface.co/spaces/tencent/Hunyuan3D-2.1 (anonymous, free quota) | Tencent Hunyuan 3D 2.1 Community License; outputs are ours to use | A rough 3D shape from the painted front view |
+| Hunyuan3D-2.1, through its public demo | https://huggingface.co/spaces/tencent/Hunyuan3D-2.1 (anonymous, free quota) | Tencent Hunyuan 3D 2.1 Community License | Tried on both pilots and **not used in the game**: the two shapes it returned are kept in `art_source/characters/*/raw/hunyuan.glb` only as a record (devlog 015) |
+| Blender 5.2 | blender.org | GPL (the program; what is made with it is ours) | Building, rigging, animating and exporting the characters |
 | gradio_client, numpy, scipy, Pillow | PyPI | Apache 2.0, BSD, BSD, HPND | Talking to the demo; painting the front view |
 
 ## Made by us (no outside source)
